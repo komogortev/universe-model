@@ -26,7 +26,7 @@ export function createPlanetoid(planetoidInfo = {}) {
         );
         break;
       case 'distance':
-        planetoidOrbit.position.x = planetoidInfo.distance * 30
+        planetoidOrbit.position.x = planetoidInfo.distance * 20
         break;
     }
   })

@@ -111,47 +111,50 @@ const state = reactive({
           cycle: 10767.5,
           radius: 58232,
           mass: 95,
-          color: 0xE6FC81,
+          color: 0xF7F085,
           children: {
             Titan: {
               nameId: 'Titan',
-              distance: 1,
+              distance: 0.8,
               scale: 1,
-              color: 0xF3F2F2
+              color: 0xF1E17B
             },
             Enceladus: {
               nameId: 'Enceladus',
               distance: 1,
               scale: 1,
-              color: 0xF3F2F2
+              color: 0xDADADA
             },
             Iapetus: {
               nameId: 'Iapetus',
-              distance: 1,
+              distance: 1.2,
               scale: 1,
-              color: 0xF3F2F2
+              color: 0x506855
             },
             Rhea: {
               nameId: 'Rhea',
-              distance: 1,
+              distance: 1.4,
               scale: 1,
-              color: 0xF3F2F2
+              color: 0xDADADA
             },
             Dione: {
               nameId: 'Dione',
-              distance: 1,
+              distance: 1.6,
               scale: 1,
-              color: 0xF3F2F2 },
+              color: 0xDADADA
+            },
             Tethys: {
               nameId: 'Tethys',
-              distance: 1,
+              distance: 1.8,
               scale: 1,
-              color: 0xF3F2F2 },
+              color: 0xDADADA
+            },
             Mimas: {
               nameId: 'Mimas',
-              distance: 1,
+              distance: 2,
               scale: 1,
-              color: 0xF3F2F2 },
+              color: 0xDADADA
+            },
           }
         },
         Uranus: {
@@ -161,33 +164,38 @@ const state = reactive({
           scale: 4,
           radius: 25362,
           mass: 14,
-          color: 0xF3F2F2,
+          color: 0x85E9F7,
           children: {
             Titania: {
               nameId: 'Titania',
-              distance: 1,
+              distance: 0.8,
               scale: 1,
-              color: 0xF3F2F2 },
+              color: 0xDADADA
+            },
             Oberon: {
               nameId: 'Oberon',
               distance: 1,
               scale: 1,
-              color: 0xF3F2F2 },
+              color: 0xF9D8F6
+            },
             Umbriel: {
               nameId: 'Umbriel',
-              distance: 1,
+              distance: 1.2,
               scale: 1,
-              color: 0xF3F2F2 },
+              color: 0xDADADA
+            },
             Ariel: {
               nameId: 'Ariel',
-              distance: 1,
+              distance: 1.4,
               scale: 1,
-              color: 0xF3F2F2 },
+              color: 0xDADADA
+            },
             Miranda: {
               nameId: 'Miranda',
-              distance: 1,
+              distance: 1.6,
               scale: 1,
-              color: 0xF3F2F2 },
+              color: 0xDADADA
+            },
           }
         },
         Neptun: {
@@ -197,13 +205,14 @@ const state = reactive({
           scale: 4,
           radius: 24622,
           mass: 17,
-          color: 0xF3F2F2,
+          color: 0x173498,
           children: {
             Triton: {
               nameId: 'Triton',
-              distance: 1,
+              distance: 0.8,
               scale: 1,
-              color: 0xF3F2F2 },
+              color: 0xDAB0FF
+            },
           }
         }
       }

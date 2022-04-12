@@ -8,14 +8,15 @@ const state = reactive({
       nameId: 'Sun',
       scale: 5, // (110*Earth)
       radius: 700000, //
+      rotation_period: 27,
       emissive: 0xFFFF00,
       children: {
         Mercury: {
           nameId: 'Mercury',
           distance: 0.4, //  [AU] (150,000,000 km; 93,000,000 mi)
           scale: 0.33, // times Earth's
-          cycle: 87.97, // Earth's days (24hr)
-          rotation: 175.94, // Earth's days
+          orbital_period: 87.97, // Earth's days (24hr)
+          rotation_period: 175.94, // Earth's days (24hr)
           inclination: 0.3, // degrees to Sun equator
           radius: 2440, // (*km)
           mass: 0.055, // Earth's mass
@@ -30,8 +31,8 @@ const state = reactive({
           nameId: 'Venus',
           distance: 0.7,
           scale: 0.95,
-          cycle: 224.7,
-          rotation: 243,
+          orbital_period: 224.7,
+          rotation_period: 243,
           inclination: 3.86,
           radius: 6052,
           mass: 0.815,
@@ -46,8 +47,8 @@ const state = reactive({
           nameId: 'Earth',
           distance: 1,
           scale: 1,
-          cycle: 365,
-          rotation: 1,
+          orbital_period: 365,
+          rotation_period: 1,
           inclination: 7.155,
           radius: 6371,
           mass: 1,
@@ -62,7 +63,8 @@ const state = reactive({
               nameId: 'Moon',
               distance: 0.1,
               scale: 0.3,
-              cycle: 28,
+              orbital_period: 28,
+              rotation_period: 0,
               inclination: 5.145,
               radius: 1737.4,
               mass: 0.0123,
@@ -74,8 +76,8 @@ const state = reactive({
           nameId: 'Mars',
           distance: 1.5,
           scale: 0.5,
-          cycle: 687,
-          rotation: 1.02,
+          orbital_period: 687,
+          rotation_period: 1.02,
           inclination: 5.65,
           radius: 3396,
           mass: 0.107,
@@ -90,7 +92,8 @@ const state = reactive({
           nameId: 'Jupiter',
           distance: 5.2,
           scale: 11,
-          cycle: 4380,
+          orbital_period: 4380,
+          rotation_period: 1.02,
           radius: 69911,
           mass: 318,
           color: 0xE1DFDE,
@@ -99,7 +102,8 @@ const state = reactive({
               nameId: 'Ganymede',
               distance: .2,
               scale: 1,
-              cycle: 7,
+              orbital_period: 7,
+              rotation_period: 0,
               color: 0xF3F2F2
             }
           }
@@ -108,7 +112,8 @@ const state = reactive({
           nameId: 'Saturn',
           distance: 9.5,
           scale: 9,
-          cycle: 10767.5,
+          orbital_period: 10767.5,
+          rotation_period: 0.475,
           radius: 58232,
           mass: 95,
           color: 0xF7F085,
@@ -117,42 +122,56 @@ const state = reactive({
               nameId: 'Titan',
               distance: 0.8,
               scale: 1,
+              orbital_period: 500,
+              rotation_period: 0,
               color: 0xF1E17B
             },
             Enceladus: {
               nameId: 'Enceladus',
               distance: 1,
               scale: 1,
+              orbital_period: 510,
+              rotation_period: 0,
               color: 0xDADADA
             },
             Iapetus: {
               nameId: 'Iapetus',
               distance: 1.2,
               scale: 1,
+              orbital_period: 520,
+              rotation_period: 0,
               color: 0x506855
             },
             Rhea: {
               nameId: 'Rhea',
               distance: 1.4,
               scale: 1,
+              orbital_period: 530,
+              rotation_period: 0,
               color: 0xDADADA
             },
             Dione: {
               nameId: 'Dione',
               distance: 1.6,
               scale: 1,
+              orbital_period: 540,
+              rotation_period: 0,
               color: 0xDADADA
             },
             Tethys: {
               nameId: 'Tethys',
               distance: 1.8,
               scale: 1,
+              orbital_period: 550,
+              rotation_period: 0,
               color: 0xDADADA
             },
             Mimas: {
               nameId: 'Mimas',
               distance: 2,
               scale: 1,
+              orbital_period: 560,
+              rotation_period: 0,
               color: 0xDADADA
             },
           }
@@ -160,8 +179,9 @@ const state = reactive({
         Uranus: {
           nameId: 'Uranus',
           distance: 19.2,
-          cycle: 30660,
           scale: 4,
+          orbital_period: 30660,
+          rotation_period: 0.71832,
           radius: 25362,
           mass: 14,
           color: 0x85E9F7,
@@ -170,30 +190,40 @@ const state = reactive({
               nameId: 'Titania',
               distance: 0.8,
               scale: 1,
+              orbital_period: 500,
+              rotation_period: 0,
               color: 0xDADADA
             },
             Oberon: {
               nameId: 'Oberon',
               distance: 1,
               scale: 1,
+              orbital_period: 510,
+              rotation_period: 0,
               color: 0xF9D8F6
             },
             Umbriel: {
               nameId: 'Umbriel',
               distance: 1.2,
               scale: 1,
+              orbital_period: 520,
+              rotation_period: 0,
               color: 0xDADADA
             },
             Ariel: {
               nameId: 'Ariel',
               distance: 1.4,
               scale: 1,
+              orbital_period: 530,
+              rotation_period: 0,
               color: 0xDADADA
             },
             Miranda: {
               nameId: 'Miranda',
               distance: 1.6,
               scale: 1,
+              orbital_period: 540,
+              rotation_period: 0,
               color: 0xDADADA
             },
           }
@@ -201,8 +231,9 @@ const state = reactive({
         Neptun: {
           nameId: 'Neptun',
           distance: 30.1,
-          cycle: 60225,
           scale: 4,
+          orbital_period: 60225,
+          rotation_period: 0.67125,
           radius: 24622,
           mass: 17,
           color: 0x173498,
@@ -211,6 +242,8 @@ const state = reactive({
               nameId: 'Triton',
               distance: 0.8,
               scale: 1,
+              orbital_period: 500,
+              rotation_period: 0,
               color: 0xDAB0FF
             },
           }

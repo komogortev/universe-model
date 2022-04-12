@@ -22,7 +22,11 @@ const loader = new GLTFLoader();
 const scene = new THREE.Scene()
 const celestialOjects = [];
 const solarSystem3D = new THREE.Object3D();
+solarSystem3D.name = 'SolarSystem'
+
+scene.add(camera, ambientLight, pointLight, solarSystem3D)
 celestialOjects.push(solarSystem3D)
+// updateRenderer()
 
 // 2. Init Scene
 // * Load 3D model
@@ -47,40 +51,32 @@ loader.load( '/public/models/toon-cat/toon-cat.gltf', ( gltf ) => {
   console.error( error );
 });
 
-scene.add(camera, ambientLight, pointLight, solarSystem3D)
-updateRenderer()
-
 onMounted(() => {
+  //@Todo optimize into recursive fn
   Object.keys(solarSystem.value).forEach(key => {
-    const planetoid = createPlanetoid(getPlanetoidInfo(key))
-    solarSystem3D.add(planetoid.planetoidOrbit)
-    celestialOjects.push(planetoid.planetoidOrbit)
-    celestialOjects.push(planetoid.planetoidMesh)
+    const sun = createPlanetoid(getPlanetoidInfo(key))
+    solarSystem3D.add(sun.planetoidMesh)
+    celestialOjects.push(sun.planetoidMesh)
 
     if (solarSystem.value[key].children) {
       Object.keys(solarSystem.value[key].children).forEach(childKey => {
-        const planetoid2 = createPlanetoid(getPlanetoidInfo(childKey))
-        solarSystem3D.add(planetoid2.planetoidOrbit)
-        celestialOjects.push(planetoid2.planetoidOrbit)
-        celestialOjects.push(planetoid2.planetoidMesh)
+        const earth = createPlanetoid(getPlanetoidInfo(childKey))
+        solarSystem3D.add(earth.planetoidOrbit)
+        earth.planetoidOrbit.add(earth.planetoidMesh);
+        celestialOjects.push(earth.planetoidOrbit)
+        celestialOjects.push(earth.planetoidMesh)
 
         if (solarSystem.value[key].children[childKey].children) {
           Object.keys(solarSystem.value[key].children[childKey].children).forEach(childKey2 => {
-            const planetoid3 = createPlanetoid(getPlanetoidInfo(childKey2))
-            planetoid2.planetoidOrbit.add(planetoid3.planetoidOrbit)
-            celestialOjects.push(planetoid3.planetoidMesh)
+            const moon = createPlanetoid(getPlanetoidInfo(childKey2))
+            earth.planetoidOrbit.add(moon.planetoidOrbit)
+            moon.planetoidOrbit.add(moon.planetoidMesh)
+            celestialOjects.push(moon.planetoidMesh)
           })
         }
       })
     }
   })
-
-
-  // collectNameIds(solarSystem.value).forEach(planetoidName => {
-  //   const planetoid = createPlanetoid(getPlanetoidInfo(planetoidName))
-  //   solarSystem3D.add(planetoid.planetoidMesh)
-  //   celestialOjects.push(planetoid.planetoidMesh)
-  // })
 });
 
 // 3. Animation loop
@@ -89,7 +85,10 @@ const loop = () => {
   requestAnimationFrame(loop)
 
   celestialOjects.forEach((obj) => {
-    obj.rotation.y += 0.001;
+    // Spin the planetoids
+    if (['Mesh','Object3D'].includes(obj.type) && obj.planetoidInfo && obj.planetoidInfo.rotation_period) {
+       obj.rotation.y += (0.001 * obj.planetoidInfo.rotation_period)
+    }
   });
 }
 loop()

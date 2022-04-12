@@ -1,6 +1,7 @@
 import { Object3D, Mesh, MeshPhongMaterial, SphereGeometry } from 'three'
 
 export function createPlanetoid(planetoidInfo = {}) {
+  const planetoid = { planetoidInfo }
   const radius = 1
   const widthSegments = 6
   const heightSegments = 6
@@ -8,29 +9,29 @@ export function createPlanetoid(planetoidInfo = {}) {
     radius, widthSegments, heightSegments
   )
 
-  const planetoidName = planetoidInfo.nameId
-  const planetoidOrbit = new Object3D();
+  // Create planetoid body
   const planetoidMaterial = new MeshPhongMaterial({
     emissive: planetoidInfo.emissive ? planetoidInfo.emissive : null,
     color: planetoidInfo.color ? planetoidInfo.color : null,
   });
   const planetoidMesh = new Mesh(sphereGeometry, planetoidMaterial);
+  planetoidMesh.name = planetoidInfo.nameId
+  planetoidMesh.planetoidInfo = planetoidInfo
+  planetoidMesh.scale.set(
+    planetoidInfo.scale,
+    planetoidInfo.scale,
+    planetoidInfo.scale,
+  );
+  planetoid.planetoidMesh = planetoidMesh
 
-  Object.keys(planetoidInfo).forEach(prop => {
-    switch (prop) {
-      case 'scale':
-        planetoidMesh.scale.set(
-          planetoidInfo.scale,
-          planetoidInfo.scale,
-          planetoidInfo.scale,
-        );
-        break;
-      case 'distance':
-        planetoidOrbit.position.x = planetoidInfo.distance * 20
-        break;
-    }
-  })
+  // create planetoid Orbit object
+  if (planetoidInfo.orbital_period) {
+    const planetoidOrbit = new Object3D();
+    planetoidOrbit.name = planetoidInfo.nameId
+    planetoidOrbit.position.x = planetoidInfo.distance * 20
+    planetoidOrbit.planetoidInfo = planetoidInfo
+    planetoid.planetoidOrbit = planetoidOrbit
+  }
 
-  planetoidOrbit.add(planetoidMesh);
-  return { planetoidOrbit, planetoidMesh }
+  return planetoid
 }

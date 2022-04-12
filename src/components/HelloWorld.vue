@@ -6,7 +6,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { renderer, updateRenderer } from '../core/renderer'
 import { camera } from '../core/camera'
 import { ambientLight, pointLight } from '../core/lights'
-import '../core/controls'
+import '../core/orbit-controls'
 import { createPlanetoid } from '../utils/planetoid'
 import { collectNameIds } from '../utils/helpers'
 import useWorldStore from "../store/world";
@@ -89,6 +89,7 @@ const loop = () => {
     if (['Mesh','Object3D'].includes(obj.type) && obj.planetoidInfo && obj.planetoidInfo.rotation_period) {
        obj.rotation.y += (0.001 * obj.planetoidInfo.rotation_period)
     }
+    //@Todo calculate/assign planetoid position progression
   });
 }
 loop()

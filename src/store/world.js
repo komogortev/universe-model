@@ -3,10 +3,10 @@ import { ref, reactive, computed, toRefs } from "vue";
 import { findObjectSection } from '../utils/helpers'
 
 const state = reactive({
-  solarSystem: {
+  solarSystemStore: {
     Sun: {
       nameId: 'Sun',
-      scale: 5, // (110*Earth)
+      scale: 3, // (110*Earth)
       radius: 700000, //
       rotation_period: 27,
       emissive: 0xFFFF00,
@@ -257,11 +257,11 @@ const state = reactive({
 export default function useWorldStore() {
 
   const getPlanetoidInfo = ((nameId) => {
-    return findObjectSection(state.solarSystem, nameId)
+    return findObjectSection(state.solarSystemStore, nameId)
   })
 
   const setSolarState = (solar) => {
-    state.solarSystem = solar
+    state.solarSystemStore = solar
   }
 
   return {

@@ -14,22 +14,23 @@ import { AxisGridHelper } from '../utils/axis-helper'
 import useWorldStore from "../store/world";
 
 // 1. Properties listing
-const { solarSystem, setSolarState, getPlanetoidInfo } = useWorldStore();
+const { solarSystemStore, setSolarState, getPlanetoidInfo } = useWorldStore();
 
 defineProps({
-  msg: String
+  msg: String,
 })
 
-const loader = new GLTFLoader();
+const loader = new GLTFLoader()
 const scene = new THREE.Scene()
 const gui = new GUI();
 const celestialOjects = [];
-const solarSystem3D = new THREE.Object3D();
-solarSystem3D.name = 'SolarSystem'
 
-scene.add(camera, ambientLight, pointLight, solarSystem3D)
-celestialOjects.push(solarSystem3D)
-makeAxisGrid(solarSystem3D, 'solarSystem', 50);
+const solarSystemNode = new THREE.Object3D();
+solarSystemNode.name = 'SolarSystemNode'
+makeAxisGrid(solarSystemNode, 'solarSystem', 50);
+// celestialOjects.push(solarSystemNode)
+
+scene.add(camera, ambientLight, pointLight, solarSystemNode)
 // updateRenderer()
 
 // 2. Init Scene
@@ -61,34 +62,32 @@ function makeAxisGrid(node, label, units) {
 }
 
 onMounted(() => {
-
   //@Todo optimize into recursive fn
-  Object.keys(solarSystem.value).forEach(key => {
+  Object.keys(solarSystemStore.value).forEach(key => {
     const sun = createPlanetoid(getPlanetoidInfo(key))
-    solarSystem3D.add(sun.planetoidMesh)
-    celestialOjects.push(sun.planetoidMesh)
-    makeAxisGrid(solarSystem3D, `solarSystem3DOrbit`);
-    makeAxisGrid(sun.planetoidMesh, `${key}Mesh`);
+    solarSystemNode.add(sun.planetoidOrbit)
+    celestialOjects.push(sun.planetoidOrbit)
+    makeAxisGrid(sun.planetoidOrbit, `${key}Orbit`);
 
-    if (solarSystem.value[key].children) {
-      Object.keys(solarSystem.value[key].children).forEach(childKey => {
+    if (solarSystemStore.value[key].children) {
+      Object.keys(solarSystemStore.value[key].children).forEach(childKey => {
         const earth = createPlanetoid(getPlanetoidInfo(childKey))
-        solarSystem3D.add(earth.planetoidOrbit)
-        earth.planetoidOrbit.add(earth.planetoidMesh)
-
+        solarSystemNode.add(earth.planetoidParentOrbit)
+        celestialOjects.push(earth.planetoidParentOrbit)
         celestialOjects.push(earth.planetoidOrbit)
-        celestialOjects.push(earth.planetoidMesh)
 
-        makeAxisGrid(earth.planetoidOrbit, `${childKey}Orbit`)
+        makeAxisGrid(earth.planetoidParentOrbit, `${childKey}ParentOrbit`, 50)
+        makeAxisGrid(earth.planetoidOrbit, `${childKey}Orbit`, 25)
         makeAxisGrid(earth.planetoidMesh, `${childKey}Mesh`)
 
-        if (solarSystem.value[key].children[childKey].children) {
-          Object.keys(solarSystem.value[key].children[childKey].children).forEach(childKey2 => {
+        if (solarSystemStore.value[key].children[childKey].children) {
+          Object.keys(solarSystemStore.value[key].children[childKey].children).forEach(childKey2 => {
             const moon = createPlanetoid(getPlanetoidInfo(childKey2))
-            earth.planetoidOrbit.add(moon.planetoidOrbit)
-            moon.planetoidOrbit.add(moon.planetoidMesh)
-            celestialOjects.push(moon.planetoidMesh)
-            makeAxisGrid(moon.planetoidOrbit, `${childKey2}Orbit`)
+
+            earth.planetoidOrbit.add(moon.planetoidParentOrbit)
+            celestialOjects.push(moon.planetoidParentOrbit)
+            makeAxisGrid(moon.planetoidParentOrbit, `${childKey2}ParentOrbit`, 50)
+            makeAxisGrid(moon.planetoidOrbit, `${childKey2}Orbit`, 25)
             makeAxisGrid(moon.planetoidMesh, `${childKey2}Mesh`)
           })
         }
@@ -112,8 +111,11 @@ const loop = () => {
 
   celestialOjects.forEach((obj) => {
     // Spin the planetoids
-    if (['Mesh','Object3D'].includes(obj.type) && obj.planetoidInfo && obj.planetoidInfo.rotation_period) {
-       obj.rotation.y += (0.001 * obj.planetoidInfo.rotation_period)
+    if (obj.rotation_period) {
+       obj.rotation.y += (0.0000001 * obj.rotation_period)
+    }
+    if (obj.orbital_period) {
+       obj.rotation.y += (0.0000001 * obj.orbital_period)
     }
     //@Todo calculate/assign planetoid position progression
   });

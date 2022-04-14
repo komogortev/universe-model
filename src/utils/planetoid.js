@@ -22,16 +22,24 @@ export function createPlanetoid(planetoidInfo = {}) {
     planetoidInfo.scale,
     planetoidInfo.scale,
   );
-  planetoid.planetoidMesh = planetoidMesh
+
+  const planetoidOrbit = new Object3D();
+  planetoidOrbit.name = planetoidInfo.nameId
+  planetoidOrbit.rotation_period = planetoidInfo.rotation_period
+  planetoidOrbit.position.x = planetoidInfo.distance * 20 //Distance from parent
+  planetoidOrbit.add(planetoidMesh)
 
   // create planetoid Orbit object
   if (planetoidInfo.orbital_period) {
-    const planetoidOrbit = new Object3D();
-    planetoidOrbit.name = planetoidInfo.nameId
-    planetoidOrbit.position.x = planetoidInfo.distance * 20
-    planetoidOrbit.planetoidInfo = planetoidInfo
-    planetoid.planetoidOrbit = planetoidOrbit
+    const planetoidParentOrbit = new Object3D();
+    planetoidParentOrbit.name = planetoidInfo.nameId
+    planetoidParentOrbit.orbital_period = planetoidInfo.orbital_period
+    planetoidParentOrbit.add(planetoidOrbit)
+    planetoid.planetoidParentOrbit = planetoidParentOrbit
   }
+
+  planetoid.planetoidMesh = planetoidMesh
+  planetoid.planetoidOrbit = planetoidOrbit
 
   return planetoid
 }

@@ -65,29 +65,26 @@ onMounted(() => {
   //@Todo optimize into recursive fn
   Object.keys(solarSystemStore.value).forEach(key => {
     const sun = createPlanetoid(getPlanetoidInfo(key))
-    solarSystemNode.add(sun.planetoidOrbit)
-    celestialOjects.push(sun.planetoidOrbit)
-    makeAxisGrid(sun.planetoidOrbit, `${key}Orbit`);
+    solarSystemNode.add(sun.planetoidMesh)
+    celestialOjects.push(sun.planetoidMesh)
+    makeAxisGrid(sun.planetoidMesh, `${key}Mesh`);
 
     if (solarSystemStore.value[key].children) {
       Object.keys(solarSystemStore.value[key].children).forEach(childKey => {
         const earth = createPlanetoid(getPlanetoidInfo(childKey))
         solarSystemNode.add(earth.planetoidParentOrbit)
         celestialOjects.push(earth.planetoidParentOrbit)
-        celestialOjects.push(earth.planetoidOrbit)
-
+        celestialOjects.push(earth.planetoidMesh)
         makeAxisGrid(earth.planetoidParentOrbit, `${childKey}ParentOrbit`, 50)
-        makeAxisGrid(earth.planetoidOrbit, `${childKey}Orbit`, 25)
+        makeAxisGrid(earth.planetoidNode, `${childKey}Node`, 12)
         makeAxisGrid(earth.planetoidMesh, `${childKey}Mesh`)
 
         if (solarSystemStore.value[key].children[childKey].children) {
           Object.keys(solarSystemStore.value[key].children[childKey].children).forEach(childKey2 => {
             const moon = createPlanetoid(getPlanetoidInfo(childKey2))
-
-            earth.planetoidOrbit.add(moon.planetoidParentOrbit)
+            earth.planetoidNode.add(moon.planetoidParentOrbit)
             celestialOjects.push(moon.planetoidParentOrbit)
             makeAxisGrid(moon.planetoidParentOrbit, `${childKey2}ParentOrbit`, 50)
-            makeAxisGrid(moon.planetoidOrbit, `${childKey2}Orbit`, 25)
             makeAxisGrid(moon.planetoidMesh, `${childKey2}Mesh`)
           })
         }
@@ -111,11 +108,11 @@ const loop = () => {
 
   celestialOjects.forEach((obj) => {
     // Spin the planetoids
-    if (obj.rotation_period) {
-       obj.rotation.y += (0.0000001 * obj.rotation_period)
+    if (obj.hasOwnProperty('rotation_period') && obj.rotation_period !== 0) {
+       obj.rotation.y += (0.00001 * obj.rotation_period)
     }
-    if (obj.orbital_period) {
-       obj.rotation.y += (0.0000001 * obj.orbital_period)
+    if (obj.hasOwnProperty('orbital_period') && obj.orbital_period !== 0) {
+       obj.rotation.y += (0.00001 * obj.orbital_period)
     }
     //@Todo calculate/assign planetoid position progression
   });

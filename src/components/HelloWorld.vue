@@ -1,7 +1,9 @@
 <script setup>
 import { ref, render, onMounted } from 'vue'
 import * as THREE from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import GUI from 'lil-gui';
+import '../utils/axis-helper'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 import { renderer, updateRenderer } from '../core/renderer'
 import { camera } from '../core/camera'
@@ -9,6 +11,7 @@ import { ambientLight, pointLight } from '../core/lights'
 import '../core/orbit-controls'
 import { createPlanetoid } from '../utils/planetoid'
 import { collectNameIds } from '../utils/helpers'
+import { AxisGridHelper } from '../utils/axis-helper'
 import useWorldStore from "../store/world";
 
 // 1. Properties listing
@@ -20,6 +23,7 @@ defineProps({
 
 const loader = new GLTFLoader();
 const scene = new THREE.Scene()
+const gui = new GUI();
 const celestialOjects = [];
 const solarSystem3D = new THREE.Object3D();
 solarSystem3D.name = 'SolarSystem'
@@ -51,20 +55,30 @@ loader.load( '/public/models/toon-cat/toon-cat.gltf', ( gltf ) => {
   console.error( error );
 });
 
+function makeAxisGrid(node, label, units) {
+  const helper = new AxisGridHelper(node, units);
+  gui.add(helper, 'visible').name(label);
+}
+
 onMounted(() => {
+  makeAxisGrid(solarSystem3D, 'solarSystem', 25);
+
   //@Todo optimize into recursive fn
   Object.keys(solarSystem.value).forEach(key => {
     const sun = createPlanetoid(getPlanetoidInfo(key))
     solarSystem3D.add(sun.planetoidMesh)
     celestialOjects.push(sun.planetoidMesh)
+    makeAxisGrid(sun.planetoidMesh, 'sunMesh');
 
     if (solarSystem.value[key].children) {
       Object.keys(solarSystem.value[key].children).forEach(childKey => {
         const earth = createPlanetoid(getPlanetoidInfo(childKey))
         solarSystem3D.add(earth.planetoidOrbit)
-        earth.planetoidOrbit.add(earth.planetoidMesh);
+        earth.planetoidOrbit.add(earth.planetoidMesh)
         celestialOjects.push(earth.planetoidOrbit)
         celestialOjects.push(earth.planetoidMesh)
+        makeAxisGrid(earth.planetoidOrbit, 'earthOrbit')
+        makeAxisGrid(earth.planetoidMesh, 'earthMesh')
 
         if (solarSystem.value[key].children[childKey].children) {
           Object.keys(solarSystem.value[key].children[childKey].children).forEach(childKey2 => {
@@ -72,11 +86,21 @@ onMounted(() => {
             earth.planetoidOrbit.add(moon.planetoidOrbit)
             moon.planetoidOrbit.add(moon.planetoidMesh)
             celestialOjects.push(moon.planetoidMesh)
+            makeAxisGrid(moon.planetoidOrbit, 'moonOrbit')
+            makeAxisGrid(moon.planetoidMesh, 'moonMesh')
           })
         }
       })
     }
   })
+
+  // add an AxesHelper to each node
+  celestialOjects.forEach((node) => {
+    const axes = new THREE.AxesHelper();
+    axes.material.depthTest = false;
+    axes.renderOrder = 1;
+    node.add(axes);
+  });
 });
 
 // 3. Animation loop

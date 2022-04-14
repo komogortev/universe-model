@@ -8,8 +8,10 @@ const state = reactive({
       nameId: 'Sun',
       scale: 3, // (110*Earth)
       radius: 700000, //
+      orbital_period: 0.1,
       rotation_period: 27,
       emissive: 0xFFFF00,
+      color: 0xFF7910,
       children: {
         Mercury: {
           nameId: 'Mercury',

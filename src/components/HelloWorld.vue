@@ -2,7 +2,6 @@
 import { ref, render, onMounted } from 'vue'
 import * as THREE from 'three'
 import GUI from 'lil-gui';
-import '../utils/axis-helper'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 import { renderer, updateRenderer } from '../core/renderer'
@@ -30,6 +29,7 @@ solarSystem3D.name = 'SolarSystem'
 
 scene.add(camera, ambientLight, pointLight, solarSystem3D)
 celestialOjects.push(solarSystem3D)
+makeAxisGrid(solarSystem3D, 'solarSystem', 50);
 // updateRenderer()
 
 // 2. Init Scene
@@ -61,24 +61,26 @@ function makeAxisGrid(node, label, units) {
 }
 
 onMounted(() => {
-  makeAxisGrid(solarSystem3D, 'solarSystem', 25);
 
   //@Todo optimize into recursive fn
   Object.keys(solarSystem.value).forEach(key => {
     const sun = createPlanetoid(getPlanetoidInfo(key))
     solarSystem3D.add(sun.planetoidMesh)
     celestialOjects.push(sun.planetoidMesh)
-    makeAxisGrid(sun.planetoidMesh, 'sunMesh');
+    makeAxisGrid(solarSystem3D, `solarSystem3DOrbit`);
+    makeAxisGrid(sun.planetoidMesh, `${key}Mesh`);
 
     if (solarSystem.value[key].children) {
       Object.keys(solarSystem.value[key].children).forEach(childKey => {
         const earth = createPlanetoid(getPlanetoidInfo(childKey))
         solarSystem3D.add(earth.planetoidOrbit)
         earth.planetoidOrbit.add(earth.planetoidMesh)
+
         celestialOjects.push(earth.planetoidOrbit)
         celestialOjects.push(earth.planetoidMesh)
-        makeAxisGrid(earth.planetoidOrbit, 'earthOrbit')
-        makeAxisGrid(earth.planetoidMesh, 'earthMesh')
+
+        makeAxisGrid(earth.planetoidOrbit, `${childKey}Orbit`)
+        makeAxisGrid(earth.planetoidMesh, `${childKey}Mesh`)
 
         if (solarSystem.value[key].children[childKey].children) {
           Object.keys(solarSystem.value[key].children[childKey].children).forEach(childKey2 => {
@@ -86,8 +88,8 @@ onMounted(() => {
             earth.planetoidOrbit.add(moon.planetoidOrbit)
             moon.planetoidOrbit.add(moon.planetoidMesh)
             celestialOjects.push(moon.planetoidMesh)
-            makeAxisGrid(moon.planetoidOrbit, 'moonOrbit')
-            makeAxisGrid(moon.planetoidMesh, 'moonMesh')
+            makeAxisGrid(moon.planetoidOrbit, `${childKey2}Orbit`)
+            makeAxisGrid(moon.planetoidMesh, `${childKey2}Mesh`)
           })
         }
       })

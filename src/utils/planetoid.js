@@ -4,8 +4,8 @@ export function createPlanetoid(planetoidInfo = {}) {
   const loader = new TextureLoader();
   const planetoid = { planetoidInfo }
   const radius = 1
-  const widthSegments = 6
-  const heightSegments = 6
+  const widthSegments = 24
+  const heightSegments = 24
   const sphereGeometry = new SphereGeometry(
     radius, widthSegments, heightSegments
   )
@@ -25,7 +25,7 @@ export function createPlanetoid(planetoidInfo = {}) {
   const planetoidMaterial = new MeshPhongMaterial({
     emissive: planetoidInfo.emissive ? planetoidInfo.emissive : null,
     color: planetoidInfo.color ? planetoidInfo.color : '#ccc',
-    map: planetoidInfo.textureMap ? loader.load('public/models/solar-system/textures/2k_earth_daymap.jpg') : null,
+    map: planetoidInfo.textureMap ? loader.load(planetoidInfo.textureMap) : null,
   });
 
 

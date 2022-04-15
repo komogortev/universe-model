@@ -10,8 +10,9 @@ const state = reactive({
       radius: 700000, //
       orbital_period: 0.1,
       rotation_period: 27,
-      emissive: 0xFFFF00,
-      color: 0xFF7910,
+      emissive: 0xFFFF00,//@Todo causes issue with texture map load
+      // color: 0xFF7910,
+      textureMap: 'models/solar-system/textures/sun_map.jpg',
       children: {
         Mercury: {
           nameId: 'Mercury',
@@ -27,7 +28,8 @@ const state = reactive({
             night: -173
           },
           athmosphere: 0, // times Earth's
-          color: 0xFF7910
+          // color: 0xFF7910,
+          textureMap: 'models/solar-system/textures/mercury_map.jpg'
         },
         Venus: {
           nameId: 'Venus',
@@ -43,7 +45,8 @@ const state = reactive({
             night: 400
           },
           athmosphere: 90,
-          color: 0xDA8A17
+          // color: 0xDA8A17,
+          textureMap: 'models/solar-system/textures/venus_map.jpg'
         },
         Earth: {
           nameId: 'Earth',
@@ -59,7 +62,7 @@ const state = reactive({
             night: -89.2
           },
           athmosphere: 1,
-          color: 0x1397FF,
+          // color: 0x1397FF,
           textureMap: 'models/solar-system/textures/2k_earth_daymap.jpg',
           children: {
             Moon: {
@@ -71,7 +74,8 @@ const state = reactive({
               inclination: 5.145,
               radius: 1737.4,
               mass: 0.0123,
-              color: 0xFCF7AB
+              // color: 0xFCF7AB,
+              textureMap: 'models/solar-system/textures/moon_2k.jpg',
             }
           }
         },
@@ -89,7 +93,8 @@ const state = reactive({
             night: 35
           },
           athmosphere: 0.6,
-          color: 0xCF400F
+          color: 0xCF400F,
+          textureMap: 'models/solar-system/textures/mars_map_1k.jpg',
         },
         Jupiter: {
           nameId: 'Jupiter',
@@ -99,7 +104,8 @@ const state = reactive({
           rotation_period: 1.02,
           radius: 69911,
           mass: 318,
-          color: 0xE1DFDE,
+          // color: 0xE1DFDE,
+          textureMap: 'models/solar-system/textures/jupiter_map.jpg',
           children: {
             Ganymede: {
               nameId: 'Ganymede',
@@ -119,7 +125,8 @@ const state = reactive({
           rotation_period: 0.475,
           radius: 58232,
           mass: 95,
-          color: 0xF7F085,
+          // color: 0xF7F085,
+          textureMap: 'models/solar-system/textures/saturn_map.jpg',
           children: {
             Titan: {
               nameId: 'Titan',
@@ -187,7 +194,8 @@ const state = reactive({
           rotation_period: 0.71832,
           radius: 25362,
           mass: 14,
-          color: 0x85E9F7,
+          // color: 0x85E9F7,
+          textureMap: 'models/solar-system/textures/uranus_map.jpg',
           children: {
             Titania: {
               nameId: 'Titania',
@@ -239,7 +247,8 @@ const state = reactive({
           rotation_period: 0.67125,
           radius: 24622,
           mass: 17,
-          color: 0x173498,
+          // color: 0x173498,
+          textureMap: 'models/solar-system/textures/neptune_map.jpg',
           children: {
             Triton: {
               nameId: 'Triton',

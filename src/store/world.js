@@ -60,6 +60,7 @@ const state = reactive({
           },
           athmosphere: 1,
           color: 0x1397FF,
+          textureMap: 'models/solar-system/textures/2k_earth_daymap.jpg',
           children: {
             Moon: {
               nameId: 'Moon',

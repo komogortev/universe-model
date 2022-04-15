@@ -75,6 +75,7 @@ onMounted(() => {
         solarSystemNode.add(earth.planetoidParentOrbit)
         celestialOjects.push(earth.planetoidParentOrbit)
         celestialOjects.push(earth.planetoidNode)
+
         makeAxisGrid(earth.planetoidParentOrbit, `${childKey}ParentOrbit`, 50)
         makeAxisGrid(earth.planetoidNode, `${childKey}Node`, 12)
         makeAxisGrid(earth.planetoidMesh, `${childKey}Mesh`)
@@ -110,10 +111,10 @@ const loop = () => {
   celestialOjects.forEach((obj) => {
     // Spin the planetoids
     if (obj.hasOwnProperty('rotation_period') && obj.rotation_period !== 0) {
-       obj.rotation.y += (0.001 * obj.rotation_period)
+       obj.rotation.y += (0.0001 * obj.rotation_period)
     }
     if (obj.hasOwnProperty('orbital_period') && obj.orbital_period !== 0) {
-       obj.rotation.y += (0.0000001 * obj.orbital_period)
+       obj.rotation.y += (0.000001 * obj.orbital_period)
     }
     //@Todo calculate/assign planetoid position progression
   });

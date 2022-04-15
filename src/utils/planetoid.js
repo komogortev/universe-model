@@ -1,6 +1,7 @@
-import { Object3D, Mesh, MeshPhongMaterial, SphereGeometry } from 'three'
+import { Object3D, Mesh, MeshPhongMaterial, MeshBasicMaterial, SphereGeometry, TextureLoader } from 'three'
 
 export function createPlanetoid(planetoidInfo = {}) {
+  const loader = new TextureLoader();
   const planetoid = { planetoidInfo }
   const radius = 1
   const widthSegments = 6
@@ -15,10 +16,20 @@ export function createPlanetoid(planetoidInfo = {}) {
   planetoidNode.position.x = planetoidInfo.distance * 20 //Distance from parent
 
   // Create planetoid body
+  ///import map from
+  // const planetoidMaterial = new MeshBasicMaterial({
+  //   emissive: planetoidInfo.emissive ? planetoidInfo.emissive : null,
+  //   color: planetoidInfo.color ? planetoidInfo.color : '#ccc',
+  //   map: planetoidInfo.textureMap ? loader.load('public/models/solar-system/textures/2k_earth_daymap.jpg') : null,
+  // });
   const planetoidMaterial = new MeshPhongMaterial({
     emissive: planetoidInfo.emissive ? planetoidInfo.emissive : null,
-    color: planetoidInfo.color ? planetoidInfo.color : null,
+    color: planetoidInfo.color ? planetoidInfo.color : '#ccc',
+    map: planetoidInfo.textureMap ? loader.load('public/models/solar-system/textures/2k_earth_daymap.jpg') : null,
   });
+
+
+
   const planetoidMesh = new Mesh(sphereGeometry, planetoidMaterial);
   planetoidMesh.name = planetoidInfo.nameId
   planetoidMesh.planetoidInfo = planetoidInfo

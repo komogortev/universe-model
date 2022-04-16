@@ -30,10 +30,10 @@ export const tankCamera = new PerspectiveCamera(
 
 
 export function makePerspectiveCamera(fov = 40) {
-  const aspect = 2;  // the canvas default
-  const zNear = 0.1;
-  const zFar = 1000;
-  return new PerspectiveCamera(fov, aspect, zNear, zFar);
+  const aspect = 2 // the canvas default
+  const zNear = 0.1
+  const zFar = 1000
+  return new PerspectiveCamera(fov, aspect, zNear, zFar)
 }
 
 window.addEventListener('resize', () => {

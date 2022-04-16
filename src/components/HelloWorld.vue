@@ -1,14 +1,14 @@
 <script setup>
 import { ref, render, onMounted } from 'vue'
 import * as THREE from 'three'
-import MouseMeshInteraction from '../assets/js/three_mmi'
 import GUI from 'lil-gui';
+import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 import { renderer, updateRenderer } from '../core/renderer'
 import { camera, turretCamera, tankCamera, makePerspectiveCamera } from '../core/cameras'
 import { ambientLight, pointLight } from '../core/lights'
-import '../core/orbit-controls'
+import { controls } from '../core/orbit-controls'
 import { createPlanetoid } from '../utils/planetoid'
 import { collectNameIds } from '../utils/helpers'
 import { AxisGridHelper } from '../utils/axis-helper'
@@ -22,86 +22,104 @@ defineProps({
   msg: String,
 })
 
+let loader, gui, stats
+let currentCamera, scene
+let celestialOjects, solarSystemNode, golemMesh, golemCamera
 
-const loader = new GLTFLoader()
-const scene = new THREE.Scene()
-const gui = new GUI();
-const celestialOjects = [];
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2( 1, 1 );
+let clickFlag, contextClickFlag
 
-const solarSystemNode = new THREE.Object3D();
-solarSystemNode.name = 'SolarSystemNode'
-_makeAxisGrid(solarSystemNode, 'solarSystem', 50);
-// celestialOjects.push(solarSystemNode)
+function init () {
+  loader = new GLTFLoader()
+  gui = new GUI();
+  stats = new Stats();
 
-scene.add(camera, ambientLight, pointLight, solarSystemNode)
-// updateRenderer()
+  currentCamera = camera
+  controls.camera = currentCamera
+  scene = new THREE.Scene()
 
-// 2. Init Scene
-// * Load 3D model
-loader.load( '/public/models/toon-cat/toon-cat.gltf', ( gltf ) => {
-  gltf.animations; // Array<THREE.AnimationClip>
-  gltf.scene; // THREE.Group
-  gltf.scenes; // Array<THREE.Group>
-  gltf.cameras; // Array<THREE.Camera>
-  gltf.asset; // Object
-  // *1. detailed option: downsize the model scale
-  // const box = new THREE.Box3().setFromObject(gltf.scene);
-  // const size = new THREE.Vector3();
-  // var center = new THREE.Vector3();
-  // box.getCenter(center);
-  // var scale = .05;
-  // gltf.scene.scale.setScalar(scale);
-  // gltf.scene.position.sub(center.multiplyScalar(scale));
-  // *2. general scale: alter model scale (less recommended)
-  gltf.scene.scale.setScalar(.025);
-  scene.add( gltf.scene );
-}, undefined, ( error ) => {
-  console.error( error );
-});
+  celestialOjects = [];
+  solarSystemNode = new THREE.Object3D();
+  solarSystemNode.name = 'SolarSystemNode'
+  _makeAxisGrid(solarSystemNode, 'solarSystem', 50);
+  // celestialOjects.push(solarSystemNode)
 
-// 3. Init golem
-const golemGeometry = new THREE.SphereGeometry(3, 6, 6);
-const golemMaterial = new THREE.MeshNormalMaterial({ wireframe: true });
-const golemMesh = new THREE.Mesh(golemGeometry, golemMaterial);
+  scene.add(camera, ambientLight, pointLight, solarSystemNode)
+  // updateRenderer()
 
-const golemOrbit = new THREE.Object3D();
-const golemElevation = new THREE.Object3D();
-const golemBlob = new THREE.Object3D();
-// golemMesh.castShadow = true;
-scene.add(golemOrbit);
-golemOrbit.add(golemElevation);
-golemElevation.position.z = 10;
-golemElevation.position.y = 3;
-golemElevation.add(golemBlob);
-golemBlob.add(golemMesh);
+  // 2. Init Scene
+  // * Load 3D model
+  loader.load( '/public/models/toon-cat/toon-cat.gltf', ( gltf ) => {
+    gltf.animations; // Array<THREE.AnimationClip>
+    gltf.scene; // THREE.Group
+    gltf.scenes; // Array<THREE.Group>
+    gltf.cameras; // Array<THREE.Camera>
+    gltf.asset; // Object
+    // *1. detailed option: downsize the model scale
+    // const box = new THREE.Box3().setFromObject(gltf.scene);
+    // const size = new THREE.Vector3();
+    // var center = new THREE.Vector3();
+    // box.getCenter(center);
+    // var scale = .05;
+    // gltf.scene.scale.setScalar(scale);
+    // gltf.scene.position.sub(center.multiplyScalar(scale));
+    // *2. general scale: alter model scale (less recommended)
+    gltf.scene.scale.setScalar(.025);
+    scene.add( gltf.scene );
+  }, undefined, ( error ) => {
+    console.error( error );
+  });
 
-const targetCamera = makePerspectiveCamera();
-const targetCameraPivot = new THREE.Object3D();
-targetCamera.position.y = 1;
-targetCamera.position.z = -2;
-targetCamera.rotation.y = Math.PI;
-golemBlob.add(targetCameraPivot);
-targetCameraPivot.add(targetCamera);
+  // 3. Init golem
+  const golemGeometry = new THREE.SphereGeometry(1, 6, 6);
+  const golemMaterial = new THREE.MeshNormalMaterial({ wireframe: true });
+  golemMesh = new THREE.Mesh(golemGeometry, golemMaterial);
 
+  const golemOrbit = new THREE.Object3D();
+  const golemElevation = new THREE.Object3D();
+  const golemBlob = new THREE.Object3D();
+  golemMesh.name = 'Golem'
+  // golemMesh.castShadow = true;
+  scene.add(golemOrbit);
+  golemOrbit.add(golemElevation);
+  golemElevation.position.z = 10;
+  golemElevation.position.y = 3;
+  golemElevation.add(golemBlob);
+  golemBlob.add(golemMesh);
 
-
-
-
-
-
-
-
-
-
-
-
+  golemCamera = makePerspectiveCamera();
+  golemCamera.position.y = 2;
+  golemCamera.position.z = 3;
+  //golemCamera.rotation.y = Math.PI;
+  golemBlob.add(golemCamera);
 
 
+  document.addEventListener( 'click', onMouseClick ) // Left click
+  document.addEventListener( 'dblclick', onMouseDblClick ) // Left, Left, Dbl
+  document.addEventListener( 'contextmenu', onMouseContext ) // Right click
 
+}
 
+function onMouseClick (event) {
+  event.preventDefault();
+  console.log('onMouseClick',event)
+  clickFlag = true
 
+  mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+  mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+}
 
+function onMouseDblClick (event) {
+  event.preventDefault();
+  console.log('onMouseDblClick',event)
+}
 
+function onMouseContext (event) {
+  event.preventDefault();
+  console.log('onMouseContext',event)
+  contextClickFlag = true
+}
 
 function _makeAxisGrid(node, label, units) {
   const helper = new AxisGridHelper(node, units);
@@ -151,9 +169,33 @@ onMounted(() => {
 });
 
 // 3. Animation loop
-const loop = () => {
-  renderer.render(scene, camera)
-  requestAnimationFrame(loop)
+const animate = () => {
+  renderer.render(scene, currentCamera)
+  requestAnimationFrame(animate)
+
+  if (clickFlag) {
+    raycaster.setFromCamera( mouse, camera );
+    const intersection = raycaster.intersectObject( golemMesh );
+    if ( intersection.length > 0 ) {
+      let foundMeshClick = !!~intersection.findIndex(object => {
+        return object.object.name === 'Golem'
+      })
+      if (foundMeshClick) {
+        currentCamera = golemCamera
+      }
+      // const instanceId = intersection[ 0 ].instanceId;
+      // golemMesh.getColorAt( instanceId, color );
+      // if ( color.equals( white ) ) {
+      //   mesh.setColorAt( instanceId, color.setHex( Math.random() * 0xffffff ) );
+      //   mesh.instanceColor.needsUpdate = true;
+      // }
+    }
+
+    clickFlag = false
+  } else if (contextClickFlag) {
+    currentCamera = camera
+    contextClickFlag = false
+  }
 
   celestialOjects.forEach((obj) => {
     // Spin the planetoids
@@ -161,13 +203,15 @@ const loop = () => {
        obj.rotation.y += (0.0001 * obj.rotation_period)
     }
     if (obj.hasOwnProperty('orbital_period') && obj.orbital_period !== 0) {
-       obj.rotation.y += (0.000001 * obj.orbital_period)
+       obj.rotation.y += (0.0000001 * obj.orbital_period)
     }
     //@Todo calculate/assign planetoid position progression
-    renderer.render(scene, camera);
+    //renderer.render(scene, camera);
   });
 }
-loop()
+
+init ()
+animate()
 </script>
 
 <template>

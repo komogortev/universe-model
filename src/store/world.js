@@ -264,6 +264,7 @@ const state = reactive({
     },
   },
   loading: true,
+
 });
 
 export default function useWorldStore() {

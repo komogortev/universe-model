@@ -1,17 +1,19 @@
 <script setup>
 import { ref, render, onMounted } from 'vue'
 import * as THREE from 'three'
+import MouseMeshInteraction from '../assets/js/three_mmi'
 import GUI from 'lil-gui';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 import { renderer, updateRenderer } from '../core/renderer'
-import { camera } from '../core/camera'
+import { camera, turretCamera, tankCamera, makePerspectiveCamera } from '../core/cameras'
 import { ambientLight, pointLight } from '../core/lights'
 import '../core/orbit-controls'
 import { createPlanetoid } from '../utils/planetoid'
 import { collectNameIds } from '../utils/helpers'
 import { AxisGridHelper } from '../utils/axis-helper'
 import useWorldStore from "../store/world";
+
 
 // 1. Properties listing
 const { solarSystemStore, setSolarState, getPlanetoidInfo } = useWorldStore();
@@ -20,6 +22,7 @@ defineProps({
   msg: String,
 })
 
+
 const loader = new GLTFLoader()
 const scene = new THREE.Scene()
 const gui = new GUI();
@@ -27,7 +30,7 @@ const celestialOjects = [];
 
 const solarSystemNode = new THREE.Object3D();
 solarSystemNode.name = 'SolarSystemNode'
-makeAxisGrid(solarSystemNode, 'solarSystem', 50);
+_makeAxisGrid(solarSystemNode, 'solarSystem', 50);
 // celestialOjects.push(solarSystemNode)
 
 scene.add(camera, ambientLight, pointLight, solarSystemNode)
@@ -56,18 +59,62 @@ loader.load( '/public/models/toon-cat/toon-cat.gltf', ( gltf ) => {
   console.error( error );
 });
 
-function makeAxisGrid(node, label, units) {
+// 3. Init golem
+const golemGeometry = new THREE.SphereGeometry(3, 6, 6);
+const golemMaterial = new THREE.MeshNormalMaterial({ wireframe: true });
+const golemMesh = new THREE.Mesh(golemGeometry, golemMaterial);
+
+const golemOrbit = new THREE.Object3D();
+const golemElevation = new THREE.Object3D();
+const golemBlob = new THREE.Object3D();
+// golemMesh.castShadow = true;
+scene.add(golemOrbit);
+golemOrbit.add(golemElevation);
+golemElevation.position.z = 10;
+golemElevation.position.y = 3;
+golemElevation.add(golemBlob);
+golemBlob.add(golemMesh);
+
+const targetCamera = makePerspectiveCamera();
+const targetCameraPivot = new THREE.Object3D();
+targetCamera.position.y = 1;
+targetCamera.position.z = -2;
+targetCamera.rotation.y = Math.PI;
+golemBlob.add(targetCameraPivot);
+targetCameraPivot.add(targetCamera);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function _makeAxisGrid(node, label, units) {
   const helper = new AxisGridHelper(node, units);
   gui.add(helper, 'visible').name(label);
 }
 
 onMounted(() => {
-  //@Todo optimize into recursive fn
+  //@Todo optimize into recursive fn generation of system
   Object.keys(solarSystemStore.value).forEach(key => {
     const sun = createPlanetoid(getPlanetoidInfo(key))
     solarSystemNode.add(sun.planetoidMesh)
     celestialOjects.push(sun.planetoidMesh)
-    makeAxisGrid(sun.planetoidMesh, `${key}Mesh`);
+    _makeAxisGrid(sun.planetoidMesh, `${key}Mesh`);
 
     if (solarSystemStore.value[key].children) {
       Object.keys(solarSystemStore.value[key].children).forEach(childKey => {
@@ -76,25 +123,25 @@ onMounted(() => {
         celestialOjects.push(earth.planetoidParentOrbit)
         celestialOjects.push(earth.planetoidNode)
 
-        makeAxisGrid(earth.planetoidParentOrbit, `${childKey}ParentOrbit`, 50)
-        makeAxisGrid(earth.planetoidNode, `${childKey}Node`, 12)
-        makeAxisGrid(earth.planetoidMesh, `${childKey}Mesh`)
+        _makeAxisGrid(earth.planetoidParentOrbit, `${childKey}ParentOrbit`, 50)
+        _makeAxisGrid(earth.planetoidNode, `${childKey}Node`, 12)
+        _makeAxisGrid(earth.planetoidMesh, `${childKey}Mesh`)
 
         if (solarSystemStore.value[key].children[childKey].children) {
           Object.keys(solarSystemStore.value[key].children[childKey].children).forEach(childKey2 => {
             const moon = createPlanetoid(getPlanetoidInfo(childKey2))
             earth.planetoidNode.add(moon.planetoidParentOrbit)
             celestialOjects.push(moon.planetoidParentOrbit)
-            makeAxisGrid(moon.planetoidParentOrbit, `${childKey2}ParentOrbit`, 50)
-            makeAxisGrid(moon.planetoidNode, `${childKey2}Node`, 12)
-            makeAxisGrid(moon.planetoidMesh, `${childKey2}Mesh`)
+            _makeAxisGrid(moon.planetoidParentOrbit, `${childKey2}ParentOrbit`, 50)
+            _makeAxisGrid(moon.planetoidNode, `${childKey2}Node`, 12)
+            _makeAxisGrid(moon.planetoidMesh, `${childKey2}Mesh`)
           })
         }
       })
     }
   })
 
-  // add an AxesHelper to each node
+  // update and add AxesHelper to each node
   celestialOjects.forEach((node) => {
     const axes = new THREE.AxesHelper();
     axes.material.depthTest = false;
@@ -117,6 +164,7 @@ const loop = () => {
        obj.rotation.y += (0.000001 * obj.orbital_period)
     }
     //@Todo calculate/assign planetoid position progression
+    renderer.render(scene, camera);
   });
 }
 loop()

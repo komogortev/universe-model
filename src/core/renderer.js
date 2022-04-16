@@ -1,5 +1,5 @@
 import { WebGLRenderer } from 'three'
-import { sizes } from './camera'
+import { sizes } from './cameras'
 
 export const renderer = new WebGLRenderer();
 renderer.setSize(sizes.width, sizes.height);

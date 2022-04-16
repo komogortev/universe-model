@@ -86,7 +86,7 @@ function init () {
   scene.add(golemOrbit);
   golemOrbit.add(golemElevation);
   golemElevation.position.x = 0;
-  golemElevation.position.z = 5;
+  golemElevation.position.z = 2;
   golemElevation.position.y = -1;
   golemElevation.add(golemBlob);
   golemBlob.add(golemMesh);
@@ -180,31 +180,22 @@ const animate = () => {
   const delta = clock.getDelta();
   const time = clock.getElapsedTime() * 10;
 
+  // Act on left click
   if (clickFlag) {
     // find btn mesh connection and switch to its camera
     raycaster.setFromCamera( mouse, camera );
-    let tmp
     const intersection = raycaster.intersectObjects( celestialOjects );
+
     if ( intersection.length > 0 ) {
       // find celestial object that has name
       for (var i = 0; i < intersection.length; i++) {
         if (intersection[i].object
           && intersection[i].object.name
           && intersection[i].object.name.length > 0) {
-            // attach golem to planet orbit
-            intersection[i].object.add(golemElevation)
-            // move the golem to the planet
-            currentCamera = golemCamera
+            _moveGolem(intersection[i].object)
             break
         }
       }
-
-      // let foundMeshClick = !!~intersection.findIndex(object => {
-      //   return object.object.name === 'Golem'
-      // })
-      // if (foundMeshClick) {
-      //   currentCamera = golemCamera
-      // }
     }
 
     clickFlag = false
@@ -215,6 +206,17 @@ const animate = () => {
     contextClickFlag = false
   }
 
+  _animateCelestialObjects(scene, currentCamera, renderer)
+  renderer.render(scene, currentCamera)
+}
+
+// Attach golem to planet mesh
+function _moveGolem (newParent) {
+  newParent.add(golemElevation)
+  currentCamera = golemCamera
+}
+
+function _animateCelestialObjects (scene, currentCamera, renderer) {
   celestialOjects.forEach((obj) => {
     // Spin the planetoids
     if (obj.hasOwnProperty('rotation_period') && obj.rotation_period !== 0) {

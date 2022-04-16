@@ -29,7 +29,8 @@ let celestialOjects, solarSystemNode, golemMesh, golemElevation, golemCamera
 const raycaster = new THREE.Raycaster()
 const mouse = new THREE.Vector2( 1, 1 )
 const clock = new THREE.Clock()
-clock.getElapsedTime()
+var time = 0;
+var delta = 0;
 let clickFlag, contextClickFlag
 
 function init () {
@@ -128,6 +129,25 @@ function _makeAxisGrid(node, label, units) {
   const helper = new AxisGridHelper(node, units);
   gui.add(helper, 'visible').name(label);
 }
+// Attach golem to planet mesh
+function _moveGolem (newParent) {
+  newParent.add(golemElevation)
+  currentCamera = golemCamera
+}
+const timeSpeed = 10
+function _animateCelestialObjects (delta) {
+  celestialOjects.forEach((obj) => {
+    // Spin the planetoids
+    if (obj.hasOwnProperty('rotation_period') && obj.rotation_period !== 0) {
+       obj.rotation.y += ((delta * (1 / obj.rotation_period))) * timeSpeed
+    }
+    if (obj.hasOwnProperty('orbital_period') && obj.orbital_period !== 0) {
+       obj.rotation.y += ((delta * (1 / obj.orbital_period))) * timeSpeed
+    }
+    //@Todo calculate/assign planetoid position progression
+    renderer.render(scene, currentCamera)
+  });
+}
 
 onMounted(() => {
   //@Todo optimize into recursive fn generation of system
@@ -172,13 +192,17 @@ onMounted(() => {
   });
 });
 
+
 // 3. Animation loop
-const animate = () => {
+function animate (currentTime) {
   renderer.render(scene, currentCamera)
   requestAnimationFrame(animate)
 
-  const delta = clock.getDelta();
-  const time = clock.getElapsedTime() * 10;
+  // measure how long the previous frame took.
+  const delta = clock.getDelta(); // diff in seconds from old time
+  time += delta // = clock.getElapsedTime() * 10; // total time in seconds
+
+  _animateCelestialObjects(delta)
 
   // Act on left click
   if (clickFlag) {
@@ -206,28 +230,11 @@ const animate = () => {
     contextClickFlag = false
   }
 
-  _animateCelestialObjects(scene, currentCamera, renderer)
+  // if (Math.round(elapsedTime) > elapsedTime) {
+  //   _animateCelestialObjects(scene, currentCamera, renderer)
+  //   console.log('count seconds', elapsedTime)
+  // }
   renderer.render(scene, currentCamera)
-}
-
-// Attach golem to planet mesh
-function _moveGolem (newParent) {
-  newParent.add(golemElevation)
-  currentCamera = golemCamera
-}
-
-function _animateCelestialObjects (scene, currentCamera, renderer) {
-  celestialOjects.forEach((obj) => {
-    // Spin the planetoids
-    if (obj.hasOwnProperty('rotation_period') && obj.rotation_period !== 0) {
-       obj.rotation.y += (0.00001 * obj.rotation_period)
-    }
-    if (obj.hasOwnProperty('orbital_period') && obj.orbital_period !== 0) {
-       obj.rotation.y += (0.000001 * obj.orbital_period)
-    }
-    //@Todo calculate/assign planetoid position progression
-    renderer.render(scene, currentCamera)
-  });
 }
 
 init ()

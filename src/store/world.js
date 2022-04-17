@@ -264,7 +264,9 @@ const state = reactive({
     },
   },
   loading: true,
-
+  settings: {
+    timeSpeed: 1
+  },
 });
 
 export default function useWorldStore() {
@@ -276,6 +278,8 @@ export default function useWorldStore() {
   const setSolarState = (solar) => {
     state.solarSystemStore = solar
   }
+
+
 
   return {
     ...toRefs(state), // convert to refs when returning

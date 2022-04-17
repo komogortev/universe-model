@@ -17,7 +17,7 @@ import { collectNameIds } from '../utils/helpers'
 import useWorldStore from "../store/world";
 
 // 1. Properties listing
-const { solarSystemStore, setSolarState, getPlanetoidInfo } = useWorldStore();
+const { solarSystemStore, settings, getPlanetoidInfo } = useWorldStore();
 
 defineProps({
   msg: String,
@@ -102,7 +102,7 @@ function _moveGolem (newParent) {
 }
 
 function _animateCelestialObjects (delta) {
-  const timeSpeed = 10
+  const timeSpeed = settings.value.timeSpeed
   // Spin the planetoids
   celestialOjects.forEach((obj) => {
     const timeSpan = 1 // (seconds)
@@ -125,7 +125,7 @@ onMounted(() => {
     const star = new Planetoid(getPlanetoidInfo(key))
     solarSystemGroup.add(star.mesh)
     celestialOjects.push(star.mesh)
-    _makeAxisGrid(star.mesh, `${key}Mesh`);
+    _makeAxisGrid(star.mesh, `${key}`);
 
     if (solarSystemStore.value[key].children) {
       Object.keys(solarSystemStore.value[key].children).forEach(childKey => {
@@ -134,8 +134,8 @@ onMounted(() => {
         celestialOjects.push(planet.parent)
         celestialOjects.push(planet.orbit)
 
-        _makeAxisGrid(planet.parent, `${childKey}ParentOrbit`, 50)
-        _makeAxisGrid(planet.orbit, `${childKey}Node`, 12)
+        _makeAxisGrid(planet.parent, `${childKey} Orbit`, 50)
+        _makeAxisGrid(planet.orbit, `${childKey}`, 12)
 
         if (solarSystemStore.value[key].children[childKey].children) {
           Object.keys(solarSystemStore.value[key].children[childKey].children).forEach(childKey2 => {
@@ -143,8 +143,8 @@ onMounted(() => {
             planet.orbit.add(moon.parent)
             celestialOjects.push(moon.parent)
 
-            _makeAxisGrid(moon.parent, `${childKey2}ParentOrbit`, 50)
-            _makeAxisGrid(moon.orbit, `${childKey2}Node`, 12)
+            _makeAxisGrid(moon.parent, `${childKey2} Orbit`, 50)
+            _makeAxisGrid(moon.orbit, `${childKey2}`, 12)
           })
         }
       })

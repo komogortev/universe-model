@@ -41,10 +41,10 @@ window.addEventListener('resize', () => {
   sizes.height = window.innerHeight
   camera.aspect = sizes.width / sizes.height
   turretCamera.aspect = sizes.width / sizes.height
-  tankCamera.aspect = sizes.width / sizes.height
+  golemCamera.aspect = sizes.width / sizes.height
   camera.updateProjectionMatrix()
   turretCamera.updateProjectionMatrix()
-  tankCamera.updateProjectionMatrix()
+  golemCamera.updateProjectionMatrix()
 })
 
 export default camera

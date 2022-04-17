@@ -9,9 +9,10 @@ import { renderer, updateRenderer } from '../core/renderer'
 import { camera, makePerspectiveCamera } from '../core/cameras'
 import { ambientLight, pointLight } from '../core/lights'
 import { controls } from '../core/orbit-controls'
-import { Loop }     from '../core/systems/Loop.js';
-import { Golem }    from '../utils/constructors/golem'
-import { Planetoid } from '../utils/constructors/planetoid'
+import { createControls }     from '../core/systems/Controls.js';
+import { Loop }      from '../core/systems/Loop.js';
+import { Golem }     from '../core/constructors/golem'
+import { Planetoid } from '../core/constructors/planetoid'
 import { AxisGridHelper } from '../utils/axis-helper'
 import { collectNameIds } from '../utils/helpers'
 import useWorldStore from "../store/world";
@@ -24,7 +25,7 @@ defineProps({
 })
 
 let loader, gui, stats
-let currentCamera, scene, loop
+let currentCamera, scene, loop, universeControls, golemControls, skyBox
 let celestialOjects, solarSystemGroup, golem
 
 const raycaster = new THREE.Raycaster()
@@ -39,12 +40,27 @@ function init () {
   gui = new GUI();
   stats = new Stats()
 
+  camera.name = 'Universe Camera'
   currentCamera = camera
-  controls.camera = currentCamera
+  universeControls = createControls(currentCamera, renderer)
   scene = new THREE.Scene()
   loop = new Loop(currentCamera, scene, renderer);
 
+const loader2 = new THREE.TextureLoader();
+const texture = loader2.load(
+    '/models/solar-system/textures/8k_stars_milky_way.jpg',
+    () => {
+      const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
+      rt.fromEquirectangularTexture(renderer, texture);
+      scene.background = rt.texture;
+    })
+
   golem = new Golem()
+  golem.camera.name = 'Golem Camera'
+  golemControls = createControls(golem.camera, renderer)
+  golemControls.enabled = false
+  _makeAxisGrid(golem.orbit, `Golem`);
+
   celestialOjects = []
   solarSystemGroup = new THREE.Group()
 
@@ -61,21 +77,21 @@ function init () {
 
   // 2. Init Scene
   // * Load 3D model
-  loader.load( '/public/models/toon-cat/toon-cat.gltf', ( gltf ) => {
-    gltf.animations; // Array<THREE.AnimationClip>
-    gltf.scene; // THREE.Group
-    gltf.scenes; // Array<THREE.Group>
-    gltf.cameras; // Array<THREE.Camera>
-    gltf.asset; // Object
-    gltf.scene.scale.setScalar(.025);
-    scene.add( gltf.scene );
+  loader.load( '/models/toon-cat/toon-cat.gltf', ( gltf ) => {
+    gltf.animations // Array<THREE.AnimationClip>
+    gltf.scene // THREE.Group
+    gltf.scenes // Array<THREE.Group>
+    gltf.cameras // Array<THREE.Camera>
+    gltf.asset // Object
+    gltf.scene.scale.setScalar(.025)
+    scene.add( gltf.scene )
   }, undefined, ( error ) => {
-    console.error( error );
-  });
+    console.error( error )
+  })
 
-  document.addEventListener( 'click', onMouseClick ) // Left click
-  document.addEventListener( 'dblclick', onMouseDblClick ) // Left, Left, Dbl
-  document.addEventListener( 'contextmenu', onMouseContext ) // Right click
+  document.addEventListener('click', onMouseClick) // Left click
+  document.addEventListener('dblclick', onMouseDblClick) // Left, Left, Dbl
+  document.addEventListener('contextmenu', onMouseContext) // Right click
 }
 
 function onMouseClick (event) {
@@ -107,7 +123,14 @@ function _makeAxisGrid(node, label, units) {
 
 // Attach golem to planet mesh
 function _moveGolem (newParent) {
+  console.log(newParent)
   currentCamera = golem.camera
+  // set controls origin
+  //golemControls.target.set(newParent.position.x, newParent.position.y, newParent.scale.z + 2)
+  golem.camera.lookAt(newParent.position.x, newParent.position.y, newParent.position.z);
+  golemControls.enabled = true
+  controls.enabled = false
+  golemControls.update()
   newParent.add(golem.orbit)
 }
 
@@ -204,7 +227,15 @@ function animate (currentTime) {
     currentCamera = camera
     scene.add(golem.orbit)
     contextClickFlag = false
+    golemControls.enabled = false
+    controls.enabled = true
   }
+
+  // golem.camera.matrix = camera.matrix;
+  // golem.camera.projectionMatrix = camera.projectionMatrix;
+  // camera.matrixAutoUpdate = false;
+  // golem.camera.matrixAutoUpdate = false;
+  // camera.updateMatrix();
 
   renderer.render(scene, currentCamera)
 }

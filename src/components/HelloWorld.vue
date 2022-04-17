@@ -48,11 +48,11 @@ function init () {
   celestialOjects = []
   solarSystemGroup = new THREE.Group()
 
-  const myObject = {
-    myNumber: 1
+  const timeSpeedSetting = {
+    speed: 1
   }
   // Add sliders to number fields by passing min and max
-  gui.add( myObject, 'myNumber', -100, 100, 1)
+  gui.add( timeSpeedSetting, 'speed', -100, 100, 1)
     .name( 'Time speed' )
     .onChange( value => {
       setTimeSpeed(value)

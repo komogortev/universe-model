@@ -279,11 +279,14 @@ export default function useWorldStore() {
     state.solarSystemStore = solar
   }
 
-
+  const setTimeSpeed = (value) => {
+    state.settings = { ...state.settings, timeSpeed: value }
+  }
 
   return {
     ...toRefs(state), // convert to refs when returning
     setSolarState,
+    setTimeSpeed,
     getPlanetoidInfo
   }
 }

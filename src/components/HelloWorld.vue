@@ -17,7 +17,7 @@ import { collectNameIds } from '../utils/helpers'
 import useWorldStore from "../store/world";
 
 // 1. Properties listing
-const { solarSystemStore, settings, getPlanetoidInfo } = useWorldStore();
+const { solarSystemStore, settings, setTimeSpeed, getPlanetoidInfo } = useWorldStore();
 
 defineProps({
   msg: String,
@@ -42,13 +42,22 @@ function init () {
   currentCamera = camera
   controls.camera = currentCamera
   scene = new THREE.Scene()
-  loop = new Loop(camera, scene, renderer);
+  loop = new Loop(currentCamera, scene, renderer);
 
   golem = new Golem()
   celestialOjects = []
   solarSystemGroup = new THREE.Group()
 
-  scene.add(ambientLight, pointLight, camera, solarSystemGroup)
+  const myObject = {
+    myNumber: 1
+  }
+  // Add sliders to number fields by passing min and max
+  gui.add( myObject, 'myNumber', -100, 100, 1)
+    .name( 'Time speed' )
+    .onChange( value => {
+      setTimeSpeed(value)
+    })
+  scene.add(ambientLight, pointLight, currentCamera, solarSystemGroup)
 
   // 2. Init Scene
   // * Load 3D model
@@ -95,6 +104,7 @@ function _makeAxisGrid(node, label, units) {
   const helper = new AxisGridHelper(node, units);
   gui.add(helper, 'visible').name(label);
 }
+
 // Attach golem to planet mesh
 function _moveGolem (newParent) {
   currentCamera = golem.camera

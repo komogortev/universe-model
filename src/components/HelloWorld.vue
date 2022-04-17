@@ -134,15 +134,19 @@ function _moveGolem (newParent) {
   newParent.add(golemElevation)
   currentCamera = golemCamera
 }
-const timeSpeed = 10
+
 function _animateCelestialObjects (delta) {
+  const timeSpeed = 10
+  // Spin the planetoids
   celestialOjects.forEach((obj) => {
-    // Spin the planetoids
+    const timeSpan = 1 // (seconds)
     if (obj.hasOwnProperty('rotation_period') && obj.rotation_period !== 0) {
-       obj.rotation.y += ((delta * (1 / obj.rotation_period))) * timeSpeed
+      const rotationRadiantsPerSecond = timeSpan / obj.rotation_period
+      obj.rotation.y += (delta * rotationRadiantsPerSecond) * timeSpeed
     }
     if (obj.hasOwnProperty('orbital_period') && obj.orbital_period !== 0) {
-       obj.rotation.y += ((delta * (1 / obj.orbital_period))) * timeSpeed
+     const orbitRadiantsPerSecond = timeSpan / obj.orbital_period
+     obj.rotation.y += (delta * orbitRadiantsPerSecond) * timeSpeed
     }
     //@Todo calculate/assign planetoid position progression
     renderer.render(scene, currentCamera)
@@ -200,8 +204,6 @@ function animate (currentTime) {
 
   // measure how long the previous frame took.
   const delta = clock.getDelta(); // diff in seconds from old time
-  time += delta // = clock.getElapsedTime() * 10; // total time in seconds
-
   _animateCelestialObjects(delta)
 
   // Act on left click
@@ -230,10 +232,6 @@ function animate (currentTime) {
     contextClickFlag = false
   }
 
-  // if (Math.round(elapsedTime) > elapsedTime) {
-  //   _animateCelestialObjects(scene, currentCamera, renderer)
-  //   console.log('count seconds', elapsedTime)
-  // }
   renderer.render(scene, currentCamera)
 }
 

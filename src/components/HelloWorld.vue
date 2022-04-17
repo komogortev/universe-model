@@ -6,12 +6,14 @@ import Stats from 'three/examples/jsm/libs/stats.module.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 import { renderer, updateRenderer } from '../core/renderer'
-import { camera, turretCamera, tankCamera, makePerspectiveCamera } from '../core/cameras'
+import { camera, makePerspectiveCamera } from '../core/cameras'
 import { ambientLight, pointLight } from '../core/lights'
 import { controls } from '../core/orbit-controls'
-import { createPlanetoid } from '../utils/planetoid'
-import { collectNameIds } from '../utils/helpers'
+import { Loop } from '../core/systems/Loop.js';
+import { createPlanetoid } from '../utils/constructors/planetoid'
+import { Golem } from '../utils/constructors/golem'
 import { AxisGridHelper } from '../utils/axis-helper'
+import { collectNameIds } from '../utils/helpers'
 import useWorldStore from "../store/world";
 
 
@@ -23,8 +25,8 @@ defineProps({
 })
 
 let loader, gui, stats
-let currentCamera, scene
-let celestialOjects, solarSystemNode, golemMesh, golemElevation, golemCamera
+let currentCamera, scene, loop
+let celestialOjects, solarSystemNode, golem
 
 const raycaster = new THREE.Raycaster()
 const mouse = new THREE.Vector2( 1, 1 )
@@ -41,6 +43,7 @@ function init () {
   currentCamera = camera
   controls.camera = currentCamera
   scene = new THREE.Scene()
+  loop = new Loop(camera, scene, renderer);
 
   celestialOjects = []
   solarSystemNode = new THREE.Object3D()
@@ -75,28 +78,31 @@ function init () {
   });
 
   // 3. Init golem
-  const golemGeometry = new THREE.SphereGeometry(1, 6, 6);
-  const golemMaterial = new THREE.MeshNormalMaterial({ wireframe: true });
-  golemMesh = new THREE.Mesh(golemGeometry, golemMaterial);
+  golem = new Golem()
 
-  const golemOrbit = new THREE.Object3D();
-  golemElevation = new THREE.Object3D();
-  const golemBlob = new THREE.Object3D();
-  golemMesh.name = 'Golem'
-  // golemMesh.castShadow = true;
-  scene.add(golemOrbit);
-  golemOrbit.add(golemElevation);
-  golemElevation.position.x = 0;
-  golemElevation.position.z = 2;
-  golemElevation.position.y = -1;
-  golemElevation.add(golemBlob);
-  golemBlob.add(golemMesh);
+  // const golemGeometry = new THREE.SphereGeometry(1, 6, 6);
+  // const golemMaterial = new THREE.MeshNormalMaterial({ wireframe: true });
+  // golemMesh = new THREE.Mesh(golemGeometry, golemMaterial);
 
-  golemCamera = makePerspectiveCamera();
-  golemCamera.position.y = 2;
-  golemCamera.position.z = 3;
-  //golemCamera.rotation.y = Math.PI;
-  golemBlob.add(golemCamera);
+  // const golemOrbit = new THREE.Object3D();
+  // golemElevation = new THREE.Object3D();
+  // const golemBlob = new THREE.Object3D();
+  // golemMesh.name = 'Golem'
+  // // golemMesh.castShadow = true;
+  // scene.add(golemOrbit);
+  // golemOrbit.add(golemElevation);
+  // golemElevation.position.x = 0;
+  // golemElevation.position.z = 2;
+  // golemElevation.position.y = -1;
+
+  // golemElevation.add(golemBlob);
+  // golemBlob.add(golemMesh);
+
+  // golemCamera = makePerspectiveCamera();
+  // golemCamera.position.y = 2;
+  // golemCamera.position.z = 3;
+  // //golemCamera.rotation.y = Math.PI;
+  // golemBlob.add(golemCamera);
 
   document.addEventListener( 'click', onMouseClick ) // Left click
   document.addEventListener( 'dblclick', onMouseDblClick ) // Left, Left, Dbl
@@ -131,8 +137,8 @@ function _makeAxisGrid(node, label, units) {
 }
 // Attach golem to planet mesh
 function _moveGolem (newParent) {
-  newParent.add(golemElevation)
-  currentCamera = golemCamera
+  newParent.add(golem.golemNode)
+  currentCamera = golem.camera
 }
 
 function _animateCelestialObjects (delta) {

@@ -21,7 +21,7 @@ export const turretCamera = new PerspectiveCamera(
   1000 // far clipping plane
 )
 
-export const tankCamera = new PerspectiveCamera(
+export const golemCamera = new PerspectiveCamera(
   75, // FOV
   window.innerWidth / window.innerHeight, // aspect ratio
   0.1, // near clipping plane

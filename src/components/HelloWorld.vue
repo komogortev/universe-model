@@ -9,13 +9,12 @@ import { renderer, updateRenderer } from '../core/renderer'
 import { camera, makePerspectiveCamera } from '../core/cameras'
 import { ambientLight, pointLight } from '../core/lights'
 import { controls } from '../core/orbit-controls'
-import { Loop } from '../core/systems/Loop.js';
-import { createPlanetoid } from '../utils/constructors/planetoid'
-import { Golem } from '../utils/constructors/golem'
+import { Loop }     from '../core/systems/Loop.js';
+import { Golem }    from '../utils/constructors/golem'
+import { Planetoid } from '../utils/constructors/planetoid'
 import { AxisGridHelper } from '../utils/axis-helper'
 import { collectNameIds } from '../utils/helpers'
 import useWorldStore from "../store/world";
-
 
 // 1. Properties listing
 const { solarSystemStore, setSolarState, getPlanetoidInfo } = useWorldStore();
@@ -26,7 +25,7 @@ defineProps({
 
 let loader, gui, stats
 let currentCamera, scene, loop
-let celestialOjects, solarSystemNode, golem
+let celestialOjects, solarSystemGroup, golem
 
 const raycaster = new THREE.Raycaster()
 const mouse = new THREE.Vector2( 1, 1 )
@@ -45,14 +44,11 @@ function init () {
   scene = new THREE.Scene()
   loop = new Loop(camera, scene, renderer);
 
+  golem = new Golem()
   celestialOjects = []
-  solarSystemNode = new THREE.Object3D()
-  solarSystemNode.name = 'SolarSystemNode'
-  _makeAxisGrid(solarSystemNode, 'solarSystem', 50)
-  // celestialOjects.push(solarSystemNode)
+  solarSystemGroup = new THREE.Group()
 
-  scene.add(camera, ambientLight, pointLight, solarSystemNode)
-  // updateRenderer()
+  scene.add(ambientLight, pointLight, camera, solarSystemGroup)
 
   // 2. Init Scene
   // * Load 3D model
@@ -62,47 +58,11 @@ function init () {
     gltf.scenes; // Array<THREE.Group>
     gltf.cameras; // Array<THREE.Camera>
     gltf.asset; // Object
-    // *1. detailed option: downsize the model scale
-    // const box = new THREE.Box3().setFromObject(gltf.scene);
-    // const size = new THREE.Vector3();
-    // var center = new THREE.Vector3();
-    // box.getCenter(center);
-    // var scale = .05;
-    // gltf.scene.scale.setScalar(scale);
-    // gltf.scene.position.sub(center.multiplyScalar(scale));
-    // *2. general scale: alter model scale (less recommended)
     gltf.scene.scale.setScalar(.025);
     scene.add( gltf.scene );
   }, undefined, ( error ) => {
     console.error( error );
   });
-
-  // 3. Init golem
-  golem = new Golem()
-
-  // const golemGeometry = new THREE.SphereGeometry(1, 6, 6);
-  // const golemMaterial = new THREE.MeshNormalMaterial({ wireframe: true });
-  // golemMesh = new THREE.Mesh(golemGeometry, golemMaterial);
-
-  // const golemOrbit = new THREE.Object3D();
-  // golemElevation = new THREE.Object3D();
-  // const golemBlob = new THREE.Object3D();
-  // golemMesh.name = 'Golem'
-  // // golemMesh.castShadow = true;
-  // scene.add(golemOrbit);
-  // golemOrbit.add(golemElevation);
-  // golemElevation.position.x = 0;
-  // golemElevation.position.z = 2;
-  // golemElevation.position.y = -1;
-
-  // golemElevation.add(golemBlob);
-  // golemBlob.add(golemMesh);
-
-  // golemCamera = makePerspectiveCamera();
-  // golemCamera.position.y = 2;
-  // golemCamera.position.z = 3;
-  // //golemCamera.rotation.y = Math.PI;
-  // golemBlob.add(golemCamera);
 
   document.addEventListener( 'click', onMouseClick ) // Left click
   document.addEventListener( 'dblclick', onMouseDblClick ) // Left, Left, Dbl
@@ -137,8 +97,8 @@ function _makeAxisGrid(node, label, units) {
 }
 // Attach golem to planet mesh
 function _moveGolem (newParent) {
-  newParent.add(golem.golemNode)
   currentCamera = golem.camera
+  newParent.add(golem.orbit)
 }
 
 function _animateCelestialObjects (delta) {
@@ -162,31 +122,29 @@ function _animateCelestialObjects (delta) {
 onMounted(() => {
   //@Todo optimize into recursive fn generation of system
   Object.keys(solarSystemStore.value).forEach(key => {
-    const sun = createPlanetoid(getPlanetoidInfo(key))
-    solarSystemNode.add(sun.planetoidMesh)
-    celestialOjects.push(sun.planetoidMesh)
-    _makeAxisGrid(sun.planetoidMesh, `${key}Mesh`);
+    const star = new Planetoid(getPlanetoidInfo(key))
+    solarSystemGroup.add(star.mesh)
+    celestialOjects.push(star.mesh)
+    _makeAxisGrid(star.mesh, `${key}Mesh`);
 
     if (solarSystemStore.value[key].children) {
       Object.keys(solarSystemStore.value[key].children).forEach(childKey => {
-        const earth = createPlanetoid(getPlanetoidInfo(childKey))
-        solarSystemNode.add(earth.planetoidParentOrbit)
-        celestialOjects.push(earth.planetoidParentOrbit)
-        celestialOjects.push(earth.planetoidNode)
+        const planet = new Planetoid(getPlanetoidInfo(childKey))
+        solarSystemGroup.add(planet.parent)
+        celestialOjects.push(planet.parent)
+        celestialOjects.push(planet.orbit)
 
-        _makeAxisGrid(earth.planetoidParentOrbit, `${childKey}ParentOrbit`, 50)
-        _makeAxisGrid(earth.planetoidNode, `${childKey}Node`, 12)
-        _makeAxisGrid(earth.planetoidMesh, `${childKey}Mesh`)
+        _makeAxisGrid(planet.parent, `${childKey}ParentOrbit`, 50)
+        _makeAxisGrid(planet.orbit, `${childKey}Node`, 12)
 
         if (solarSystemStore.value[key].children[childKey].children) {
           Object.keys(solarSystemStore.value[key].children[childKey].children).forEach(childKey2 => {
-            const moon = createPlanetoid(getPlanetoidInfo(childKey2))
-            earth.planetoidNode.add(moon.planetoidParentOrbit)
-            celestialOjects.push(moon.planetoidParentOrbit)
+            const moon = new Planetoid(getPlanetoidInfo(childKey2))
+            planet.orbit.add(moon.parent)
+            celestialOjects.push(moon.parent)
 
-            _makeAxisGrid(moon.planetoidParentOrbit, `${childKey2}ParentOrbit`, 50)
-            _makeAxisGrid(moon.planetoidNode, `${childKey2}Node`, 12)
-            _makeAxisGrid(moon.planetoidMesh, `${childKey2}Mesh`)
+            _makeAxisGrid(moon.parent, `${childKey2}ParentOrbit`, 50)
+            _makeAxisGrid(moon.orbit, `${childKey2}Node`, 12)
           })
         }
       })
@@ -234,7 +192,7 @@ function animate (currentTime) {
   } else if (contextClickFlag) {
     // return to default camera on right click
     currentCamera = camera
-    scene.add(golemElevation)
+    scene.add(golem.orbit)
     contextClickFlag = false
   }
 

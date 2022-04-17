@@ -24,13 +24,13 @@ class Golem {
   get camera() {
     return this.golemCamera
   }
-  get golemNode() {
+  get orbit() {
     return this.golemOrbit
   }
   set visible(v) {
-    this._visible = v;
-    this.grid.visible = v;
-    this.axes.visible = v;
+    // this._visible = v;
+    // this.grid.visible = v;
+    // this.axes.visible = v;
   }
 }
 

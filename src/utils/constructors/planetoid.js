@@ -1,57 +1,61 @@
 import { Object3D, Mesh, MeshPhongMaterial, MeshBasicMaterial, SphereGeometry, TextureLoader } from 'three'
 
-export function createPlanetoid(planetoidInfo = {}) {
-  const loader = new TextureLoader();
-  const planetoid = { planetoidInfo }
-  const radius = 1
-  const widthSegments = 24
-  const heightSegments = 24
-  const sphereGeometry = new SphereGeometry(
-    radius, widthSegments, heightSegments
-  )
+class Planetoid {
+  constructor(planetoidInfo = {}) {
+    this.loader = new TextureLoader();
+    this.radius = 1
+    this.widthSegments = 24
+    this.heightSegments = 24
+    this.sphereGeometry = new SphereGeometry(
+      this.radius, this.widthSegments, this.heightSegments
+    )
+    this.planetoidMaterial = new MeshPhongMaterial({
+      emissive: planetoidInfo.emissive ? planetoidInfo.emissive : null,
+      color: planetoidInfo.color ? planetoidInfo.color : '#ccc',
+      map: planetoidInfo.textureMap ? this.loader.load(planetoidInfo.textureMap) : null,
+    });
 
-  // Create planetoid orbit
-  const planetoidNode = new Object3D();
-  planetoidNode.name = `${planetoidInfo.nameId}Node`
-  planetoidNode.position.x = planetoidInfo.distance * 20 //Distance from parent
+    this.planetoidOrbit = new Object3D();
+    this.planetoidOrbit.name = `${planetoidInfo.nameId}Node`
+    this.planetoidOrbit.position.x = planetoidInfo.distance * 20 //Distance from parent
 
-  // Create planetoid body
-  ///import map from
-  // const planetoidMaterial = new MeshBasicMaterial({
-  //   emissive: planetoidInfo.emissive ? planetoidInfo.emissive : null,
-  //   color: planetoidInfo.color ? planetoidInfo.color : '#ccc',
-  //   map: planetoidInfo.textureMap ? loader.load('public/models/solar-system/textures/2k_earth_daymap.jpg') : null,
-  // });
-  const planetoidMaterial = new MeshPhongMaterial({
-    emissive: planetoidInfo.emissive ? planetoidInfo.emissive : null,
-    color: planetoidInfo.color ? planetoidInfo.color : '#ccc',
-    map: planetoidInfo.textureMap ? loader.load(planetoidInfo.textureMap) : null,
-  });
+    this.planetoidMesh = new Mesh(this.sphereGeometry, this.planetoidMaterial);
+    this.planetoidMesh.name = planetoidInfo.nameId
+    this.planetoidMesh.planetoidInfo = planetoidInfo
+    this.planetoidOrbit.rotation_period = planetoidInfo.rotation_period
+    this.planetoidMesh.scale.set(
+        planetoidInfo.scale,
+        planetoidInfo.scale,
+        planetoidInfo.scale,
+      );
 
+    this.planetoidParentOrbit = new Object3D();
+    this.planetoidParentOrbit.name = `${planetoidInfo.nameId}ParentOrbit`
+    this.planetoidParentOrbit.orbital_period = planetoidInfo.orbital_period
+    this.planetoidParentOrbit.add(this.planetoidOrbit)
 
+    this.planetoidOrbit = this.planetoidOrbit
+    this.planetoidMesh = this.planetoidMesh
+    this.planetoidOrbit.add(this.planetoidMesh)
 
-  const planetoidMesh = new Mesh(sphereGeometry, planetoidMaterial);
-  planetoidMesh.name = planetoidInfo.nameId
-  planetoidMesh.planetoidInfo = planetoidInfo
-  planetoidNode.rotation_period = planetoidInfo.rotation_period
-  planetoidMesh.scale.set(
-    planetoidInfo.scale,
-    planetoidInfo.scale,
-    planetoidInfo.scale,
-  );
-
-  // create planetoid parent Orbit object
-  if (planetoidInfo.orbital_period) {
-    const planetoidParentOrbit = new Object3D();
-    planetoidParentOrbit.name = `${planetoidInfo.nameId}ParentOrbit`
-    planetoidParentOrbit.orbital_period = planetoidInfo.orbital_period
-    planetoidParentOrbit.add(planetoidNode)
-    planetoid.planetoidParentOrbit = planetoidParentOrbit
   }
-
-  planetoid.planetoidNode = planetoidNode
-  planetoid.planetoidMesh = planetoidMesh
-  planetoid.planetoidNode.add(planetoid.planetoidMesh)
-
-  return planetoid
+  get camera() {
+    //return this.golemCamera
+  }
+  get parent() {
+    return this.planetoidParentOrbit
+  }
+  get orbit() {
+    return this.planetoidOrbit
+  }
+  get mesh() {
+    return this.planetoidMesh
+  }
+  set visible(v) {
+    // this._visible = v;
+    // this.grid.visible = v;
+    // this.axes.visible = v;
+  }
 }
+
+export { Planetoid }

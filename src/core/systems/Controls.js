@@ -1,11 +1,19 @@
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-// import { camera } from '../cameras'
-// import { renderer } from '../renderer'
+import { FlyControls } from 'three/examples/jsm/controls/FlyControls.js';
 
 function createControls(camera, renderer) {
   const controls = new OrbitControls(camera, renderer.domElement);
-
   return controls;
 }
 
-export { createControls };
+function createFlyControls(camera, renderer) {
+  const controls = new FlyControls(camera, renderer.domElement);
+  controls.movementSpeed = 1000;
+  controls.domElement = renderer.domElement;
+  //controls.rollSpeed = Math.PI / 24;
+  //controls.autoForward = false;
+  //controls.dragToLook = false;
+  return controls;
+}
+
+export { createControls, createFlyControls };

@@ -39,15 +39,22 @@ function init () {
   sceneCamera.name = 'Universe Camera'
   sceneCamera.position.set(0, 0, 50);
   sceneCamera.lookAt(0, 0, 0);
+  _makeAxisGrid(sceneCamera, `sceneCamera`);
   universeControls = createControls(sceneCamera, renderer)
 
   golem = new Golem()
-  golemCamera = makePerspectiveCamera(70, window.innerWidth / window.innerHeight)
-  golemCamera.position.set(0, 10, 50);
-  golemCamera.lookAt(0, 0, 0);
-  golemControls = createControls(golemCamera, renderer)
-  golemControls.enabled = false
-  golemControls.update()
+  _makeAxisGrid(golem.camera, `golem.camera`, 10)
+  _makeAxisGrid(golem.parent, `golem.parent`, 12)
+  _makeAxisGrid(golem.orbit, `golem.rbit`, 14)
+  // golemCamera = makePerspectiveCamera(70, window.innerWidth / window.innerHeight)
+  // golemCamera.position.set(0, 10, 50);
+  // golemCamera.lookAt(0, 0, 0);
+  // golemCamera.updateProjectionMatrix()
+  // golem.orbit.add(golemCamera)
+  //_makeAxisGrid(golemCamera, `golemCamera`);
+  // golemControls = createControls(golemCamera, renderer)
+  // golemControls.enabled = false
+  // golemControls.update()
 
   currentCamera = sceneCamera
   celestialOjects = []
@@ -73,7 +80,7 @@ function init () {
       scene.background = rt.texture;
     })
 
-  scene.add(ambientLight, pointLight, currentCamera, golemCamera, sceneCamera, solarSystemGroup)
+  scene.add(ambientLight, pointLight, currentCamera, sceneCamera, solarSystemGroup, golem.golemParentOrbit)
 
   // 2. Init Scene
   // * Load 3D model
@@ -125,28 +132,32 @@ function focusPlanetoidView(planetoid) {
   // attach camera to clicked object
   planetoid.add(golem.parent)
   // place golem on parent orbit
-  golem.orbit.position.set(
-    planetoid.scale.x + 1.25,
-    planetoid.scale.y + 1.25,
-    planetoid.scale.z + 1.25
+  golem.parent.position.set(
+    0,
+    0,
+    0
   )
 
-  golemCamera.lookAt(
-    golem.parent.position.x,
-    golem.parent.position.y,
-    golem.parent.position.z
-  );
-  currentCamera = golemCamera
-  golemCamera.updateProjectionMatrix()
-  currentCamera.updateProjectionMatrix()
-  // set controls origin
-  golemControls.target.set(golem.parent.position)
-  golemControls.enabled = true
-  golemControls.update()
-  universeControls.enabled = false
-  universeControls.update()
+  golem.orbit.position.set(
+    planetoid.children[0].scale.x + 1,
+    0.25,
+    planetoid.children[0].scale.z + .5
+  )
 
-  console.log('Golem arrived to ', planetoid)
+  golem.camera.lookAt(
+    planetoid.position.x,
+    planetoid.position.y,
+    planetoid.position.z
+  );
+  golem.camera.updateProjectionMatrix()
+  currentCamera = golem.camera
+  //currentCamera.updateProjectionMatrix()
+  // set controls origin
+  //golemControls.target.set(golem.parent.position)
+  // golemControls = createControls(golem.camera, renderer)
+  // golemControls.update()
+
+  console.log('Golem arrived to ', planetoid, golem)
 }
 
 function _animateCelestialObjects (delta) {
@@ -210,7 +221,7 @@ onMounted(() => {
 
 // 3. Animation loop
 function animate (currentTime) {
-  renderer.render(scene, golemCamera)
+  //renderer.render(scene, golemCamera)
   renderer.render(scene, sceneCamera)
   requestAnimationFrame(animate)
 
@@ -239,17 +250,17 @@ function animate (currentTime) {
 
 
   } else if (contextClickFlag) {
-    contextClickFlag = false
     // return to default camera on right click
     currentCamera = sceneCamera
     scene.add(golem.orbit)
-    golemControls.enabled = false
-    universeControls.enabled = true
-    //controls.update() must be called after any manual changes to the camera's transform
-    golemControls.update()
-    universeControls.update()
-    sceneCamera.updateProjectionMatrix()
+    // golemControls.enabled = false
+    // universeControls.enabled = true
+    // //controls.update() must be called after any manual changes to the camera's transform
+    // golemControls.update()
+    // universeControls.update()
+    // sceneCamera.updateProjectionMatrix()
     currentCamera.updateProjectionMatrix()
+    contextClickFlag = false
   }
 
 

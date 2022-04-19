@@ -1,9 +1,11 @@
 import { SphereGeometry, MeshNormalMaterial, Mesh, Object3D } from 'three'
-import { golemCamera } from '../cameras'
+import { createControls } from '../systems/Controls'
+import { makePerspectiveCamera } from '../cameras'
+import { renderer, updateRenderer } from '../renderer'
 
 class Golem {
-  constructor(orbitDistance = 1) {
-    this.radius = .05
+  constructor(orbitDistance = 3) {
+    this.radius = 1
     this.widthSegments = 5
     this.heightSegments = 5
     this.golemGeometry = new SphereGeometry(
@@ -15,7 +17,7 @@ class Golem {
 
     this.golemOrbit = new Object3D();
     this.golemOrbit.name = 'Golem'
-    this.golemOrbit.position.x = orbitDistance //Distance from parent
+    this.golemOrbit.position.z = orbitDistance //Distance from parent
 
     this.golemMesh = new Mesh(this.golemGeometry, this.golemMaterial);
     this.golemMesh.name = 'Golem Mesh'
@@ -27,12 +29,17 @@ class Golem {
     this.golemParentOrbit.add(this.golemOrbit)
     this.golemOrbit.add(this.golemMesh)
 
-    this.golemCamera = golemCamera;
+    this.golemCamera = makePerspectiveCamera(75, window.innerWidth / window.innerHeight);
     this.golemCamera.name = 'Golem Camera'
-    this.golemCamera.position.x = 0.15;
-    this.golemCamera.position.y = 0;
-    this.golemCamera.position.z = 0;
-    this.golemOrbit.add(golemCamera);
+    this.golemCamera.position.x = 1;
+    this.golemCamera.position.y = 1;
+    this.golemCamera.position.z = 1;
+    this.golemCamera.lookAt(0, 0, 0)
+    this.golemCamera.updateProjectionMatrix()
+    this.golemOrbit.add(this.golemCamera);
+
+    this.golemControls = createControls(this.golemCamera, renderer)
+
   }
   get camera() {
     return this.golemCamera

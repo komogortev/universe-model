@@ -131,16 +131,18 @@ function _makeAxisGrid(node, label, units) {
 function focusPlanetoidView(planetoid) {
   // attach camera to clicked object
   planetoid.add(golem.parent)
-  golem.parent.position.set(
-    0,
-    0,
-    0,
-  )
+  golem.parent.position.set( 0, 0, 0,)
   // place golem on parent orbit
   golem.orbit.position.set(
     golem.parent.position.x, //planetoid.children[0].scale.x + 1,
     golem.parent.position.y, //.25,
     golem.parent.position.z, //planetoid.children[0].scale.z + .5
+  )
+
+  golem.mesh.scale.set(
+    planetoid.scale.x + 0.15,
+    planetoid.scale.y + 0.15,
+    planetoid.scale.z + 0.15
   )
 
   golem.camera.lookAt(

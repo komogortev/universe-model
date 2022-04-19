@@ -42,7 +42,7 @@ function init () {
   _makeAxisGrid(sceneCamera, `sceneCamera`);
   universeControls = createControls(sceneCamera, renderer)
 
-  golem = new Golem()
+  golem = new Golem(renderer)
   _makeAxisGrid(golem.camera, `golem.camera`, 10)
   _makeAxisGrid(golem.parent, `golem.parent`, 12)
   _makeAxisGrid(golem.orbit, `golem.rbit`, 14)
@@ -131,17 +131,16 @@ function _makeAxisGrid(node, label, units) {
 function focusPlanetoidView(planetoid) {
   // attach camera to clicked object
   planetoid.add(golem.parent)
-  // place golem on parent orbit
   golem.parent.position.set(
     0,
     0,
-    0
+    0,
   )
-
+  // place golem on parent orbit
   golem.orbit.position.set(
-    planetoid.children[0].scale.x + 1,
-    0.25,
-    planetoid.children[0].scale.z + .5
+    golem.parent.position.x, //planetoid.children[0].scale.x + 1,
+    golem.parent.position.y, //.25,
+    golem.parent.position.z, //planetoid.children[0].scale.z + .5
   )
 
   golem.camera.lookAt(
@@ -149,13 +148,23 @@ function focusPlanetoidView(planetoid) {
     planetoid.position.y,
     planetoid.position.z
   );
+  golem.camera.position.x = 0;
+  golem.camera.position.y = 0;
+  golem.camera.position.z = 10;
   golem.camera.updateProjectionMatrix()
   currentCamera = golem.camera
-  //currentCamera.updateProjectionMatrix()
+
   // set controls origin
-  //golemControls.target.set(golem.parent.position)
-  // golemControls = createControls(golem.camera, renderer)
-  // golemControls.update()
+  golem.controls.enabled = true
+  golem.controls.target.set(
+    planetoid.position.x,
+    planetoid.position.y,
+    planetoid.position.z
+  )
+  golem.controls.update()
+
+  universeControls.enabled = false
+  universeControls.update()
 
   console.log('Golem arrived to ', planetoid, golem)
 }
@@ -250,20 +259,17 @@ function animate (currentTime) {
 
 
   } else if (contextClickFlag) {
+    focusPlanetoidView(scene)
     // return to default camera on right click
     currentCamera = sceneCamera
-    scene.add(golem.orbit)
-    // golemControls.enabled = false
-    // universeControls.enabled = true
-    // //controls.update() must be called after any manual changes to the camera's transform
-    // golemControls.update()
-    // universeControls.update()
+
+    golem.controls.enabled = false
+    golem.controls.update()
+    universeControls.enabled = true
+    universeControls.update()
     // sceneCamera.updateProjectionMatrix()
-    currentCamera.updateProjectionMatrix()
     contextClickFlag = false
   }
-
-
 
   renderer.render(scene, currentCamera)
 }

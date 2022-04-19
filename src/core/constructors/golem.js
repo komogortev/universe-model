@@ -1,10 +1,9 @@
 import { SphereGeometry, MeshNormalMaterial, Mesh, Object3D } from 'three'
 import { createControls } from '../systems/Controls'
 import { makePerspectiveCamera } from '../cameras'
-import { renderer, updateRenderer } from '../renderer'
 
 class Golem {
-  constructor(orbitDistance = 3) {
+  constructor(renderer) {
     this.radius = 1
     this.widthSegments = 5
     this.heightSegments = 5
@@ -17,7 +16,6 @@ class Golem {
 
     this.golemOrbit = new Object3D();
     this.golemOrbit.name = 'Golem'
-    this.golemOrbit.position.z = orbitDistance //Distance from parent
 
     this.golemMesh = new Mesh(this.golemGeometry, this.golemMaterial);
     this.golemMesh.name = 'Golem Mesh'
@@ -31,9 +29,9 @@ class Golem {
 
     this.golemCamera = makePerspectiveCamera(75, window.innerWidth / window.innerHeight);
     this.golemCamera.name = 'Golem Camera'
-    this.golemCamera.position.x = 1;
-    this.golemCamera.position.y = 1;
-    this.golemCamera.position.z = 1;
+    this.golemCamera.position.x = 0;
+    this.golemCamera.position.y = 0;
+    this.golemCamera.position.z = 10;
     this.golemCamera.lookAt(0, 0, 0)
     this.golemCamera.updateProjectionMatrix()
     this.golemOrbit.add(this.golemCamera);
@@ -52,6 +50,9 @@ class Golem {
   }
   get mesh() {
     return this.golemMesh
+  }
+  get controls() {
+    return this.golemControls
   }
   set visible(v) {
     // this._visible = v;

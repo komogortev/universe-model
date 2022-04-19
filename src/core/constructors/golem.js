@@ -28,7 +28,7 @@ class Golem {
     this.golemOrbit.add(this.golemMesh)
 
     this.golemCamera = golemCamera;
-    golemCamera.name = 'Golem Camera'
+    this.golemCamera.name = 'Golem Camera'
     this.golemCamera.position.x = 0.15;
     this.golemCamera.position.y = 0;
     this.golemCamera.position.z = 0;

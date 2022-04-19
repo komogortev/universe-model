@@ -5,7 +5,7 @@ import GUI from 'lil-gui';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 import { renderer, updateRenderer } from '../core/renderer'
-import { camera, makePerspectiveCamera } from '../core/cameras'
+import { makePerspectiveCamera } from '../core/cameras'
 import { ambientLight, pointLight } from '../core/lights'
 import { createControls, createFlyControls  } from '../core/systems/Controls.js';
 import { Golem }     from '../core/constructors/golem'
@@ -21,7 +21,7 @@ defineProps({
 })
 
 let loader, gui, textureLoader
-let currentCamera, scene, universeControls, golemControls
+let currentCamera, scene, sceneCamera, golemCamera, universeControls, golemControls
 let celestialOjects, solarSystemGroup, golem
 
 const raycaster = new THREE.Raycaster()
@@ -35,25 +35,21 @@ function init () {
   loader = new GLTFLoader()
   gui = new GUI();
 
-  camera.name = 'Universe Camera'
-  currentCamera = camera
-  universeControls = createFlyControls(camera, renderer)
-  scene = new THREE.Scene()
-
-  textureLoader = new THREE.TextureLoader();
-  const texture = textureLoader.load(
-    '/models/solar-system/textures/8k_stars_milky_way.jpg',
-    () => {
-      const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
-      rt.fromEquirectangularTexture(renderer, texture);
-      scene.background = rt.texture;
-    })
+  sceneCamera = makePerspectiveCamera(70, window.innerWidth / window.innerHeight)
+  sceneCamera.name = 'Universe Camera'
+  sceneCamera.position.set(0, 0, 50);
+  sceneCamera.lookAt(0, 0, 0);
+  universeControls = createControls(sceneCamera, renderer)
 
   golem = new Golem()
-  golemControls = createFlyControls(golem.camera, renderer)
+  golemCamera = makePerspectiveCamera(70, window.innerWidth / window.innerHeight)
+  golemCamera.position.set(0, 10, 50);
+  golemCamera.lookAt(0, 0, 0);
+  golemControls = createControls(golemCamera, renderer)
   golemControls.enabled = false
   golemControls.update()
 
+  currentCamera = sceneCamera
   celestialOjects = []
   solarSystemGroup = new THREE.Group()
 
@@ -67,7 +63,17 @@ function init () {
       setTimeSpeed(value)
     })
 
-  scene.add(ambientLight, pointLight, currentCamera, solarSystemGroup)
+  scene = new THREE.Scene()
+  textureLoader = new THREE.TextureLoader();
+  const texture = textureLoader.load(
+    '/models/solar-system/textures/8k_stars_milky_way.jpg',
+    () => {
+      const rt = new THREE.WebGLCubeRenderTarget(texture.image.height);
+      rt.fromEquirectangularTexture(renderer, texture);
+      scene.background = rt.texture;
+    })
+
+  scene.add(ambientLight, pointLight, currentCamera, golemCamera, sceneCamera, solarSystemGroup)
 
   // 2. Init Scene
   // * Load 3D model
@@ -114,28 +120,33 @@ function _makeAxisGrid(node, label, units) {
   const helper = new AxisGridHelper(node, units);
   gui.add(helper, 'visible').name(label);
 }
+
 function focusPlanetoidView(planetoid) {
-  golem.orbit.position.set(planetoid.scale.x + .25, planetoid.scale.y + .25, planetoid.scale.z + .25,)
-  currentCamera = golem.camera
-  // set controls origin
-  // golemControls.target.set(0,0,0)
-  golem.camera.lookAt(0,0,0);
-  golemControls.enabled = true
-  universeControls.enabled = false
-  // controls.update() must be called after any manual changes
-  // to the camera's transform
-  golemControls.update()
-  universeControls.update()
-  golem.camera.updateProjectionMatrix()
-  camera.updateProjectionMatrix()
+  // attach camera to clicked object
+  planetoid.add(golem.parent)
+  // place golem on parent orbit
+  golem.orbit.position.set(
+    planetoid.scale.x + 1.25,
+    planetoid.scale.y + 1.25,
+    planetoid.scale.z + 1.25
+  )
+
+  golemCamera.lookAt(
+    golem.parent.position.x,
+    golem.parent.position.y,
+    golem.parent.position.z
+  );
+  currentCamera = golemCamera
+  golemCamera.updateProjectionMatrix()
   currentCamera.updateProjectionMatrix()
+  // set controls origin
+  golemControls.target.set(golem.parent.position)
+  golemControls.enabled = true
+  golemControls.update()
+  universeControls.enabled = false
+  universeControls.update()
 
-  _moveGolemTo(planetoid)
   console.log('Golem arrived to ', planetoid)
-}
-
-function _moveGolemTo (newParent) {
-  newParent.add(golem.orbit)
 }
 
 function _animateCelestialObjects (delta) {
@@ -199,7 +210,8 @@ onMounted(() => {
 
 // 3. Animation loop
 function animate (currentTime) {
-  renderer.render(scene, currentCamera)
+  renderer.render(scene, golemCamera)
+  renderer.render(scene, sceneCamera)
   requestAnimationFrame(animate)
 
   // measure how long the previous frame took.
@@ -210,7 +222,7 @@ function animate (currentTime) {
   if (clickFlag) {
     clickFlag = false
     // find btn mesh connection and switch to its camera
-    raycaster.setFromCamera( mouse, camera );
+    raycaster.setFromCamera( mouse, sceneCamera );
     const intersection = raycaster.intersectObjects( celestialOjects );
 
     if (intersection.length > 0) {
@@ -229,14 +241,14 @@ function animate (currentTime) {
   } else if (contextClickFlag) {
     contextClickFlag = false
     // return to default camera on right click
-    currentCamera = camera
+    currentCamera = sceneCamera
     scene.add(golem.orbit)
     golemControls.enabled = false
     universeControls.enabled = true
     //controls.update() must be called after any manual changes to the camera's transform
     golemControls.update()
     universeControls.update()
-    camera.updateProjectionMatrix()
+    sceneCamera.updateProjectionMatrix()
     currentCamera.updateProjectionMatrix()
   }
 

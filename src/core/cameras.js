@@ -1,4 +1,4 @@
-import { PerspectiveCamera } from 'three'
+import { PerspectiveCamera, CameraHelper } from 'three'
 
 export const sizes = {
   width: window.innerWidth,

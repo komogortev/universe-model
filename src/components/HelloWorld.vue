@@ -34,18 +34,29 @@ let clickFlag, contextClickFlag
 function init () {
   loader = new GLTFLoader()
   gui = new GUI();
+  const timeSpeedSetting = { speed: 1 }
+  // Add sliders to number fields by passing min and max
+  gui.add( timeSpeedSetting, 'speed', -100, 100, 1)
+    .name( 'Time speed' )
+    .onChange( value => { setTimeSpeed(value) })
 
   sceneCamera = makePerspectiveCamera(70, window.innerWidth / window.innerHeight)
   sceneCamera.name = 'Universe Camera'
   sceneCamera.position.set(0, 0, 50);
   sceneCamera.lookAt(0, 0, 0);
-  _makeAxisGrid(sceneCamera, `sceneCamera`);
+  const cameraHelper = new THREE.CameraHelper(sceneCamera);
+
   universeControls = createControls(sceneCamera, renderer)
 
   golem = new Golem(renderer)
-  _makeAxisGrid(golem.camera, `golem.camera`, 10)
-  _makeAxisGrid(golem.parent, `golem.parent`, 12)
-  _makeAxisGrid(golem.orbit, `golem.rbit`, 14)
+  const golemCameraHelper = new THREE.CameraHelper(golem.camera);
+
+  const f1 = gui.addFolder('Golem Helpers')
+  _makeAxisGrid(golem.camera, `golem.camera`, 10, f1)
+  _makeAxisGrid(golem.parent, `golem.parent`, 12, f1)
+  _makeAxisGrid(golem.orbit, `golem.rbit`, 14, f1)
+  f1.close();
+
   // golemCamera = makePerspectiveCamera(70, window.innerWidth / window.innerHeight)
   // golemCamera.position.set(0, 10, 50);
   // golemCamera.lookAt(0, 0, 0);
@@ -60,16 +71,6 @@ function init () {
   celestialOjects = []
   solarSystemGroup = new THREE.Group()
 
-  const timeSpeedSetting = {
-    speed: 1
-  }
-  // Add sliders to number fields by passing min and max
-  gui.add( timeSpeedSetting, 'speed', -100, 100, 1)
-    .name( 'Time speed' )
-    .onChange( value => {
-      setTimeSpeed(value)
-    })
-
   scene = new THREE.Scene()
   textureLoader = new THREE.TextureLoader();
   const texture = textureLoader.load(
@@ -80,7 +81,7 @@ function init () {
       scene.background = rt.texture;
     })
 
-  scene.add(ambientLight, pointLight, currentCamera, sceneCamera, solarSystemGroup, golem.golemParentOrbit)
+  scene.add(ambientLight, pointLight, currentCamera, sceneCamera, solarSystemGroup, golem.golemParentOrbit, cameraHelper, golemCameraHelper)
 
   // 2. Init Scene
   // * Load 3D model
@@ -123,9 +124,9 @@ function onMouseContext (event) {
   contextClickFlag = true
 }
 
-function _makeAxisGrid(node, label, units) {
+function _makeAxisGrid(node, label, units, folder = gui) {
   const helper = new AxisGridHelper(node, units);
-  gui.add(helper, 'visible').name(label);
+  folder.add(helper, 'visible').name(label);
 }
 
 function focusPlanetoidView(planetoid) {
@@ -154,6 +155,7 @@ function focusPlanetoidView(planetoid) {
   golem.camera.position.y = 0;
   golem.camera.position.z = 10;
   golem.camera.updateProjectionMatrix()
+
   currentCamera = golem.camera
 
   // set controls origin
@@ -190,12 +192,13 @@ function _animateCelestialObjects (delta) {
 }
 
 onMounted(() => {
+  const f2 = gui.addFolder('Planetoid Helpers')
   //@Todo optimize into recursive fn generation of system
   Object.keys(solarSystemStore.value).forEach(key => {
     const star = new Planetoid(getPlanetoidInfo(key))
     solarSystemGroup.add(star.mesh)
     celestialOjects.push(star.mesh)
-    _makeAxisGrid(star.mesh, `${key}`);
+    _makeAxisGrid(star.mesh, `${key}`, 10, f2);
 
     if (solarSystemStore.value[key].children) {
       Object.keys(solarSystemStore.value[key].children).forEach(childKey => {
@@ -204,8 +207,8 @@ onMounted(() => {
         celestialOjects.push(planet.parent)
         celestialOjects.push(planet.orbit)
 
-        _makeAxisGrid(planet.parent, `${childKey} Orbit`, 50)
-        _makeAxisGrid(planet.orbit, `${childKey}`, 12)
+        _makeAxisGrid(planet.parent, `${childKey} Orbit`, 50, f2)
+        _makeAxisGrid(planet.orbit, `${childKey}`, 12, f2)
 
         if (solarSystemStore.value[key].children[childKey].children) {
           Object.keys(solarSystemStore.value[key].children[childKey].children).forEach(childKey2 => {
@@ -213,13 +216,14 @@ onMounted(() => {
             planet.orbit.add(moon.parent)
             celestialOjects.push(moon.parent)
 
-            _makeAxisGrid(moon.parent, `${childKey2} Orbit`, 50)
-            _makeAxisGrid(moon.orbit, `${childKey2}`, 12)
+            _makeAxisGrid(moon.parent, `${childKey2} Orbit`, 50, f2)
+            _makeAxisGrid(moon.orbit, `${childKey2}`, 12, f2)
           })
         }
       })
     }
   })
+  f2.close();
 
   // update and add AxesHelper to each node
   celestialOjects.forEach((node) => {

@@ -1,4 +1,4 @@
-import { SphereGeometry, MeshNormalMaterial, Mesh, Object3D } from 'three'
+import { SphereGeometry, MeshNormalMaterial, Mesh, Object3D, CameraHelper } from 'three'
 import { createControls } from '../systems/Controls'
 import { makePerspectiveCamera } from '../cameras'
 
@@ -34,6 +34,7 @@ class Golem {
     this.golemCamera.position.z = 10;
     this.golemCamera.lookAt(0, 0, 0)
     this.golemCamera.updateProjectionMatrix()
+    const cameraHelper = new CameraHelper(this.golemCamera);
     this.golemOrbit.add(this.golemCamera);
 
     this.golemControls = createControls(this.golemCamera, renderer)

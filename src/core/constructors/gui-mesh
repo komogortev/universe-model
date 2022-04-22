@@ -1,0 +1,93 @@
+
+import {
+  Group,
+  PlaneBufferGeometry,
+  LineBasicMaterial,
+  MeshPhongMaterial,
+  DoubleSide,
+  LineSegments,
+  Mesh
+} from 'three';
+import { GUI } from 'lil-gui';
+import { guis } from '../../utils/gui-mesh-helper'
+
+const gui = new GUI();
+
+function createMesh(meshInfo, index, settings, guiFolder = gui) {
+  const cardParentOrbitOffset = index * (settings.width + settings.gap);
+  const data = {
+    width: settings.width || 10,
+    height: settings.height || 10,
+    widthSegments: 1,
+    heightSegments: 1,
+    gap: settings.gap || 0,
+    index: index || 0,
+    x: 0,
+    y: 1,
+    z: 0,
+  };
+
+  const group = new Group();
+  // Create a plane that receives shadows (but does not cast them)
+  const geometry = new PlaneBufferGeometry(
+    data.width,
+    data.height,
+    data.widthSegments,
+    data.heightSegments
+  );
+
+  const lineMaterial = new LineBasicMaterial({
+    color: 0xffffff,
+    transparent: true,
+    opacity: 0.5,
+  });
+  const meshMaterial = new MeshPhongMaterial({
+    color: 0x156289,
+    emissive: 0x072534,
+    side: DoubleSide,
+    flatShading: true,
+  });
+  // meshMaterial.receiveShadow = true;
+  // meshMaterial.castShadow = true; // default is false
+  // meshMaterial.receiveShadow = false; // default
+
+  group.add(new LineSegments(geometry, lineMaterial));
+  group.add(new Mesh(geometry, meshMaterial));
+
+  // group.options = chooseFromHash(group, "PlaneGeometry", folder);
+  const folder = guiFolder.addFolder(`Mesh #${data.index}`);
+  guis.PlaneGeometry(group, data, folder);
+  folder.close();
+  return group;
+}
+
+function createMeshGroup(meshInfoArray) {
+  const MeshOptions = {
+    width: 1,
+    height: 2,
+    gap: 1,
+  };
+
+  const meshesGuiFolder = gui.addFolder("Group");
+  const meshGroup = new Group();
+  const groupTotalWidth =
+    meshInfoArray.length * (MeshOptions.width + MeshOptions.gap);
+  meshGroup.name = "Group";
+  meshGroup.position.x = -(groupTotalWidth / 2);
+  meshGroup.position.y = MeshOptions.height / 2 + 0.5;
+  meshGroup.rotation.x = Math.PI * -0.1;
+
+  meshInfoArray.forEach((mesh_, index) => {
+    const meshObject = createMesh(
+      mesh_,
+      index,
+      MeshOptions,
+      meshesGuiFolder
+    );
+    meshesGuiFolder.add(meshObject, 'mesh');
+  });
+
+  return meshesGuiFolder;
+}
+
+export { createMeshGroup, createMesh }

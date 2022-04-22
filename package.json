@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "three": "^0.139.2",
+    "three-orbitcontrols": "^2.110.3",
     "vue": "^3.2.25"
   },
   "devDependencies": {

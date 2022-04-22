@@ -11,6 +11,7 @@ import { createControls, createFlyControls  } from '../core/systems/Controls.js'
 import { Golem }     from '../core/constructors/golem'
 import { Planetoid } from '../core/constructors/planetoid'
 import { AxisGridHelper } from '../utils/axis-helper'
+import { createMeshGroup, createMesh } from '../core/constructors/gui-mesh'
 import useWorldStore from "../store/world";
 
 // 1. Properties listing
@@ -56,16 +57,6 @@ function init () {
   _makeAxisGrid(golem.parent, `golem.parent`, 12, f1)
   _makeAxisGrid(golem.orbit, `golem.rbit`, 14, f1)
   f1.close();
-
-  // golemCamera = makePerspectiveCamera(70, window.innerWidth / window.innerHeight)
-  // golemCamera.position.set(0, 10, 50);
-  // golemCamera.lookAt(0, 0, 0);
-  // golemCamera.updateProjectionMatrix()
-  // golem.orbit.add(golemCamera)
-  //_makeAxisGrid(golemCamera, `golemCamera`);
-  // golemControls = createControls(golemCamera, renderer)
-  // golemControls.enabled = false
-  // golemControls.update()
 
   currentCamera = sceneCamera
   celestialOjects = []
@@ -196,6 +187,10 @@ onMounted(() => {
   //@Todo optimize into recursive fn generation of system
   Object.keys(solarSystemStore.value).forEach(key => {
     const star = new Planetoid(getPlanetoidInfo(key))
+    const description = createMesh(star, 0, {}, gui)
+    description.position.x = 4
+    star.mesh.add(description)
+
     solarSystemGroup.add(star.mesh)
     celestialOjects.push(star.mesh)
     _makeAxisGrid(star.mesh, `${key}`, 10, f2);
@@ -203,6 +198,10 @@ onMounted(() => {
     if (solarSystemStore.value[key].children) {
       Object.keys(solarSystemStore.value[key].children).forEach(childKey => {
         const planet = new Planetoid(getPlanetoidInfo(childKey))
+        const description = createMesh(planet, 0, {}, gui)
+        description.position.x = 3
+        planet.orbit.add(description)
+
         solarSystemGroup.add(planet.parent)
         celestialOjects.push(planet.parent)
         celestialOjects.push(planet.orbit)
@@ -213,6 +212,10 @@ onMounted(() => {
         if (solarSystemStore.value[key].children[childKey].children) {
           Object.keys(solarSystemStore.value[key].children[childKey].children).forEach(childKey2 => {
             const moon = new Planetoid(getPlanetoidInfo(childKey2))
+            const description = createMesh(moon, 0, {}, gui)
+            description.position.x = 2
+            moon.orbit.add(description)
+
             planet.orbit.add(moon.parent)
             celestialOjects.push(moon.parent)
 

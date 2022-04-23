@@ -37,8 +37,8 @@ import {
   WebGLRenderer,
 } from "three";
 
-import { GUI } from "../../examples/jsm/libs/lil-gui.module.min.js";
-import { OrbitControls } from "../../examples/jsm/controls/OrbitControls.js";
+import { GUI } from "lil-gui";
+import { OrbitControls } from "three-orbitcontrols";
 
 const twoPi = Math.PI * 2;
 

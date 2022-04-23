@@ -9,7 +9,7 @@ import {
   Mesh
 } from 'three';
 import { GUI } from 'lil-gui';
-import { guis } from '../../utils/gui-mesh-helper'
+import { guis } from './gui-mesh-helper'
 
 const gui = new GUI();
 

@@ -38,9 +38,10 @@ import {
 } from "three";
 
 import { GUI } from "lil-gui";
-import { OrbitControls } from "three-orbitcontrols";
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 const twoPi = Math.PI * 2;
+const gui = new GUI();
 
 class CustomSinCurve extends Curve {
   constructor(scale = 1) {
@@ -83,7 +84,7 @@ heartShape.bezierCurveTo(x + 16, y + 7, x + 16, y, x + 10, y);
 heartShape.bezierCurveTo(x + 7, y, x + 5, y + 5, x + 5, y + 5);
 
 const guis = {
-  BoxGeometry: function (mesh) {
+  BoxGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       width: 15,
       height: 15,
@@ -107,22 +108,22 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.BoxGeometry");
+    // const folder = parentFolder.addFolder("THREE.BoxGeometry");
 
-    folder.add(data, "width", 1, 30).onChange(generateGeometry);
-    folder.add(data, "height", 1, 30).onChange(generateGeometry);
-    folder.add(data, "depth", 1, 30).onChange(generateGeometry);
-    folder.add(data, "widthSegments", 1, 10).step(1).onChange(generateGeometry);
-    folder
+    parentFolder.add(data, "width", 1, 30).onChange(generateGeometry);
+    parentFolder.add(data, "height", 1, 30).onChange(generateGeometry);
+    parentFolder.add(data, "depth", 1, 30).onChange(generateGeometry);
+    parentFolder.add(data, "widthSegments", 1, 10).step(1).onChange(generateGeometry);
+    parentFolder
       .add(data, "heightSegments", 1, 10)
       .step(1)
       .onChange(generateGeometry);
-    folder.add(data, "depthSegments", 1, 10).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "depthSegments", 1, 10).step(1).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  CapsuleGeometry: function (mesh) {
+  CapsuleGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       radius: 5,
       length: 5,
@@ -142,12 +143,12 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.CapsuleGeometry");
+    // const folder = parentFolder.addFolder("THREE.CapsuleGeometry");
 
-    folder.add(data, "radius", 1, 30).onChange(generateGeometry);
-    folder.add(data, "length", 1, 30).onChange(generateGeometry);
-    folder.add(data, "capSegments", 1, 32).step(1).onChange(generateGeometry);
-    folder
+    parentFolder.add(data, "radius", 1, 30).onChange(generateGeometry);
+    parentFolder.add(data, "length", 1, 30).onChange(generateGeometry);
+    parentFolder.add(data, "capSegments", 1, 32).step(1).onChange(generateGeometry);
+    parentFolder
       .add(data, "heightSegments", 1, 64)
       .step(1)
       .onChange(generateGeometry);
@@ -155,7 +156,7 @@ const guis = {
     generateGeometry();
   },
 
-  CylinderGeometry: function (mesh) {
+  CylinderGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       radiusTop: 5,
       radiusBottom: 5,
@@ -183,27 +184,27 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.CylinderGeometry");
+    // const folder = parentFolder.addFolder("THREE.CylinderGeometry");
 
-    folder.add(data, "radiusTop", 0, 30).onChange(generateGeometry);
-    folder.add(data, "radiusBottom", 0, 30).onChange(generateGeometry);
-    folder.add(data, "height", 1, 50).onChange(generateGeometry);
-    folder
+    parentFolder.add(data, "radiusTop", 0, 30).onChange(generateGeometry);
+    parentFolder.add(data, "radiusBottom", 0, 30).onChange(generateGeometry);
+    parentFolder.add(data, "height", 1, 50).onChange(generateGeometry);
+    parentFolder
       .add(data, "radialSegments", 3, 64)
       .step(1)
       .onChange(generateGeometry);
-    folder
+    parentFolder
       .add(data, "heightSegments", 1, 64)
       .step(1)
       .onChange(generateGeometry);
-    folder.add(data, "openEnded").onChange(generateGeometry);
-    folder.add(data, "thetaStart", 0, twoPi).onChange(generateGeometry);
-    folder.add(data, "thetaLength", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "openEnded").onChange(generateGeometry);
+    parentFolder.add(data, "thetaStart", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "thetaLength", 0, twoPi).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  ConeGeometry: function (mesh) {
+  ConeGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       radius: 5,
       height: 10,
@@ -229,26 +230,26 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.ConeGeometry");
+    // const folder = parentFolder.addFolder("THREE.ConeGeometry");
 
-    folder.add(data, "radius", 0, 30).onChange(generateGeometry);
-    folder.add(data, "height", 1, 50).onChange(generateGeometry);
-    folder
+    parentFolder.add(data, "radius", 0, 30).onChange(generateGeometry);
+    parentFolder.add(data, "height", 1, 50).onChange(generateGeometry);
+    parentFolder
       .add(data, "radialSegments", 3, 64)
       .step(1)
       .onChange(generateGeometry);
-    folder
+    parentFolder
       .add(data, "heightSegments", 1, 64)
       .step(1)
       .onChange(generateGeometry);
-    folder.add(data, "openEnded").onChange(generateGeometry);
-    folder.add(data, "thetaStart", 0, twoPi).onChange(generateGeometry);
-    folder.add(data, "thetaLength", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "openEnded").onChange(generateGeometry);
+    parentFolder.add(data, "thetaStart", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "thetaLength", 0, twoPi).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  CircleGeometry: function (mesh) {
+  CircleGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       radius: 10,
       segments: 32,
@@ -268,17 +269,17 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.CircleGeometry");
+    // const folder = parentFolder.addFolder("THREE.CircleGeometry");
 
-    folder.add(data, "radius", 1, 20).onChange(generateGeometry);
-    folder.add(data, "segments", 0, 128).step(1).onChange(generateGeometry);
-    folder.add(data, "thetaStart", 0, twoPi).onChange(generateGeometry);
-    folder.add(data, "thetaLength", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "radius", 1, 20).onChange(generateGeometry);
+    parentFolder.add(data, "segments", 0, 128).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "thetaStart", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "thetaLength", 0, twoPi).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  DodecahedronGeometry: function (mesh) {
+  DodecahedronGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       radius: 10,
       detail: 0,
@@ -291,15 +292,15 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.DodecahedronGeometry");
+    // const folder = parentFolder.addFolder("THREE.DodecahedronGeometry");
 
-    folder.add(data, "radius", 1, 20).onChange(generateGeometry);
-    folder.add(data, "detail", 0, 5).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "radius", 1, 20).onChange(generateGeometry);
+    parentFolder.add(data, "detail", 0, 5).step(1).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  IcosahedronGeometry: function (mesh) {
+  IcosahedronGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       radius: 10,
       detail: 0,
@@ -312,15 +313,15 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.IcosahedronGeometry");
+    // const folder = parentFolder.addFolder("THREE.IcosahedronGeometry");
 
-    folder.add(data, "radius", 1, 20).onChange(generateGeometry);
-    folder.add(data, "detail", 0, 5).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "radius", 1, 20).onChange(generateGeometry);
+    parentFolder.add(data, "detail", 0, 5).step(1).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  LatheGeometry: function (mesh) {
+  LatheGeometry: function (mesh, options, parentFolder = gui) {
     const points = [];
 
     for (let i = 0; i < 10; i++) {
@@ -344,16 +345,16 @@ const guis = {
       updateGroupGeometry(mesh, geometry);
     }
 
-    const folder = gui.addFolder("THREE.LatheGeometry");
+    // const folder = parentFolder.addFolder("THREE.LatheGeometry");
 
-    folder.add(data, "segments", 1, 30).step(1).onChange(generateGeometry);
-    folder.add(data, "phiStart", 0, twoPi).onChange(generateGeometry);
-    folder.add(data, "phiLength", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "segments", 1, 30).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "phiStart", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "phiLength", 0, twoPi).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  OctahedronGeometry: function (mesh) {
+  OctahedronGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       radius: 10,
       detail: 0,
@@ -366,15 +367,15 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.OctahedronGeometry");
+    // const folder = parentFolder.addFolder("THREE.OctahedronGeometry");
 
-    folder.add(data, "radius", 1, 20).onChange(generateGeometry);
-    folder.add(data, "detail", 0, 5).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "radius", 1, 20).onChange(generateGeometry);
+    parentFolder.add(data, "detail", 0, 5).step(1).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  PlaneGeometry: function (mesh) {
+  PlaneGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       width: 10,
       height: 10,
@@ -394,12 +395,12 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.PlaneGeometry");
+    // const folder = parentFolder.addFolder("THREE.PlaneGeometry");
 
-    folder.add(data, "width", 1, 30).onChange(generateGeometry);
-    folder.add(data, "height", 1, 30).onChange(generateGeometry);
-    folder.add(data, "widthSegments", 1, 30).step(1).onChange(generateGeometry);
-    folder
+    parentFolder.add(data, "width", 1, 30).onChange(generateGeometry);
+    parentFolder.add(data, "height", 1, 30).onChange(generateGeometry);
+    parentFolder.add(data, "widthSegments", 1, 30).step(1).onChange(generateGeometry);
+    parentFolder
       .add(data, "heightSegments", 1, 30)
       .step(1)
       .onChange(generateGeometry);
@@ -407,7 +408,7 @@ const guis = {
     generateGeometry();
   },
 
-  RingGeometry: function (mesh) {
+  RingGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       innerRadius: 5,
       outerRadius: 10,
@@ -431,19 +432,19 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.RingGeometry");
+    // const folder = parentFolder.addFolder("THREE.RingGeometry");
 
-    folder.add(data, "innerRadius", 1, 30).onChange(generateGeometry);
-    folder.add(data, "outerRadius", 1, 30).onChange(generateGeometry);
-    folder.add(data, "thetaSegments", 1, 30).step(1).onChange(generateGeometry);
-    folder.add(data, "phiSegments", 1, 30).step(1).onChange(generateGeometry);
-    folder.add(data, "thetaStart", 0, twoPi).onChange(generateGeometry);
-    folder.add(data, "thetaLength", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "innerRadius", 1, 30).onChange(generateGeometry);
+    parentFolder.add(data, "outerRadius", 1, 30).onChange(generateGeometry);
+    parentFolder.add(data, "thetaSegments", 1, 30).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "phiSegments", 1, 30).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "thetaStart", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "thetaLength", 0, twoPi).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  SphereGeometry: function (mesh) {
+  SphereGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       radius: 15,
       widthSegments: 32,
@@ -469,23 +470,23 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.SphereGeometry");
+    // const folder = parentFolder.addFolder("THREE.SphereGeometry");
 
-    folder.add(data, "radius", 1, 30).onChange(generateGeometry);
-    folder.add(data, "widthSegments", 3, 64).step(1).onChange(generateGeometry);
-    folder
+    parentFolder.add(data, "radius", 1, 30).onChange(generateGeometry);
+    parentFolder.add(data, "widthSegments", 3, 64).step(1).onChange(generateGeometry);
+    parentFolder
       .add(data, "heightSegments", 2, 32)
       .step(1)
       .onChange(generateGeometry);
-    folder.add(data, "phiStart", 0, twoPi).onChange(generateGeometry);
-    folder.add(data, "phiLength", 0, twoPi).onChange(generateGeometry);
-    folder.add(data, "thetaStart", 0, twoPi).onChange(generateGeometry);
-    folder.add(data, "thetaLength", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "phiStart", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "phiLength", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "thetaStart", 0, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "thetaLength", 0, twoPi).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  TetrahedronGeometry: function (mesh) {
+  TetrahedronGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       radius: 10,
       detail: 0,
@@ -498,15 +499,15 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.TetrahedronGeometry");
+    // const folder = parentFolder.addFolder("THREE.TetrahedronGeometry");
 
-    folder.add(data, "radius", 1, 20).onChange(generateGeometry);
-    folder.add(data, "detail", 0, 5).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "radius", 1, 20).onChange(generateGeometry);
+    parentFolder.add(data, "detail", 0, 5).step(1).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  TorusGeometry: function (mesh) {
+  TorusGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       radius: 10,
       tube: 3,
@@ -528,24 +529,24 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.TorusGeometry");
+    // const folder = parentFolder.addFolder("THREE.TorusGeometry");
 
-    folder.add(data, "radius", 1, 20).onChange(generateGeometry);
-    folder.add(data, "tube", 0.1, 10).onChange(generateGeometry);
-    folder
+    parentFolder.add(data, "radius", 1, 20).onChange(generateGeometry);
+    parentFolder.add(data, "tube", 0.1, 10).onChange(generateGeometry);
+    parentFolder
       .add(data, "radialSegments", 2, 30)
       .step(1)
       .onChange(generateGeometry);
-    folder
+    parentFolder
       .add(data, "tubularSegments", 3, 200)
       .step(1)
       .onChange(generateGeometry);
-    folder.add(data, "arc", 0.1, twoPi).onChange(generateGeometry);
+    parentFolder.add(data, "arc", 0.1, twoPi).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  TorusKnotGeometry: function (mesh) {
+  TorusKnotGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       radius: 10,
       tube: 3,
@@ -569,25 +570,25 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.TorusKnotGeometry");
+    // const folder = parentFolder.addFolder("THREE.TorusKnotGeometry");
 
-    folder.add(data, "radius", 1, 20).onChange(generateGeometry);
-    folder.add(data, "tube", 0.1, 10).onChange(generateGeometry);
-    folder
+    parentFolder.add(data, "radius", 1, 20).onChange(generateGeometry);
+    parentFolder.add(data, "tube", 0.1, 10).onChange(generateGeometry);
+    parentFolder
       .add(data, "tubularSegments", 3, 300)
       .step(1)
       .onChange(generateGeometry);
-    folder
+    parentFolder
       .add(data, "radialSegments", 3, 20)
       .step(1)
       .onChange(generateGeometry);
-    folder.add(data, "p", 1, 20).step(1).onChange(generateGeometry);
-    folder.add(data, "q", 1, 20).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "p", 1, 20).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "q", 1, 20).step(1).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  TubeGeometry: function (mesh) {
+  TubeGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       segments: 20,
       radius: 2,
@@ -609,11 +610,11 @@ const guis = {
       );
     }
 
-    const folder = gui.addFolder("THREE.TubeGeometry");
+    // const folder = parentFolder.addFolder("THREE.TubeGeometry");
 
-    folder.add(data, "segments", 1, 100).step(1).onChange(generateGeometry);
-    folder.add(data, "radius", 1, 10).onChange(generateGeometry);
-    folder
+    parentFolder.add(data, "segments", 1, 100).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "radius", 1, 10).onChange(generateGeometry);
+    parentFolder
       .add(data, "radialSegments", 1, 20)
       .step(1)
       .onChange(generateGeometry);
@@ -621,7 +622,7 @@ const guis = {
     generateGeometry();
   },
 
-  ShapeGeometry: function (mesh) {
+  ShapeGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       segments: 12,
     };
@@ -633,13 +634,13 @@ const guis = {
       updateGroupGeometry(mesh, geometry);
     }
 
-    const folder = gui.addFolder("THREE.ShapeGeometry");
-    folder.add(data, "segments", 1, 100).step(1).onChange(generateGeometry);
+    // const folder = parentFolder.addFolder("THREE.ShapeGeometry");
+    parentFolder.add(data, "segments", 1, 100).step(1).onChange(generateGeometry);
 
     generateGeometry();
   },
 
-  ExtrudeGeometry: function (mesh) {
+  ExtrudeGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
       steps: 2,
       depth: 16,
@@ -667,14 +668,14 @@ const guis = {
       updateGroupGeometry(mesh, geometry);
     }
 
-    const folder = gui.addFolder("THREE.ExtrudeGeometry");
+    // const folder = parentFolder.addFolder("THREE.ExtrudeGeometry");
 
-    folder.add(data, "steps", 1, 10).step(1).onChange(generateGeometry);
-    folder.add(data, "depth", 1, 20).onChange(generateGeometry);
-    folder.add(data, "bevelThickness", 1, 5).step(1).onChange(generateGeometry);
-    folder.add(data, "bevelSize", 0, 5).step(1).onChange(generateGeometry);
-    folder.add(data, "bevelOffset", -4, 5).step(1).onChange(generateGeometry);
-    folder.add(data, "bevelSegments", 1, 5).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "steps", 1, 10).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "depth", 1, 20).onChange(generateGeometry);
+    parentFolder.add(data, "bevelThickness", 1, 5).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "bevelSize", 0, 5).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "bevelOffset", -4, 5).step(1).onChange(generateGeometry);
+    parentFolder.add(data, "bevelSegments", 1, 5).step(1).onChange(generateGeometry);
 
     generateGeometry();
   },

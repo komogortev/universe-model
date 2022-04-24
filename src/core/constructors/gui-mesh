@@ -14,7 +14,7 @@ import { guis } from './gui-mesh-helper'
 const gui = new GUI();
 
 function createMesh(meshInfo, index, settings, guiFolder = gui) {
-  const cardParentOrbitOffset = index * (settings.width + settings.gap);
+  const parentOrbitOffset = index * (settings.width + settings.gap);
   const data = {
     width: settings.width || 10,
     height: settings.height || 10,
@@ -47,9 +47,9 @@ function createMesh(meshInfo, index, settings, guiFolder = gui) {
     side: DoubleSide,
     flatShading: true,
   });
-  // meshMaterial.receiveShadow = true;
-  // meshMaterial.castShadow = true; // default is false
-  // meshMaterial.receiveShadow = false; // default
+  meshMaterial.receiveShadow = true;
+  meshMaterial.castShadow = true; // default is false
+  meshMaterial.receiveShadow = false; // default
 
   group.add(new LineSegments(geometry, lineMaterial));
   group.add(new Mesh(geometry, meshMaterial));

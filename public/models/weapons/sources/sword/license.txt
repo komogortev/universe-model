@@ -1,0 +1,11 @@
+Model Information:
+* title:	Sword
+* source:	https://sketchfab.com/3d-models/sword-8c4a35e26d0644c2bc11f835758c5456
+* author:	Veninhu (https://sketchfab.com/Veninhu)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Sword" (https://sketchfab.com/3d-models/sword-8c4a35e26d0644c2bc11f835758c5456) by Veninhu (https://sketchfab.com/Veninhu) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -377,8 +377,8 @@ const guis = {
 
   PlaneGeometry: function (mesh, options, parentFolder = gui) {
     const data = {
-      width: 10,
-      height: 10,
+      width: options.width || 1,
+      height: options.height || 1,
       widthSegments: 1,
       heightSegments: 1,
     };

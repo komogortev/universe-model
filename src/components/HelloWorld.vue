@@ -187,8 +187,14 @@ onMounted(() => {
   //@Todo optimize into recursive fn generation of system
   Object.keys(solarSystemStore.value).forEach(key => {
     const star = new Planetoid(getPlanetoidInfo(key))
-    const description = createMesh(star, 0, {}, gui)
-    description.position.x = 4
+    const description = createMesh(
+      star,
+      0,
+      { width: 1, height: 1 },
+      gui
+    )
+    description.position.x = star.mesh.scale.x - 1.25
+    description.rotation.x = -.25
     star.mesh.add(description)
 
     solarSystemGroup.add(star.mesh)
@@ -198,8 +204,14 @@ onMounted(() => {
     if (solarSystemStore.value[key].children) {
       Object.keys(solarSystemStore.value[key].children).forEach(childKey => {
         const planet = new Planetoid(getPlanetoidInfo(childKey))
-        const description = createMesh(planet, 0, {}, gui)
-        description.position.x = 3
+        const description = createMesh(
+          planet,
+          0,
+          { width: 1, height: 1 },
+          gui
+        )
+        description.position.x = planet.mesh.scale.x + 1
+        description.rotation.x = -.25
         planet.orbit.add(description)
 
         solarSystemGroup.add(planet.parent)
@@ -212,8 +224,14 @@ onMounted(() => {
         if (solarSystemStore.value[key].children[childKey].children) {
           Object.keys(solarSystemStore.value[key].children[childKey].children).forEach(childKey2 => {
             const moon = new Planetoid(getPlanetoidInfo(childKey2))
-            const description = createMesh(moon, 0, {}, gui)
-            description.position.x = 2
+            const description = createMesh(
+              moon,
+              0,
+              { width: 1, height: 1 },
+              gui
+            )
+            description.position.x = moon.mesh.scale.x + 1
+            description.rotation.x = -.25
             moon.orbit.add(description)
 
             planet.orbit.add(moon.parent)

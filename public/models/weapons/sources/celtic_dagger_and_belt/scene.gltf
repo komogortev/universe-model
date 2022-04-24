@@ -1,0 +1,404 @@
+{
+  "accessors": [
+    {
+      "bufferView": 2,
+      "componentType": 5126,
+      "count": 2262,
+      "max": [
+        -1.0226500034332275,
+        24.555213928222656,
+        17.76957893371582
+      ],
+      "min": [
+        -32.824981689453125,
+        -2.513123035430908,
+        -3.4031059741973877
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 27144,
+      "componentType": 5126,
+      "count": 2262,
+      "max": [
+        0.9911409020423889,
+        0.999422550201416,
+        0.9922989010810852
+      ],
+      "min": [
+        -0.9981415271759033,
+        -0.9994187355041504,
+        -0.9774659872055054
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "componentType": 5126,
+      "count": 2262,
+      "max": [
+        0.9984431862831116,
+        0.9995636940002441,
+        0.9995397329330444,
+        1.0
+      ],
+      "min": [
+        -0.9995019435882568,
+        -0.9996164441108704,
+        -0.999176025390625,
+        -1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 2262,
+      "max": [
+        0.9793170094490051,
+        0.9980469942092896
+      ],
+      "min": [
+        0.0019529999699443579,
+        0.0019529999699443579
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "componentType": 5125,
+      "count": 11184,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 54288,
+      "componentType": 5126,
+      "count": 6442,
+      "max": [
+        13.255931854248047,
+        24.01877212524414,
+        18.369430541992188
+      ],
+      "min": [
+        -21.652313232421875,
+        -3.2429380416870117,
+        -14.128478050231934
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 131592,
+      "componentType": 5126,
+      "count": 6442,
+      "max": [
+        0.9999178647994995,
+        0.9974403381347656,
+        0.9989465475082397
+      ],
+      "min": [
+        -0.9999110102653503,
+        -0.9977667331695557,
+        -0.997689425945282
+      ],
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 36192,
+      "componentType": 5126,
+      "count": 6442,
+      "max": [
+        0.9999883770942688,
+        0.9999678730964661,
+        0.9998689293861389,
+        1.0
+      ],
+      "min": [
+        -0.9997934103012085,
+        -0.999915599822998,
+        -0.9998558163642883,
+        -1.0
+      ],
+      "type": "VEC4"
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 18096,
+      "componentType": 5126,
+      "count": 6442,
+      "max": [
+        0.9980469942092896,
+        0.98396897315979
+      ],
+      "min": [
+        0.0019529999699443579,
+        0.0019529999699443579
+      ],
+      "type": "VEC2"
+    },
+    {
+      "bufferView": 0,
+      "byteOffset": 44736,
+      "componentType": 5125,
+      "count": 28938,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "extras": {
+      "author": "Andy woodhead (https://sketchfab.com/Andywoodhead)",
+      "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
+      "source": "https://sketchfab.com/3d-models/celtic-dagger-and-belt-64297fcde7e74885b0ff6d8e025c9fed",
+      "title": "Celtic dagger and belt"
+    },
+    "generator": "Sketchfab-13.1.0",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 160488,
+      "name": "floatBufferViews",
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteLength": 69632,
+      "byteOffset": 160488,
+      "byteStride": 8,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 208896,
+      "byteOffset": 230120,
+      "byteStride": 12,
+      "name": "floatBufferViews",
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteLength": 139264,
+      "byteOffset": 439016,
+      "byteStride": 16,
+      "name": "floatBufferViews",
+      "target": 34962
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 578280,
+      "uri": "scene.bin"
+    }
+  ],
+  "images": [
+    {
+      "uri": "textures/Belt_baseColor.jpeg"
+    },
+    {
+      "uri": "textures/Belt_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/Belt_normal.png"
+    },
+    {
+      "uri": "textures/Dagger_baseColor.jpeg"
+    },
+    {
+      "uri": "textures/Dagger_metallicRoughness.png"
+    },
+    {
+      "uri": "textures/Dagger_normal.png"
+    }
+  ],
+  "materials": [
+    {
+      "doubleSided": true,
+      "name": "Belt",
+      "normalTexture": {
+        "index": 2
+      },
+      "occlusionTexture": {
+        "index": 1
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 1
+        }
+      }
+    },
+    {
+      "doubleSided": true,
+      "name": "Dagger",
+      "normalTexture": {
+        "index": 5
+      },
+      "occlusionTexture": {
+        "index": 4
+      },
+      "pbrMetallicRoughness": {
+        "baseColorTexture": {
+          "index": 3
+        },
+        "metallicRoughnessTexture": {
+          "index": 4
+        }
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "defaultMaterial",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 1,
+            "POSITION": 0,
+            "TANGENT": 2,
+            "TEXCOORD_0": 3
+          },
+          "indices": 4,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    },
+    {
+      "name": "defaultMaterial",
+      "primitives": [
+        {
+          "attributes": {
+            "NORMAL": 6,
+            "POSITION": 5,
+            "TANGENT": 7,
+            "TEXCOORD_0": 8
+          },
+          "indices": 9,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "children": [
+        1
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        2.220446049250313e-16,
+        -1.0,
+        0.0,
+        0.0,
+        1.0,
+        2.220446049250313e-16,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Sketchfab_model"
+    },
+    {
+      "children": [
+        2,
+        4
+      ],
+      "matrix": [
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        -4.371139006309477e-08,
+        0.999999999999999,
+        0.0,
+        0.0,
+        -0.999999999999999,
+        -4.371139006309477e-08,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Collada visual scene group"
+    },
+    {
+      "children": [
+        3
+      ],
+      "name": "Dagger"
+    },
+    {
+      "mesh": 0,
+      "name": "defaultMaterial"
+    },
+    {
+      "children": [
+        5
+      ],
+      "name": "Belt"
+    },
+    {
+      "mesh": 1,
+      "name": "defaultMaterial"
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "Sketchfab_Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "source": 0
+    },
+    {
+      "sampler": 0,
+      "source": 1
+    },
+    {
+      "sampler": 0,
+      "source": 2
+    },
+    {
+      "sampler": 0,
+      "source": 3
+    },
+    {
+      "sampler": 0,
+      "source": 4
+    },
+    {
+      "sampler": 0,
+      "source": 5
+    }
+  ]
+}

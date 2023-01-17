@@ -156,8 +156,8 @@ class Character {
     this.characterCamera = camera;
     this.characterBody.add(this.characterCamera)
     this.characterCamera.position.set(
-      this.characterBody.position.x,
-      this.characterBody.position.y + .35,
+      this.characterBody.position.x + 0.05,
+      this.characterBody.position.y + .15,
       this.characterBody.position.z
     )
     this.characterCamera.lookAt(this._lookAt)

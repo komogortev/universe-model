@@ -117,12 +117,12 @@ class Character {
     this._longitude = 0;
     this._parent = gravitationalParent;
     this._updateRigPosition()
-    this._lookAtDistance = 0.5
+    this._lookAtDistance = -0.5
     // LookAt should be calculated relative to characterRig plane
     this._lookAt = new Vector3(
-      0,
-      0 + this._lookAtDistance,
-      this._lookAtDistance
+      0 ,
+      this._lookAtDistance,
+      0 // behind the shoulder offset + this._lookAtDistance
     )
 
 
@@ -158,10 +158,9 @@ class Character {
     this.characterCamera.position.set(
       this.characterBody.position.x,
       this.characterBody.position.y + .35,
-      this.characterBody.position.z - 0.25
+      this.characterBody.position.z
     )
-    this.characterCamera.lookAt(this.characterBody.position)
-    this.characterCamera.up.set( 0, 0, 1 );
+    this.characterCamera.lookAt(this._lookAt)
     this.characterCamera.updateProjectionMatrix();
   }
 

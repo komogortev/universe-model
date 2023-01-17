@@ -6,6 +6,8 @@ import { createRenderer } from '../utils/renderer';
 import { createScene } from '../utils/scene';
 import { createPerspectiveCamera, ThirdPersonCamera, ConstructCameraRig } from "../utils/camera"
 import { createOrbitControls } from "../utils/controls"
+import { FlyControls } from 'three/examples/jsm/controls/FlyControls.js';
+
 import { Loop } from '../systems/Loop';
 import { Resizer } from '../systems/Resizer';
 // Scene Objects
@@ -56,7 +58,7 @@ class WorldScene {
     const universeCameraHelper = new THREE.CameraHelper(universeCamera)
 
     characterCamera = createPerspectiveCamera();
-    characterControls = createOrbitControls(characterCamera, renderer_.domElement)
+    characterControls = new FlyControls(characterCamera, renderer_.domElement)
     const characterCameraHelper = new THREE.CameraHelper(characterCamera)
 
     scene_.add(universeCameraHelper, characterCameraHelper)
@@ -72,7 +74,6 @@ class WorldScene {
     Loop_.updatables.push(StarPlanetoid);
 
     const character = new Character(StarPlanetoid, characterCamera);
-    character.Rig.add(characterCamera)
     StarPlanetoid.mesh.add(character.Rig);
     Loop_.updatables.push(character);
   }

@@ -7,6 +7,7 @@ import {
   Vector3,
   TextureLoader
 } from 'three'
+import map from '../assets/2k_earth_daymap.jpg'
 
 class Planetoid {
   radius: number;
@@ -25,8 +26,8 @@ class Planetoid {
       this.radius, this.widthSegments, this.heightSegments
     );
 
-    this.planetMaterial = new MeshNormalMaterial({
-      wireframe: true,
+    this.planetMaterial = new MeshBasicMaterial({
+      map: new TextureLoader().load(map) //wireframe: true,
     });
 
     this.planetMesh = new Mesh(this.planetGeometry, this.planetMaterial);
@@ -39,7 +40,7 @@ class Planetoid {
   }
 
   tick(delta: number) {
-    //this.planetMesh.rotation.y += 0.0001
+    this.planetMesh.rotation.y += 0.0001
   }
 }
 

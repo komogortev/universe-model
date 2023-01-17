@@ -102,7 +102,11 @@ function createOrbitControls(camera, canvas) {
   return controls;
 }
 
-function createFlyControls(camera, canvas, options = AppSettings.FLY_CONTROLS) {
+function createFlyControls(camera, canvas, options = {
+    movementSpeed: 1,
+    dragToLook: true,
+    rollSpeed: 1,
+  }) {
   const controls = new FlyControls(camera, canvas);
   controls.lookSpeed = options.lookSpeed;
   controls.movementSpeed = options.movementSpeed;
@@ -151,7 +155,11 @@ function createFlyControls(camera, canvas, options = AppSettings.FLY_CONTROLS) {
   return controls;
 }
 
-function createFpsControls(camera, canvas, options = AppSettings.FPS_CONTROLS) {
+function createFpsControls(camera, canvas, options = {
+    movementSpeed: 0.5,
+    lookSpeed: 0.005,
+
+  }) {
   const controls = new FirstPersonControls(camera, canvas);
   controls.movementSpeed = options.movementSpeed;
   controls.activeLook = true; // def true
@@ -194,7 +202,11 @@ function createFpsControls(camera, canvas, options = AppSettings.FPS_CONTROLS) {
   return controls;
 }
 
-function createPointerLockControls(cameraRig, canvas, options = AppSettings.FLY_CONTROLS) {
+function createPointerLockControls(cameraRig, canvas, options = {
+    movementSpeed: 1,
+    dragToLook: true,
+    rollSpeed: 1,
+  }) {
   const blocker = document.getElementById('blocker');
   const instructions = document.getElementById('instructions');
   const raycaster_ = new Raycaster(new Vector3(), new Vector3(0, - 1, 0), 0, 10);

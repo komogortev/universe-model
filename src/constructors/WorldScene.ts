@@ -10,11 +10,13 @@ import { Loop } from '../systems/Loop';
 import { Resizer } from '../systems/Resizer';
 // Scene Objects
 import { Planetoid } from './Planetoid';
-import { Golem, _BasicGolemControllerInput } from './Golem';
+import { Golem } from './Golem';
+import { Character } from './Character';
 
 let renderer_: any,
 scene_: any,
-Loop_: any;
+Loop_: any,
+Resizer_: any;
 
 let cameras: Group, cameraRig: any,
 activeCamera: PerspectiveCamera,
@@ -34,7 +36,7 @@ class WorldScene {
     // initialize scene tools
     this._initCameras();
 
-    const resizer = new Resizer(this.container, activeCamera, renderer_);
+    Resizer_ = new Resizer(this.container, activeCamera, renderer_);
     Loop_ = new Loop(activeCamera, scene_, renderer_);
 
     // attach constructed scene to the WorldTheater view
@@ -52,13 +54,13 @@ class WorldScene {
     universeCamera.lookAt(0, 0, 0); // so we can view the scene center
     const univerceControls = createOrbitControls(universeCamera, renderer_.domElement)
     const universeCameraHelper = new THREE.CameraHelper(universeCamera)
-    cameras.add(universeCamera)
 
     characterCamera = createPerspectiveCamera();
+    const characterControls = createOrbitControls(characterCamera, renderer_.domElement)
     const characterCameraHelper = new THREE.CameraHelper(characterCamera)
-    scene_.add(characterCameraHelper)
-    cameras.add(universeCameraHelper, characterCamera)
-    cameraRig = new ConstructCameraRig(characterCamera);
+
+    scene_.add(universeCameraHelper, characterCameraHelper)
+    cameras.add(universeCamera, characterCamera)
     // set universe camera as default
     activeCamera = cameras.children[0] as PerspectiveCamera;
   }
@@ -69,10 +71,10 @@ class WorldScene {
     scene_.add(StarPlanetoid.mesh);
     Loop_.updatables.push(StarPlanetoid);
 
-    const Character = new Golem(StarPlanetoid);
-    StarPlanetoid.mesh.add(Character.mesh);
-    cameraRig.parent = Character.mesh
-    Loop_.updatables.push(Character);
+    const character = new Character(StarPlanetoid);
+    character.Rig.add(characterCamera)
+    StarPlanetoid.mesh.add(character.Rig);
+    Loop_.updatables.push(character);
   }
 
   start() {
@@ -92,12 +94,14 @@ function onKeyDown( event: KeyboardEvent ) {
       activeCamera = universeCamera;
       activeCamera.updateProjectionMatrix();
       Loop_.camera = activeCamera
+      Resizer_.camera = activeCamera
       console.log('uni cam')
       break;
     case 80: /*P*/
       activeCamera = characterCamera;
       activeCamera.updateProjectionMatrix();
       Loop_.camera = activeCamera
+      Resizer_.camera = activeCamera
       console.log('char cam')
       break;
   }

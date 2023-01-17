@@ -76,8 +76,10 @@ class ConstructCameraRig {
   }
 
   updateCamera() {
-    this._camera.position.set(0, 0.5, 0.5);
-    this._camera.lookAt(-1, 0.5, 1);
+    if (this._parent != null) {
+      this._camera.position.set(0,0,0)
+      this._camera.lookAt(-1, 0.5, 1);
+    }
   }
 
   get name() {
@@ -94,14 +96,15 @@ class ConstructCameraRig {
 
   set parent(mesh: any) {
     this._parent = mesh;
-    this.updateCamera()
   }
 
   tick(delta: number) {
     // rotate the rig to face the floor
     this.rig.lookAt(this._parent.position.x, this._parent.position.y, this._parent.position.z)
-    this._camera.position.set(this._parent.mesh.position.x, this._parent.mesh.position.y, this._parent.mesh.position.z)
-
+    if (this._parent != null) {
+      this.updateCamera()
+      this.rig.position.copy(this._parent.position)
+    }
     // find direction of attraction (to floor)
 
     // ensure rig is on the floor

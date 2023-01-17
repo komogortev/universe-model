@@ -39,7 +39,7 @@ class Planetoid {
   }
 
   tick(delta: number) {
-    this.planetMesh.rotation.y += 0.0001
+    //this.planetMesh.rotation.y += 0.0001
   }
 }
 

@@ -1,4 +1,6 @@
-const setSize = (container: HTMLElement, camera, renderer) => {
+import { PerspectiveCamera } from 'three';
+
+const setSize = (container: HTMLElement, camera: PerspectiveCamera, renderer: any) => {
   //camera.aspect = container.clientWidth / container.clientHeight;
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -8,16 +10,23 @@ const setSize = (container: HTMLElement, camera, renderer) => {
 };
 
 class Resizer {
-  constructor(container: HTMLElement, camera, renderer) {
+  _camera: PerspectiveCamera;
+
+  constructor(container: HTMLElement, camera: PerspectiveCamera, renderer: any) {
+    this._camera = camera
     // set initial size
-    setSize(container, camera, renderer);
+    setSize(container, this._camera, renderer);
 
     window.addEventListener('resize', () => {
       // set the size again if a resize occurs
-      setSize(container, camera, renderer);
+      setSize(container, this._camera, renderer);
       // perform any custom actions
       this.onResize();
     });
+  }
+
+  set camera(camera: PerspectiveCamera) {
+    this._camera = camera
   }
 
   onResize() { }

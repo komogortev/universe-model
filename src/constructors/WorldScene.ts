@@ -21,8 +21,8 @@ Resizer_: any;
 let cameras: Group, cameraRig: any,
 activeCamera: PerspectiveCamera,
 universeCamera: PerspectiveCamera,
-characterCamera: PerspectiveCamera;
-
+characterCamera: PerspectiveCamera,
+universeControls: any, characterControls: any;
 class WorldScene {
   container: HTMLElement;
   controls: any;
@@ -52,11 +52,11 @@ class WorldScene {
     universeCamera = createPerspectiveCamera();
     universeCamera.position.set(0, 0, 5); // move the camera back
     universeCamera.lookAt(0, 0, 0); // so we can view the scene center
-    const univerceControls = createOrbitControls(universeCamera, renderer_.domElement)
+    universeControls = createOrbitControls(universeCamera, renderer_.domElement)
     const universeCameraHelper = new THREE.CameraHelper(universeCamera)
 
     characterCamera = createPerspectiveCamera();
-    const characterControls = createOrbitControls(characterCamera, renderer_.domElement)
+    characterControls = createOrbitControls(characterCamera, renderer_.domElement)
     const characterCameraHelper = new THREE.CameraHelper(characterCamera)
 
     scene_.add(universeCameraHelper, characterCameraHelper)
@@ -71,7 +71,7 @@ class WorldScene {
     scene_.add(StarPlanetoid.mesh);
     Loop_.updatables.push(StarPlanetoid);
 
-    const character = new Character(StarPlanetoid);
+    const character = new Character(StarPlanetoid, characterCamera);
     character.Rig.add(characterCamera)
     StarPlanetoid.mesh.add(character.Rig);
     Loop_.updatables.push(character);
@@ -92,6 +92,9 @@ function onKeyDown( event: KeyboardEvent ) {
   switch ( event.keyCode ) {
     case 79: /*O*/
       activeCamera = universeCamera;
+      universeControls.enabled = true;
+      characterControls.enabled = false;
+
       activeCamera.updateProjectionMatrix();
       Loop_.camera = activeCamera
       Resizer_.camera = activeCamera
@@ -99,6 +102,8 @@ function onKeyDown( event: KeyboardEvent ) {
       break;
     case 80: /*P*/
       activeCamera = characterCamera;
+      universeControls.enabled = false;
+      characterControls.enabled = true;
       activeCamera.updateProjectionMatrix();
       Loop_.camera = activeCamera
       Resizer_.camera = activeCamera

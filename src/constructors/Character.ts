@@ -101,6 +101,8 @@ function _CalculateParentPosition(parentRadius: number, lat: number, lng: number
 
 class Character {
   characterRig: Group;
+  characterBody: any;
+  characterCamera: PerspectiveCamera;
   _input: any;
   _latitude: number;
   _longitude: number;
@@ -108,7 +110,7 @@ class Character {
   _lookAtDistance: number;
   _lookAt: Vector3;
 
-  constructor(gravitationalParent: any) {
+  constructor(gravitationalParent: any, camera: PerspectiveCamera) {
     this.characterRig = new Group();
     this._input = new _BasicGolemControllerInput();
     this._latitude = 0;
@@ -123,27 +125,44 @@ class Character {
       this._lookAtDistance
     )
 
+
     //this.buildDirectionArrow()
     this.buildAxesHelper()
     this.characterRig.add(new GridHelper(3,3))
     console.log(this._parent.mesh.position, this.characterRig.position)
     this.buildCenterLine()
 
-    const golemGeometry = new SphereGeometry(.5, 12, 12);
-
-    const golemMaterial = new MeshBasicMaterial({
-      // wireframe: true,
-      map: new TextureLoader().load(map)
-    });
-
-    const golemMesh = new Mesh(golemGeometry, golemMaterial);
-    this.characterRig.add(golemMesh)
-    golemMesh.add(new GridHelper(2,2))
+    this.buildCharacterBody()
+    this.buildCharacterCamera(camera)
 
   }
 
   get Rig() {
     return this.characterRig
+  }
+
+  buildCharacterBody(){
+    const golemGeometry = new SphereGeometry(.125, 12, 12);
+    const golemMaterial = new MeshBasicMaterial({
+      map: new TextureLoader().load(map)
+    });
+
+    this.characterBody = new Mesh(golemGeometry, golemMaterial);
+    this.characterRig.add(this.characterBody)
+    this.characterBody.position.set(0,.08,0)
+  }
+
+  buildCharacterCamera(camera) {
+    this.characterCamera = camera;
+    this.characterBody.add(this.characterCamera)
+    this.characterCamera.position.set(
+      this.characterBody.position.x,
+      this.characterBody.position.y + .35,
+      this.characterBody.position.z - 0.25
+    )
+    this.characterCamera.lookAt(this.characterBody.position)
+    this.characterCamera.up.set( 0, 0, 1 );
+    this.characterCamera.updateProjectionMatrix();
   }
 
   _updateRigPosition() {
@@ -156,7 +175,7 @@ class Character {
     this.characterRig.position.copy(position)
   }
 
-  _updateRifRotation() {
+  _updateRigRotation() {
     var axis = new Vector3(0, 1, 0);
     var vector = new Vector3(this.characterRig.position.x, this.characterRig.position.y, this.characterRig.position.z)
     this.characterRig.quaternion.setFromUnitVectors(axis, vector.clone().normalize())
@@ -222,8 +241,7 @@ class Character {
     }
 
     this._updateRigPosition()
-    this._updateRifRotation()
-
+    this._updateRigRotation()
   }
 }
 

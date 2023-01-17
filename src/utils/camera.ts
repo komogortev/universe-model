@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Vector2, Vector3 } from "three";
+import { Group, PerspectiveCamera, Vector2, Vector3 } from "three";
 
 function createPerspectiveCamera(
   fov: number = 75,
@@ -9,6 +9,27 @@ function createPerspectiveCamera(
 ) {
 
   const camera = new PerspectiveCamera(fov, aspect, near, far);
+  var cameraLayer = 1;
+
+  camera.name = name
+
+  return camera;
+}
+
+function createFpsCamera(
+  fov: number = 75,
+  aspect: number = window.innerWidth / window.innerHeight,
+  near: number = 0.05,
+  far: number = 1000,
+  name: string = "Perspective Camera"
+) {
+
+  const camera = new PerspectiveCamera(
+      fov,
+      aspect,
+      0.001,
+      20
+    );
   var cameraLayer = 1;
 
   camera.name = name
@@ -54,4 +75,56 @@ class ThirdPersonCamera {
   }
 }
 
-export { createPerspectiveCamera, ThirdPersonCamera };
+class ConstructCameraRig {
+  _name: string;
+  _rig: Group;
+  _parent: any | null;
+  _camera: any;
+
+  constructor(camera: any, parent?: any | null) {
+    this._name = 'Camera Rig';
+    this._rig = new Group();
+    this._parent = parent;
+    this._camera = camera
+
+    this._rig.add(this._camera);
+    this.updateCamera()
+  }
+
+  updateCamera() {
+    this._camera.position.set(0, 0.5, 0.5);
+    this._camera.lookAt(-1, 0.5, 1);
+  }
+
+  get name() {
+    return this._name;
+  }
+
+  get rig() {
+    return this._rig;
+  }
+
+  get camera() {
+    return this._camera;
+  }
+
+  set parent(mesh: any) {
+    this._parent = mesh;
+    this.updateCamera()
+  }
+
+  tick(delta: number) {
+    // rotate the rig to face the floor
+    this.rig.lookAt(this._parent.position.x, this._parent.position.y, this._parent.position.z)
+    this.rig.position.set(this._parent.position.x, this._parent.position.y, this._parent.position.z)
+
+    // find direction of attraction (to floor)
+
+    // ensure rig is on the floor
+    // const cameraOffset = 0.01
+    // this.rig.position.copy(parent.position)
+    //  .add(new Vector3(0, 0, this._floor.scale.z + cameraOffset));
+  }
+}
+
+export { createPerspectiveCamera, ThirdPersonCamera, ConstructCameraRig };

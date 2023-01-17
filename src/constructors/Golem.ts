@@ -8,6 +8,7 @@ import {
   TextureLoader
 } from 'three'
 import { calcPosFromLatLngRad } from '../utils/helpers'
+import map from '../assets/ironman.png'
 
 class _BasicGolemControllerInput {
   _keys: any
@@ -103,6 +104,7 @@ class Golem {
   gravitationalParent: any;
   _lookAt: Vector3;
   _lookAtDistance: number;
+  characterCamera: any;
 
   constructor(gravitationalParent: any) {
     this.radius = 0.05
@@ -113,14 +115,16 @@ class Golem {
       this.radius, this.widthSegments, this.heightSegments
     );
 
-    this.golemMaterial = new MeshNormalMaterial({
-      wireframe: true,
+    this.golemMaterial = new MeshBasicMaterial({
+      // wireframe: true,
+      map: new TextureLoader().load(map)
     });
 
     this.golemMesh = new Mesh(this.golemGeometry, this.golemMaterial);
     this.golemMesh.name = 'Golem Mesh'
 
     this._input = new _BasicGolemControllerInput();
+
     // spherical GPS coordinates Mtl
     const mtl = { lat: 45.508888, lng: -73.561668 }
     // default position
@@ -183,5 +187,4 @@ class Golem {
   }
 }
 
-
-export { Golem }
+export { Golem, _BasicGolemControllerInput }

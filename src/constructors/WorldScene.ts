@@ -5,6 +5,7 @@ import * as THREE from 'three'
 import { createRenderer } from '../utils/renderer';
 import { createScene } from '../utils/scene';
 import { createPerspectiveCamera, ThirdPersonCamera, ConstructCameraRig } from "../utils/camera"
+import { createOrbitControls } from "../utils/controls"
 import { Loop } from '../systems/Loop';
 import { Resizer } from '../systems/Resizer';
 // Scene Objects
@@ -49,10 +50,14 @@ class WorldScene {
     universeCamera = createPerspectiveCamera();
     universeCamera.position.set(0, 0, 5); // move the camera back
     universeCamera.lookAt(0, 0, 0); // so we can view the scene center
+    const univerceControls = createOrbitControls(universeCamera, renderer_.domElement)
+    const universeCameraHelper = new THREE.CameraHelper(universeCamera)
     cameras.add(universeCamera)
 
     characterCamera = createPerspectiveCamera();
-    cameras.add(characterCamera)
+    const characterCameraHelper = new THREE.CameraHelper(characterCamera)
+    scene_.add(characterCameraHelper)
+    cameras.add(universeCameraHelper, characterCamera)
     cameraRig = new ConstructCameraRig(characterCamera);
     // set universe camera as default
     activeCamera = cameras.children[0] as PerspectiveCamera;

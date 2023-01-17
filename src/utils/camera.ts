@@ -1,4 +1,4 @@
-import { Group, PerspectiveCamera, Vector2, Vector3 } from "three";
+import { CylinderGeometry, Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Vector2, Vector3 } from "three";
 
 function createPerspectiveCamera(
   fov: number = 75,
@@ -9,27 +9,6 @@ function createPerspectiveCamera(
 ) {
 
   const camera = new PerspectiveCamera(fov, aspect, near, far);
-  var cameraLayer = 1;
-
-  camera.name = name
-
-  return camera;
-}
-
-function createFpsCamera(
-  fov: number = 75,
-  aspect: number = window.innerWidth / window.innerHeight,
-  near: number = 0.05,
-  far: number = 1000,
-  name: string = "Perspective Camera"
-) {
-
-  const camera = new PerspectiveCamera(
-      fov,
-      aspect,
-      0.001,
-      20
-    );
   var cameraLayer = 1;
 
   camera.name = name
@@ -89,6 +68,11 @@ class ConstructCameraRig {
 
     this._rig.add(this._camera);
     this.updateCamera()
+
+    var geometry = new CylinderGeometry( 5, 5, 20, 32 );
+    var material = new MeshBasicMaterial( { wireframe: true } );
+    var cylinder = new Mesh( geometry, material );
+    this.rig.add(cylinder)
   }
 
   updateCamera() {
@@ -116,7 +100,7 @@ class ConstructCameraRig {
   tick(delta: number) {
     // rotate the rig to face the floor
     this.rig.lookAt(this._parent.position.x, this._parent.position.y, this._parent.position.z)
-    this.rig.position.set(this._parent.position.x, this._parent.position.y, this._parent.position.z)
+    this._camera.position.set(this._parent.mesh.position.x, this._parent.mesh.position.y, this._parent.mesh.position.z)
 
     // find direction of attraction (to floor)
 

@@ -183,7 +183,7 @@ class Character {
   _updateRigRotation() {
     var axis = new Vector3(0, 1, 0);
     var vector = new Vector3(this.characterRig.position.x, this.characterRig.position.y, this.characterRig.position.z)
-    this.characterRig.quaternion.setFromUnitVectors(axis, vector.clone().normalize())
+    this.characterBody.quaternion.setFromUnitVectors(axis, vector.clone().normalize())
   }
 
   _updateBodyRotation(delta: number) {
@@ -191,8 +191,8 @@ class Character {
     const yh = this._input.current_.mouseYDelta / window.innerHeight;
 
     // turn mouse movement into spherical coordinates
-    this.phi_ += -xh * 2;
-    this.theta_ = clamp(this.theta_ + -yh * 2, -Math.PI / 3, -Math.PI / 3)
+    this.phi_ += -xh * 25;
+    this.theta_ = clamp(this.theta_ + -yh * 5, -Math.PI / 3, -Math.PI / 3)
 
     const qx = new Quaternion();
     qx.setFromAxisAngle(new Vector3(0,1,0), this.phi_);
@@ -262,6 +262,12 @@ class Character {
 
   tick(delta: number) {
     if (this._input.keys_.w) {
+      //get mouse direction
+      // calculate step distance
+      // get new coordinates after step
+      // this._latitude = this._latitude + 0
+      // this._longitude = this._longitude + 0
+
       const destinationX = this._lookAt.x / 10
       const destinationY = this._lookAt.y / 10
 

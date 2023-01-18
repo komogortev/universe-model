@@ -54,7 +54,7 @@ class WorldScene {
   _initCameras(){
     cameras = new THREE.Group()
     universeCamera = createPerspectiveCamera();
-    universeCamera.position.set(0, 0, 505); // move the camera back
+    universeCamera.position.set(0, 0, 5); // move the camera back
     universeCamera.lookAt(0, 0, 0); // so we can view the scene center
     universeControls = createOrbitControls(universeCamera, renderer_.domElement)
     const universeCameraHelper = new THREE.CameraHelper(universeCamera)
@@ -95,6 +95,7 @@ class WorldScene {
 function onKeyDown( event: KeyboardEvent ) {
   switch ( event.key ) {
     case 'o': /*O*/
+      console.log('universeCamera')
       activeCamera = universeCamera;
       universeControls.enabled = true;
       //characterControls.enabled = false;
@@ -105,6 +106,7 @@ function onKeyDown( event: KeyboardEvent ) {
       console.log('uni cam')
       break;
     case 'p': /*P*/
+      console.log('characterCamera')
       activeCamera = characterCamera;
       universeControls.enabled = false;
       //characterControls.lock()

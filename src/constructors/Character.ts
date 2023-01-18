@@ -128,38 +128,35 @@ class Character {
   _parent: any;
   _lookAtDistance: number;
   _lookAt: Vector3;
-  _bodyRotation: any;
+  rotation_: any;
   _bodyTranslation: any;
   phi_: number;
   theta_: number;
-  controls: PointerLockControls
 
-  constructor(gravitationalParent: any, camera: PerspectiveCamera, controls: PointerLockControls) {
+  constructor(gravitationalParent: any, camera: PerspectiveCamera) {
     this.characterRig = new Group();
     this.characterCamera = camera;
     this._latitude = 0;
     this._longitude = 0;
     this._lookAtDistance = -0.5
-    // LookAt should be calculated relative to characterRig plane
-    this._lookAt = new Vector3(0, this._lookAtDistance, 0);
+    // LookAt normally returns value in global plane scope
+    this._lookAt = new Vector3(0, this._lookAtDistance, 0); // look straight north
     this._parent = gravitationalParent;
     this._updateRigPosition()
     this.initCharacterBody()
-    this.initCharacterCamera(camera)
+    this.initCharacterCamera()
     this._input = new _BasicGolemControllerInput();
-    this.controls = controls;
 
     //this.buildDirectionArrow()
-    this.buildAxesHelper()
-    this.characterRig.add(new GridHelper(3,3))
-    console.log(this._parent.mesh.position, this.characterRig.position)
-    this.buildCenterLine()
+    this.buildAxesHelper(this.characterBody)
+    this.buildGridHelper(this.characterRig)
+    //this.buildGridHelper(this.characterBody)
+    this.buildCenterLine(this.characterBody)
 
-    this._bodyRotation = new Quaternion();
+    this.rotation_ = new Quaternion();
     this._bodyTranslation = new Vector3();
     this.phi_ = 0;
     this.theta_ = 0;
-
   }
 
   get Rig() {
@@ -177,17 +174,20 @@ class Character {
     this.characterBody.position.set(0,.08,0)
   }
 
-  initCharacterCamera(camera: PerspectiveCamera) {
+  initCharacterCamera() {
     this.characterBody.add(this.characterCamera)
     this.characterCamera.position.set(
       this.characterBody.position.x + 0.05,
-      this.characterBody.position.y + .25,
+      this.characterBody.position.y + 0.05,
       this.characterBody.position.z
     )
     this.characterCamera.lookAt(this._lookAt)
     this.characterCamera.updateProjectionMatrix();
   }
 
+  /**
+   * Move characterRig on sphere surface
+   */
   _updateRigPosition() {
     const position = _CalculateParentPosition(
       this._parent.radius,
@@ -198,13 +198,32 @@ class Character {
     this.characterRig.position.copy(position)
   }
 
-  _updateRigRotation() {
+  /**
+   * Turn characterRig to "STAND" on the sphere surface
+   */
+  _updateBodyVerticalRotation() {
     var axis = new Vector3(0, 1, 0);
     var vector = new Vector3(this.characterRig.position.x, this.characterRig.position.y, this.characterRig.position.z)
     this.characterBody.quaternion.setFromUnitVectors(axis, vector.clone().normalize())
   }
 
-  _updateBodyRotation(delta: number) {
+  _updateCameraRotation(delta: number) {
+    this.characterCamera.quaternion.copy(this.rotation_)
+    //this.characterRig.lookAt(new Vector3(this.characterCamera.lookAt.z,this.characterCamera.lookAt.x,this.characterCamera.lookAt.y))
+    // attempts to apply direction to the body movement
+    //     const forward = new Vector3(0, this._lookAtDistance, 0);
+    //     forward.applyQuaternion(this.rotation_);
+    // console.log('forward',forward)
+    //     this._lookAt = forward.clone();
+  }
+
+  _actualizeGroupOnSphere() {
+    this._updateRigPosition()
+    this._updateBodyVerticalRotation()
+    this._updateCameraRotation()
+  }
+
+  _calculateMouseInputToRotation(delta: number) {
     const xh = this._input.current_.mouseXDelta / window.innerWidth;
     const yh = this._input.current_.mouseYDelta / window.innerHeight;
 
@@ -221,12 +240,67 @@ class Character {
     const q = new Quaternion();
     q.multiply(qx);
     q.multiply(qy);
-    this._bodyRotation.copy(q);
+
+    this.rotation_.copy(q);
   }
 
-  _updateCameraRotation(delta: number) {
-    this.characterCamera.quaternion.copy(this._bodyRotation)
+  _reactToInputs() {
+    this._calculateMouseInputToRotation()
+
+    if (this._input.keys_.w) {
+      //get mouse direction by accessing camera lookAt after the rotation?
+      // this._lookAt.x
+      // this._lookAt.y
+
+      // calculate step distance: relative to sphere size vs static step size
+
+      // get future position coordinates after "step" in the direction
+      // do we lookAt 10 steps away?
+      const destinationX = this._lookAt.x / 10
+      const destinationY = this._lookAt.y / 10
+
+      this._latitude = this._latitude + destinationX
+      this._longitude = this._longitude + destinationY
+    }
+
+    if (this._input.keys_.s) {
+      //get mouse direction by accessing camera lookAt after the rotation?
+      // this._lookAt.x
+      // this._lookAt.y
+
+      // calculate step distance: relative to sphere size vs static step size
+
+      // get future position coordinates after "step" in the direction
+      // do we lookAt 10 steps away?
+      const destinationX = -(this._lookAt.x / 10)
+      const destinationY = -(this._lookAt.y / 10)
+
+      this._latitude = this._latitude + destinationX
+      this._longitude = this._longitude + destinationY
+    }
+
+    if (this._input.keys_.a) {
+      // get future position coordinates after "step" in the direction
+      // do we lookAt 10 steps away?
+      const destinationX = -((this._lookAt.x - .5) / 10)
+      const destinationY = -((this._lookAt.y - .5) / 10)
+
+      this._latitude = this._latitude + destinationX
+      this._longitude = this._longitude + destinationY
+    }
+
+    if (this._input.keys_.d) {
+      // get future position coordinates after "step" in the direction
+      // do we lookAt 10 steps away?
+      const destinationX = -((this._lookAt.x + .5) / 10)
+      const destinationY = -((this._lookAt.y + .5) / 10)
+
+      this._latitude = this._latitude + destinationX
+      this._longitude = this._longitude + destinationY
+    }
   }
+
+
 
   buildDirectionArrow() {
     var targetVector = new Vector3(); // create once an reuse it
@@ -255,14 +329,18 @@ class Character {
     console.log(arrowHelperX)
   }
 
-  buildAxesHelper() {
+  buildAxesHelper(target: any) {
     const axesHelper = new AxesHelper( 5 );
-    this.characterRig.add( axesHelper );
+    target.add( axesHelper );
   }
 
-  buildCenterLine() {
+  buildGridHelper(target: any) {
+    target.add(new GridHelper(3,3))
+  }
+
+  buildCenterLine(target: Any) {
     var targetVector = new Vector3(); // create once an reuse it
-    this.characterRig.getWorldPosition( targetVector );
+    this.characterBody.getWorldPosition( targetVector );
     const points = [];
     points.push(new Vector3(
       this._parent.mesh.position.x,
@@ -275,28 +353,12 @@ class Character {
       color: 0xff0000, linewidth: 2
     });
     const line = new Line( geometry, material );
-    this.characterRig.add( line );
+    target.add( line );
   }
 
   tick(delta: number) {
-    if (this._input.keys_.w) {
-      //get mouse direction
-      // calculate step distance
-      // get new coordinates after step
-      // this._latitude = this._latitude + 0
-      // this._longitude = this._longitude + 0
-
-      const destinationX = this._lookAt.x / 10
-      const destinationY = this._lookAt.y / 10
-
-      this._latitude = this._latitude + destinationX
-      this._longitude = this._longitude + destinationY
-    }
-
-    this._updateRigPosition()
-    this._updateRigRotation()
-    this._updateBodyRotation(delta)
-    this._updateCameraRotation(delta)
+    this._reactToInputs()
+    this._actualizeGroupOnSphere()
     this._input.tick(delta)
   }
 }

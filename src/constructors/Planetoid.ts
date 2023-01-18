@@ -18,9 +18,9 @@ class Planetoid {
   planetMesh: any;
 
   constructor() {
-    this.radius = 2 // 0.05
-    this.widthSegments = 16
-    this.heightSegments = 16
+    this.radius = 400 // 0.05
+    this.widthSegments = 64
+    this.heightSegments = 64
 
     this.planetGeometry = new SphereGeometry(
       this.radius, this.widthSegments, this.heightSegments

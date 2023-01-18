@@ -13,6 +13,7 @@ import { Resizer } from '../systems/Resizer';
 import { Planetoid } from './Planetoid';
 import { Golem } from './Golem';
 import { Character } from './Character';
+import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js"
 
 let renderer_: any,
 scene_: any,
@@ -53,13 +54,13 @@ class WorldScene {
   _initCameras(){
     cameras = new THREE.Group()
     universeCamera = createPerspectiveCamera();
-    universeCamera.position.set(0, 0, 5); // move the camera back
+    universeCamera.position.set(0, 0, 505); // move the camera back
     universeCamera.lookAt(0, 0, 0); // so we can view the scene center
     universeControls = createOrbitControls(universeCamera, renderer_.domElement)
     const universeCameraHelper = new THREE.CameraHelper(universeCamera)
 
     characterCamera = createPerspectiveCamera();
-    // characterControls = new FpsCamera(characterCamera, renderer_.domElement)
+    characterControls = new PointerLockControls(characterCamera, document.body)
     // characterControls.enabled = true
     const characterCameraHelper = new THREE.CameraHelper(characterCamera)
 
@@ -75,7 +76,7 @@ class WorldScene {
     scene_.add(StarPlanetoid.mesh);
     Loop_.updatables.push(StarPlanetoid);
 
-    const character = new Character(StarPlanetoid, characterCamera);
+    const character = new Character(StarPlanetoid, characterCamera, characterControls);
     StarPlanetoid.mesh.add(character.Rig);
     Loop_.updatables.push(character);
   }
@@ -106,7 +107,7 @@ function onKeyDown( event: KeyboardEvent ) {
     case 'p': /*P*/
       activeCamera = characterCamera;
       universeControls.enabled = false;
-      //characterControls.enabled = true;
+      //characterControls.lock()
 
       activeCamera.updateProjectionMatrix();
       Loop_.camera = activeCamera

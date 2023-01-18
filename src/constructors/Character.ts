@@ -1,3 +1,4 @@
+import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
 import { Group, ArrowHelper, AxesHelper, Quaternion, PerspectiveCamera } from "three"
 import {
   SphereGeometry,
@@ -17,7 +18,8 @@ class _BasicGolemControllerInput {
   keys_: any
   previousKeys_: any;
 
-  constructor() {
+  constructor(target) {
+    this.target_ = target || document;
     this.initialize_()
   }
 
@@ -32,11 +34,11 @@ class _BasicGolemControllerInput {
     this.keys_ = {};
     this.previousKeys_ = {};
 
-    document.addEventListener('mousedown', (e: MouseEvent) => this.onMouseDown_(e), false)
-    document.addEventListener('mouseup', (e: MouseEvent) => this.onMouseUp_(e), false)
-    document.addEventListener('mousemove', (e: MouseEvent) => this.onMouseMove_(e), false)
-    document.addEventListener('keydown', (e: KeyboardEvent) => this.onKeyDown_(e), false)
-    document.addEventListener('keyup', (e: KeyboardEvent) => this.onKeyUp_(e), false)
+    this.target_.addEventListener('mousedown', (e) => this.onMouseDown_(e), false);
+    this.target_.addEventListener('mousemove', (e) => this.onMouseMove_(e), false);
+    this.target_.addEventListener('mouseup', (e) => this.onMouseUp_(e), false);
+    this.target_.addEventListener('keydown', (e) => this.onKeyDown_(e), false);
+    this.target_.addEventListener('keyup', (e) => this.onKeyUp_(e), false);
   }
 
   onMouseDown_(e: MouseEvent) {
@@ -66,6 +68,7 @@ class _BasicGolemControllerInput {
     }
   }
   onMouseMove_(e: MouseEvent) {
+    // we reduce screen size to figure mouse going up/down or left/right from the center
     this.current_.mouseX = e.pageX - window.innerWidth / 2;
     this.current_.mouseY = e.pageY - window.innerHeight / 2;
 
@@ -78,16 +81,28 @@ class _BasicGolemControllerInput {
     this.current_.mouseYDelta = this.current_.mouseY - (this.previous_.mouseY != null ? this.previous_.mouseY : 0);
   }
   onKeyDown_(e: KeyboardEvent) {
-    console.log('key dwn', e.key)
     this.keys_[e.key] = true;
   }
   onKeyUp_(e: KeyboardEvent) {
     this.keys_[e.key] = false;
   }
 
+   key(keyCode) {
+    return !!this.keys_[keyCode];
+  }
+
+  isReady() {
+    return this.previous_ !== null;
+  }
+
   tick(delta: number) {
     // push current keyboard/mouse snapshot into previous
-    this.previous_ = {...this.current_}
+    if (this.previous_ !== null) {
+      this.current_.mouseXDelta = this.current_.mouseX - this.previous_.mouseX;
+      this.current_.mouseYDelta = this.current_.mouseY - this.previous_.mouseY;
+
+      this.previous_ = {...this.current_}
+    }
   }
 }
 
@@ -117,11 +132,11 @@ class Character {
   _bodyTranslation: any;
   phi_: number;
   theta_: number;
+  controls: PointerLockControls
 
-  constructor(gravitationalParent: any, camera: PerspectiveCamera) {
+  constructor(gravitationalParent: any, camera: PerspectiveCamera, controls: PointerLockControls) {
     this.characterRig = new Group();
     this.characterCamera = camera;
-    this._input = new _BasicGolemControllerInput();
     this._latitude = 0;
     this._longitude = 0;
     this._lookAtDistance = -0.5
@@ -131,6 +146,8 @@ class Character {
     this._updateRigPosition()
     this.initCharacterBody()
     this.initCharacterCamera(camera)
+    this._input = new _BasicGolemControllerInput();
+    this.controls = controls;
 
     //this.buildDirectionArrow()
     this.buildAxesHelper()
@@ -142,6 +159,7 @@ class Character {
     this._bodyTranslation = new Vector3();
     this.phi_ = 0;
     this.theta_ = 0;
+
   }
 
   get Rig() {
@@ -163,7 +181,7 @@ class Character {
     this.characterBody.add(this.characterCamera)
     this.characterCamera.position.set(
       this.characterBody.position.x + 0.05,
-      this.characterBody.position.y + .15,
+      this.characterBody.position.y + .25,
       this.characterBody.position.z
     )
     this.characterCamera.lookAt(this._lookAt)

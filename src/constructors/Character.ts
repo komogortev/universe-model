@@ -87,7 +87,7 @@ class _BasicGolemControllerInput {
 
   tick(delta: number) {
     // push current keyboard/mouse snapshot into previous
-    this.previous_ = {...this.current}
+    this.previous_ = {...this.current_}
   }
 }
 
@@ -99,7 +99,8 @@ function _CalculateParentPosition(parentRadius: number, lat: number, lng: number
 }
 
 function clamp(number, min, max) {
-  return Math.max(min, Math.min(number, max));
+  //return Math.max(min, Math.min(number, max));
+  return Math.min(Math.max(number, min), max);
 }
 
 class Character {

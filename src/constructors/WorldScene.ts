@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { createRenderer } from '../utils/renderer';
 import { createScene } from '../utils/scene';
 import { createPerspectiveCamera, ThirdPersonCamera, ConstructCameraRig } from "../utils/camera"
-import { createOrbitControls, FpsCamera } from "../utils/controls"
+import { createOrbitControls } from "../utils/controls"
 
 import { Loop } from '../systems/Loop';
 import { Resizer } from '../systems/Resizer';
@@ -45,7 +45,9 @@ class WorldScene {
 
     // initialize scene elements
     this._initializeSceneObjects();
-    document.addEventListener( 'keydown', onKeyDown );
+
+    // switch cameras on key press
+    document.addEventListener('keydown', onKeyDown );
   }
 
   _initCameras(){
@@ -54,12 +56,11 @@ class WorldScene {
     universeCamera.position.set(0, 0, 5); // move the camera back
     universeCamera.lookAt(0, 0, 0); // so we can view the scene center
     universeControls = createOrbitControls(universeCamera, renderer_.domElement)
-    universeControls.enabled = false
     const universeCameraHelper = new THREE.CameraHelper(universeCamera)
 
     characterCamera = createPerspectiveCamera();
-    characterControls = new FpsCamera(characterCamera, renderer_.domElement)
-    characterControls.enabled = true
+    // characterControls = new FpsCamera(characterCamera, renderer_.domElement)
+    // characterControls.enabled = true
     const characterCameraHelper = new THREE.CameraHelper(characterCamera)
 
     scene_.add(universeCameraHelper, characterCameraHelper)
@@ -87,31 +88,25 @@ class WorldScene {
   stop() {
     Loop_.stop();
   }
-  tick(delta) {
-
-    controls_.tick(delta, loop_.updatables);
-    //controls_.update(delta);
-
-  }
 }
 
 
 function onKeyDown( event: KeyboardEvent ) {
-  switch ( event.keyCode ) {
-    case 79: /*O*/
+  switch ( event.key ) {
+    case 'o': /*O*/
       activeCamera = universeCamera;
       universeControls.enabled = true;
-      characterControls.enabled = false;
+      //characterControls.enabled = false;
 
       activeCamera.updateProjectionMatrix();
       Loop_.camera = activeCamera
       Resizer_.camera = activeCamera
       console.log('uni cam')
       break;
-    case 80: /*P*/
+    case 'p': /*P*/
       activeCamera = characterCamera;
       universeControls.enabled = false;
-      characterControls.enabled = true;
+      //characterControls.enabled = true;
 
       activeCamera.updateProjectionMatrix();
       Loop_.camera = activeCamera

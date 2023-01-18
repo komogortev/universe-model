@@ -1,4 +1,4 @@
-import { Group, ArrowHelper, AxesHelper, Quaternion } from "three"
+import { Group, ArrowHelper, AxesHelper, Quaternion, PerspectiveCamera } from "three"
 import {
   SphereGeometry,
   MeshNormalMaterial,
@@ -12,83 +12,82 @@ import { calcPosFromLatLngRad } from '../utils/helpers'
 import map from '../assets/ironman.png'
 
 class _BasicGolemControllerInput {
-  _keys: any
+  current_: any;
+  previous_: any;
+  keys_: any
+  previousKeys_: any;
 
   constructor() {
-    this._Init()
+    this.initialize_()
   }
 
-  _Init() {
-    this._keys = {
-      forward: false,
-      backward: false,
-      left: false,
-      rigth: false,
-      space: false,
-      shift: false,
-      rLeft: false,
-      rRight: false
+  initialize_() {
+    this.current_ = {
+      leftButton: false,
+      rightButton: false,
+      mouseX: 0,
+      mouseY: 0
     }
+    this.previous_ = null;
+    this.keys_ = {};
+    this.previousKeys_ = {};
 
-    document.addEventListener('keydown', (e: KeyboardEvent) => this._onKeyDown(e), false)
-    document.addEventListener('keyup', (e: KeyboardEvent) => this._onKeyUp(e), false)
+    document.addEventListener('mousedown', (e: MouseEvent) => this.onMouseDown_(e), false)
+    document.addEventListener('mouseup', (e: MouseEvent) => this.onMouseUp_(e), false)
+    document.addEventListener('mousemove', (e: MouseEvent) => this.onMouseMove_(e), false)
+    document.addEventListener('keydown', (e: KeyboardEvent) => this.onKeyDown_(e), false)
+    document.addEventListener('keyup', (e: KeyboardEvent) => this.onKeyUp_(e), false)
   }
 
-  _onKeyDown(e: KeyboardEvent) {
-    switch (e.key.toLowerCase()) {
-      case 'q':
-        this._keys.rLeft = true
+  onMouseDown_(e: MouseEvent) {
+    switch(e.button) {
+      case 0: {
+        this.current_.leftButton = true;
+        console.log('left mouse dwn')
         break;
-      case 'e':
-        this._keys.rRight = true
+      }
+      case 2: {
+        this.current_.rightButton = true;
+        console.log('right mouse dwn')
         break;
-      case 'w':
-        this._keys.forward = true
-        break;
-      case 'a':
-        this._keys.left = true
-        break;
-      case 's':
-        this._keys.backward = true
-        break;
-      case 'd':
-        this._keys.right = true
-        break;
-      case 'shift':
-        this._keys.shift = true
-        break;
-      case 'space':
-        this._keys.space = true
-        break;
+      }
     }
   }
-  _onKeyUp(e: KeyboardEvent) {
-    switch (e.key.toLowerCase()) {
-      case 'q':
-        this._keys.rLeft = false
+  onMouseUp_(e: MouseEvent) {
+    switch(e.button) {
+      case 0: {
+        this.current_.leftButton = false;
         break;
-      case 'e':
-        this._keys.rRight = false
+      }
+      case 2: {
+        this.current_.rightButton = false;
         break;
-      case 'w':
-        this._keys.forward = false
-        break;
-      case 'a':
-        this._keys.left = false
-        break;
-      case 's':
-        this._keys.backward = false
-        break;
-      case 'd':
-        this._keys.right = false
-        break;
-      case 'shift':
-        this._keys.shift = false
-        break;
-      case 'space':
-        this._keys.space = false
-        break;
+      }
     }
+  }
+  onMouseMove_(e: MouseEvent) {
+    this.current_.mouseX = e.pageX - window.innerWidth / 2;
+    this.current_.mouseY = e.pageY - window.innerHeight / 2;
+
+    if (this.previous_ === null) {
+      this.previous_ = {...this.current_};
+    }
+
+    // Compute mouse move delta substracting current pos from previous
+    this.current_.mouseXDelta = this.current_.mouseX - (this.previous_.mouseX != null ? this.previous_.mouseX : 0);
+    this.current_.mouseYDelta = this.current_.mouseY - (this.previous_.mouseY != null ? this.previous_.mouseY : 0);
+  }
+  onKeyDown_(e: KeyboardEvent) {
+    console.log('key dwn', e.key)
+    this.keys_[e.key] = true;
+  }
+  onKeyUp_(e: KeyboardEvent) {
+    this.keys_[e.key] = false;
+  }
+
+  tick(delta: number) {
+    // push current keyboard/mouse snapshot into previous
+    this.previous_ = {...this.current}
   }
 }
 
@@ -97,6 +96,10 @@ function _CalculateParentPosition(parentRadius: number, lat: number, lng: number
   const cartRadius = parentRadius + planetRadiusOffset
   const cartPos = calcPosFromLatLngRad(lat, lng, cartRadius);
   return new Vector3(cartPos.x, cartPos.y, cartPos.z)
+}
+
+function clamp(number, min, max) {
+  return Math.max(min, Math.min(number, max));
 }
 
 class Character {
@@ -109,22 +112,24 @@ class Character {
   _parent: any;
   _lookAtDistance: number;
   _lookAt: Vector3;
+  _bodyRotation: any;
+  _bodyTranslation: any;
+  phi_: number;
+  theta_: number;
 
   constructor(gravitationalParent: any, camera: PerspectiveCamera) {
     this.characterRig = new Group();
+    this.characterCamera = camera;
     this._input = new _BasicGolemControllerInput();
     this._latitude = 0;
     this._longitude = 0;
-    this._parent = gravitationalParent;
-    this._updateRigPosition()
     this._lookAtDistance = -0.5
     // LookAt should be calculated relative to characterRig plane
-    this._lookAt = new Vector3(
-      0 ,
-      this._lookAtDistance,
-      0 // behind the shoulder offset + this._lookAtDistance
-    )
-
+    this._lookAt = new Vector3(0, this._lookAtDistance, 0);
+    this._parent = gravitationalParent;
+    this._updateRigPosition()
+    this.initCharacterBody()
+    this.initCharacterCamera(camera)
 
     //this.buildDirectionArrow()
     this.buildAxesHelper()
@@ -132,16 +137,17 @@ class Character {
     console.log(this._parent.mesh.position, this.characterRig.position)
     this.buildCenterLine()
 
-    this.buildCharacterBody()
-    this.buildCharacterCamera(camera)
-
+    this._bodyRotation = new Quaternion();
+    this._bodyTranslation = new Vector3();
+    this.phi_ = 0;
+    this.theta_ = 0;
   }
 
   get Rig() {
     return this.characterRig
   }
 
-  buildCharacterBody(){
+  initCharacterBody(){
     const golemGeometry = new SphereGeometry(.125, 12, 12);
     const golemMaterial = new MeshBasicMaterial({
       map: new TextureLoader().load(map)
@@ -152,8 +158,7 @@ class Character {
     this.characterBody.position.set(0,.08,0)
   }
 
-  buildCharacterCamera(camera) {
-    this.characterCamera = camera;
+  initCharacterCamera(camera: PerspectiveCamera) {
     this.characterBody.add(this.characterCamera)
     this.characterCamera.position.set(
       this.characterBody.position.x + 0.05,
@@ -178,6 +183,30 @@ class Character {
     var axis = new Vector3(0, 1, 0);
     var vector = new Vector3(this.characterRig.position.x, this.characterRig.position.y, this.characterRig.position.z)
     this.characterRig.quaternion.setFromUnitVectors(axis, vector.clone().normalize())
+  }
+
+  _updateBodyRotation(delta: number) {
+    const xh = this._input.current_.mouseXDelta / window.innerWidth;
+    const yh = this._input.current_.mouseYDelta / window.innerHeight;
+
+    // turn mouse movement into spherical coordinates
+    this.phi_ += -xh * 2;
+    this.theta_ = clamp(this.theta_ + -yh * 2, -Math.PI / 3, -Math.PI / 3)
+
+    const qx = new Quaternion();
+    qx.setFromAxisAngle(new Vector3(0,1,0), this.phi_);
+
+    const qy = new Quaternion();
+    qy.setFromAxisAngle(new Vector3(0,1,0), this.phi_);
+
+    const q = new Quaternion();
+    q.multiply(qx);
+    q.multiply(qy);
+    this._bodyRotation.copy(q);
+  }
+
+  _updateCameraRotation(delta: number) {
+    this.characterCamera.quaternion.copy(this._bodyRotation)
   }
 
   buildDirectionArrow() {
@@ -231,7 +260,7 @@ class Character {
   }
 
   tick(delta: number) {
-    if (this._input._keys.forward) {
+    if (this._input.keys_.w) {
       const destinationX = this._lookAt.x / 10
       const destinationY = this._lookAt.y / 10
 
@@ -241,6 +270,9 @@ class Character {
 
     this._updateRigPosition()
     this._updateRigRotation()
+    this._updateBodyRotation(delta)
+    this._updateCameraRotation(delta)
+    this._input.tick(delta)
   }
 }
 

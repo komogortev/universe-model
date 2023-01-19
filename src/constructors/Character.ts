@@ -12,13 +12,23 @@ import {
 import { calcPosFromLatLngRad } from '../utils/helpers'
 import map from '../assets/ironman.png'
 
+const _settings = {
+      timeSpeed: 1,
+      size_scaling: {
+        multiplier: 0.0001
+      },
+      distance_scaling: {
+        divider: 1000000
+      },
+    };
+
 class _BasicGolemControllerInput {
   current_: any;
   previous_: any;
   keys_: any
   previousKeys_: any;
 
-  constructor(target) {
+  constructor(target: any) {
     this.target_ = target || document;
     this.initialize_()
   }
@@ -87,7 +97,7 @@ class _BasicGolemControllerInput {
     this.keys_[e.key] = false;
   }
 
-   key(keyCode) {
+  key(keyCode) {
     return !!this.keys_[keyCode];
   }
 
@@ -145,7 +155,7 @@ class Character {
     this._updateRigPosition()
     this.initCharacterBody()
     this.initCharacterCamera()
-    this._input = new _BasicGolemControllerInput();
+    this._input = new _BasicGolemControllerInput(document.body);
 
     //this.buildDirectionArrow()
     this.buildAxesHelper(this.characterBody)
@@ -189,8 +199,16 @@ class Character {
    * Move characterRig on sphere surface
    */
   _updateRigPosition() {
+    const planetDistanceOffset = this._parent != null && this._parent.mesh.scale.x > 0
+      ? 0 //((this._parent.mesh.scale.x + 1) * 2)//1=this.characterBody.scale.x
+      : 0
+
+    const distanceFromLocalCenterInKm = this._parent.mesh.scale.x // config.distance.AU * _AU.km
+    const newPosX = (distanceFromLocalCenterInKm + planetDistanceOffset)
+
+
     const position = _CalculateParentPosition(
-      this._parent.radius,
+      1,//newPosX,//this._parent.mesh.scale.x
       this._latitude,
       this._longitude
     )
@@ -207,7 +225,7 @@ class Character {
     this.characterBody.quaternion.setFromUnitVectors(axis, vector.clone().normalize())
   }
 
-  _updateCameraRotation(delta: number) {
+  _updateCameraRotation() {
     this.characterCamera.quaternion.copy(this.rotation_)
     //this.characterRig.lookAt(new Vector3(this.characterCamera.lookAt.z,this.characterCamera.lookAt.x,this.characterCamera.lookAt.y))
     // attempts to apply direction to the body movement
@@ -223,7 +241,7 @@ class Character {
     this._updateCameraRotation()
   }
 
-  _calculateMouseInputToRotation(delta: number) {
+  _calculateMouseInputToRotation() {
     const xh = this._input.current_.mouseXDelta / window.innerWidth;
     const yh = this._input.current_.mouseYDelta / window.innerHeight;
 
@@ -300,8 +318,6 @@ class Character {
     }
   }
 
-
-
   buildDirectionArrow() {
     var targetVector = new Vector3(); // create once an reuse it
     this.characterRig.getWorldPosition( targetVector );
@@ -338,7 +354,7 @@ class Character {
     target.add(new GridHelper(3,3))
   }
 
-  buildCenterLine(target: Any) {
+  buildCenterLine(target: any) {
     // var targetVector = new Vector3(); // create once an reuse it
     // this.characterBody.getWorldPosition( targetVector );
     // const points = [];

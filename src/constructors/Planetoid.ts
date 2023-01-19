@@ -11,15 +11,24 @@ import {
 } from 'three'
 import { calcPosFromLatLngRad, convertRotationPerDayToRadians } from '../utils/helpers';
 const loader = new TextureLoader();
-
+const _settings = {
+  timeSpeed: 1,
+  size_scaling: {
+    multiplier: 0.0001
+  },
+  distance_scaling: {
+    divider: 1000000
+  },
+};
+const _AU = {
+  km: 150000000,
+  mi: 93000000
+}
 class Planetoid {
   _planetoidConfig: any;
   _threeGroup: any;
   _children: any;
   nameId: string;
-  radius: number;
-  widthSegments: number;
-  heightSegments: number;
   planetGeometry: any;
   planetMaterial: any;
   planetMesh: any;
@@ -28,15 +37,8 @@ class Planetoid {
     this._planetoidConfig = config;
     this._threeGroup = new Group(); // A group holds other objects but cannot be seen itself
     this._children = [];
-
     this.nameId = config.nameId
-    this.radius = 2 // 0.05
-    this.widthSegments = 16
-    this.heightSegments = 16
 
-    // this.planetGeometry = new SphereGeometry(
-    //   this.radius, this.widthSegments, this.heightSegments
-    // );
     this.planetGeometry = new SphereGeometry(1, 132, 132);
 
     // this.planetMaterial = new MeshBasicMaterial({
@@ -71,19 +73,6 @@ class Planetoid {
       sphereMaterial.shininess = config.shininess
     }
 
-    const _settings = {
-      timeSpeed: 1,
-      size_scaling: {
-        multiplier: 0.0001
-      },
-      distance_scaling: {
-        divider: 1000000
-      },
-    };
-    const _AU = {
-      km: 150000000,
-      mi: 93000000
-    }
     // this.planetMesh = new Mesh(this.planetGeometry, this.planetMaterial);
     // this.planetMesh.name = 'planet Mesh'
     // this.planetMesh.mesh.position.set(0, 0, 0);

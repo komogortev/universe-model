@@ -112,10 +112,13 @@ class WorldScene {
     // const StarPlanetoid = new Planetoid();
     // scene_.add(StarPlanetoid.mesh);
     // Loop_.updatables.push(StarPlanetoid);
-    // const refToFirstStar = StarSystem_.threeGroup.children[0]
-    // const character = new Character(refToFirstStar, characterCamera);
-    // refToFirstStar.add(character.Rig);
-    // Loop_.updatables.push(character);
+    const refToFirstStarSystem = StarSystems_[0]
+    const refToStarClass = refToFirstStarSystem.children[3]
+    const refToStarMesh = refToFirstStarSystem.threeGroup.children[3]
+    const character = new Character(refToStarClass, characterCamera);
+    refToStarMesh.add(character.Rig, refToStarMesh);
+    console.log(refToStarClass)
+    Loop_.updatables.push(character);
   }
 
   start() {

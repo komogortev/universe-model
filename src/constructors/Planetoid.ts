@@ -24,7 +24,7 @@ const _AU = {
   km: 150000000,
   mi: 93000000
 }
-class Planetoid {
+class PlanetoidClass {
   _planetoidConfig: any;
   _threeGroup: any;
   _children: any;
@@ -36,6 +36,7 @@ class Planetoid {
   constructor(config: any, parent: any) {
     this._planetoidConfig = config;
     this._threeGroup = new Group(); // A group holds other objects but cannot be seen itself
+    this._threeGroup.name = `${config.nameId}Group`
     this._children = [];
     this.nameId = config.nameId
 
@@ -139,6 +140,7 @@ class Planetoid {
         this.planetMesh.add(poiMesh);
       });
     }
+    this._threeGroup.add(this.planetMesh)
   }
 
   get mesh() {
@@ -157,4 +159,4 @@ class Planetoid {
   }
 }
 
-export { Planetoid }
+export { PlanetoidClass }

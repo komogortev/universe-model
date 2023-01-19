@@ -11,7 +11,6 @@ import { Loop } from '../systems/Loop';
 import { Resizer } from '../systems/Resizer';
 // Scene Objects
 import { StarGroup } from './StarGroup';
-import { Planetoid } from './Planetoid';
 import { Character } from './Character';
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js"
 import { createAmbientLight, createPointLight } from '../utils/lights';
@@ -43,6 +42,7 @@ class WorldScene {
     renderer_ = createRenderer();
     this.textureLoader = new THREE.TextureLoader();
     scene_ = createScene(renderer_, this.textureLoader);
+    scene_.matrixAutoUpdate = false
     this.worldSceneStore = worldSceneStore;
 
     // initialize scene tools
@@ -101,7 +101,13 @@ class WorldScene {
       Loop_.updatables.push(StarSystem_);
       // also loop through children planetoid class instances (for tick method)
       // and add them to Loop
-      StarSystem_.children.forEach((ch: any) => Loop_.updatables.push(ch))
+      StarSystem_.children.forEach((ch: any) => {
+        Loop_.updatables.push(ch)
+
+        if (ch.children != null) {
+          ch.children.forEach((ch: any) => Loop_.updatables.push(ch))
+        }
+      })
     });
 
     console.log(StarSystems_, Loop_)
@@ -114,9 +120,9 @@ class WorldScene {
     // Loop_.updatables.push(StarPlanetoid);
     const refToFirstStarSystem = StarSystems_[0]
     const refToStarClass = refToFirstStarSystem.children[3]
-    const refToStarMesh = refToFirstStarSystem.threeGroup.children[3]
+    const refToStarMesh = refToFirstStarSystem.threeGroup.children[3].children[0].children[6].children[0]
     const character = new Character(refToStarClass, characterCamera);
-    refToStarMesh.add(character.Rig, refToStarMesh);
+    refToStarMesh.add(character.Rig);
     console.log(refToStarClass)
     Loop_.updatables.push(character);
   }

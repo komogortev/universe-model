@@ -8,7 +8,7 @@ import {
   TextureLoader,
   Group
 } from 'three'
-import { Planetoid } from './Planetoid';
+import { PlanetoidClass } from './Planetoid';
 
 
 class StarGroup {
@@ -18,7 +18,8 @@ class StarGroup {
 
   constructor(starSystemConfig: any) {
     this._starSystemConfig = starSystemConfig;
-    this._threeGroup = new Group(); // A group holds other objects but cannot be seen itself
+    this._threeGroup = new Group();
+    this._threeGroup.name = 'StarGroup'; // A group holds other objects but cannot be seen itself
     this._children = [];
 
     this._intialize();
@@ -31,16 +32,24 @@ class StarGroup {
   loopThroughStarConfigRecurs (config: any, parent?: any | null): void {
     if (config.type != null && ['star', 'planet', 'moon'].includes(config.type)) {
       // generate current config planetoid class
-      const currentPlanetoid = new Planetoid(config, parent)
+      const currentPlanetoid = new PlanetoidClass(config, parent)
 
       // attach class.group to threeGroup
       // attach class to children
       if (config.type == 'star') {
-        this._threeGroup.add(currentPlanetoid.mesh)
+        this._threeGroup.add(currentPlanetoid.threeGroup)
         this._children.push(currentPlanetoid)
       } else if (parent != null) {
-        this._threeGroup.add(currentPlanetoid.mesh)
-        this._children.push(currentPlanetoid)
+        if (config.type == 'planet') {
+          // planet gets attached to root Star group
+          this._threeGroup.add(currentPlanetoid.threeGroup)
+          this._children.push(currentPlanetoid)
+        } else {
+          //moon gets attached to planet
+          parent.threeGroup.children[0].add(currentPlanetoid.threeGroup)
+          parent.children.push(currentPlanetoid)
+          //this._children.push(currentPlanetoid)
+        }
       }
 
       // repeat for config.children

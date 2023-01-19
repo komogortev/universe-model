@@ -145,6 +145,7 @@ class Character {
 
   constructor(gravitationalParent: any, camera: PerspectiveCamera) {
     this.characterRig = new Group();
+    this.characterRig.name = 'characterRig';
     this.characterCamera = camera;
     this._latitude = 0;
     this._longitude = 0;

@@ -339,21 +339,21 @@ class Character {
   }
 
   buildCenterLine(target: Any) {
-    var targetVector = new Vector3(); // create once an reuse it
-    this.characterBody.getWorldPosition( targetVector );
-    const points = [];
-    points.push(new Vector3(
-      this._parent.mesh.position.x,
-      this._parent.mesh.position.y,
-      this._parent.mesh.position.z
-    ))
-    points.push( new Vector3(-this.characterRig.position.x,-this.characterRig.position.y,-this.characterRig.position.z));
-    const geometry = new BufferGeometry().setFromPoints( points );
-    const material = new LineBasicMaterial({
-      color: 0xff0000, linewidth: 2
-    });
-    const line = new Line( geometry, material );
-    target.add( line );
+    // var targetVector = new Vector3(); // create once an reuse it
+    // this.characterBody.getWorldPosition( targetVector );
+    // const points = [];
+    // points.push(new Vector3(
+    //   this._parent.position.x,
+    //   this._parent.position.y,
+    //   this._parent.position.z
+    // ))
+    // points.push( new Vector3(-this.characterRig.position.x,-this.characterRig.position.y,-this.characterRig.position.z));
+    // const geometry = new BufferGeometry().setFromPoints( points );
+    // const material = new LineBasicMaterial({
+    //   color: 0xff0000, linewidth: 2
+    // });
+    // const line = new Line( geometry, material );
+    // target.add( line );
   }
 
   tick(delta: number) {

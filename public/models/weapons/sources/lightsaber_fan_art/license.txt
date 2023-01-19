@@ -1,0 +1,11 @@
+Model Information:
+* title:	Lightsaber fan art
+* source:	https://sketchfab.com/3d-models/lightsaber-fan-art-9e1dbd91b0344fa09430aa490efd0d5d
+* author:	re1monsen (https://sketchfab.com/re1monsen)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Lightsaber fan art" (https://sketchfab.com/3d-models/lightsaber-fan-art-9e1dbd91b0344fa09430aa490efd0d5d) by re1monsen (https://sketchfab.com/re1monsen) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -1,0 +1,11 @@
+Model Information:
+* title:	Gvestag / Гвестог
+* source:	https://sketchfab.com/3d-models/gvestag-04d2695421974db8b0d3e144437b347f
+* author:	mypPi (https://sketchfab.com/mypPi)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Gvestag / Гвестог" (https://sketchfab.com/3d-models/gvestag-04d2695421974db8b0d3e144437b347f) by mypPi (https://sketchfab.com/mypPi) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

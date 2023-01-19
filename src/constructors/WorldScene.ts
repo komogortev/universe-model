@@ -99,11 +99,12 @@ class WorldScene {
       let StarSystem_ = StarSystems_[index];
       scene_.add(StarSystem_.threeGroup);
       Loop_.updatables.push(StarSystem_);
-      // also loop through children and add them to Loop
+      // also loop through children planetoid class instances (for tick method)
+      // and add them to Loop
       StarSystem_.children.forEach((ch: any) => Loop_.updatables.push(ch))
     });
 
-    console.log(StarSystems_)
+    console.log(StarSystems_, Loop_)
   }
 
   // @Todo: move into separate generator based on json config

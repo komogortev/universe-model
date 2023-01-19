@@ -162,6 +162,7 @@ class Planetoid {
   get children() {
     return this._children
   }
+
   tick(delta: number) {
     this.planetMesh.rotation.y += 0.0001
   }

@@ -39,7 +39,7 @@ class StarGroup {
         this._threeGroup.add(currentPlanetoid.mesh)
         this._children.push(currentPlanetoid)
       } else if (parent != null) {
-        parent.threeGroup.add(currentPlanetoid.mesh)
+        this._threeGroup.add(currentPlanetoid.mesh)
         parent.children.push(currentPlanetoid)
       }
 

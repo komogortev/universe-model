@@ -28,7 +28,7 @@ universeCamera: PerspectiveCamera,
 characterCamera: PerspectiveCamera,
 universeControls: any, characterControls: any;
 
-let StarSystem_: any;
+let StarSystems_: any;
 
 class WorldScene {
   container: HTMLElement;
@@ -37,6 +37,7 @@ class WorldScene {
   textureLoader: any;
 
   constructor(container: HTMLElement, worldSceneStore: any) {
+    StarSystems_ = [];
     // initialize barebones scene
     this.container = container
     renderer_ = createRenderer();
@@ -67,6 +68,13 @@ class WorldScene {
   }
 
   _initCameras(){
+    const _camSettings = {
+      position: {x: 0, y: 0, z: 50},
+      aspect: window.innerWidth / window.innerHeight, // aspect ratio
+      near: 0.05, // near clipping plane
+      far: 10000 // far clipping plane
+    },
+
     cameras = new THREE.Group()
     universeCamera = createPerspectiveCamera();
     universeCamera.position.set(0, 0, 55); // move the camera back
@@ -86,12 +94,16 @@ class WorldScene {
   }
 
   _initializeStarGroup() {
-    StarSystem_ = new StarGroup(this.worldSceneStore.getSolarSystemConfig[0]);
-    scene_.add(StarSystem_.threeGroup.children[0]);
-    Loop_.updatables.push(StarSystem_);
-    // also loop through children and add them to Loop
-    StarSystem_.children.forEach((ch: any) => Loop_.updatables.push(ch))
-    console.log(StarSystem_)
+    this.worldSceneStore.getSolarSystemConfig.forEach((starConfig: any, index: number) => {
+      StarSystems_.push(new StarGroup(starConfig))
+      let StarSystem_ = StarSystems_[index];
+      scene_.add(StarSystem_.threeGroup);
+      Loop_.updatables.push(StarSystem_);
+      // also loop through children and add them to Loop
+      StarSystem_.children.forEach((ch: any) => Loop_.updatables.push(ch))
+    });
+
+    console.log(StarSystems_)
   }
 
   // @Todo: move into separate generator based on json config

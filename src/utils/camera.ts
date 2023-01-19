@@ -4,7 +4,7 @@ function createPerspectiveCamera(
   fov: number = 75,
   aspect: number = window.innerWidth / window.innerHeight,
   near: number = 0.05,
-  far: number = 1000,
+  far: number = 10000,
   name: string = "Perspective Camera"
 ) {
 

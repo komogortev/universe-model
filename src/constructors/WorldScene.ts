@@ -102,8 +102,7 @@ class WorldScene {
     activeCamera = SceneCameras_.children[0] as PerspectiveCamera;
   }
 
-  // register class with animation loop
-  _registerWithLoop(candidates: Array<any>) {
+  _registerCandidatesWithLoop(candidates: Array<any>) {
     candidates.forEach((candidate) => {
       addToLoopRecursevly(candidate, (_candidate) => {
         if (_candidate.tick != null) {
@@ -126,7 +125,7 @@ class WorldScene {
     })
 
     // Register star system classes with animation Loop
-    this._registerWithLoop(StarSystemsClass_)
+    this._registerCandidatesWithLoop(StarSystemsClass_)
   }
 
   // @Todo: move into separate generator based on json config

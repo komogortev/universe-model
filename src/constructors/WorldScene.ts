@@ -12,7 +12,7 @@ import { Loop } from '../systems/Loop';
 import { Resizer } from '../systems/Resizer';
 // Scene Objects
 import { StarGroupClass } from './StarGroup';
-import { Character } from './Character';
+import { CharacterClass } from './Character';
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js"
 
 // connect to app stores
@@ -20,7 +20,7 @@ import useStarSystemsStore from "../stores/StarsSystemsStore";
 const { getStarConfig } = useStarSystemsStore();
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
 import { IPlanetoid, IStarConfig } from '../types/StarsStoreTypes';
-import { addToLoopRecursevly } from '../utils/helpers';
+import { addToLoopRecursevly, findObjectRecursevly } from '../utils/helpers';
 const { worldSettings } = useWorldSettingsStore();
 
 // local WebGl systems
@@ -128,18 +128,28 @@ class WorldScene {
     this._registerCandidatesWithLoop(StarSystemsClass_)
   }
 
-  // @Todo: move into separate generator based on json config
   initializeSceneObjects() {
+    // Spot the spawn threejs object
+    const characterSpawnName = 'Sun';
+    let refToCharacterSpawnClass: any;
 
-    // const StarPlanetoid = new Planetoid();
-    // scene_.add(StarPlanetoid.mesh);
-    // Loop_.updatables.push(StarPlanetoid);
-    const refToFirstStarSystem = StarSystemsClass_[0]
-    const refToStarClass = refToFirstStarSystem.children[3]
-    const refToStarMesh = refToFirstStarSystem.threeGroup.children[3].children[0].children[6].children[0]
-    const character = new Character(refToStarClass, characterCamera);
-    refToStarMesh.add(character.Rig);
-    Loop_.updatables.push(character);
+    // loopup through star systems for matching spawn class
+    StarSystemsClass_.forEach((starSystemClass: any) => {
+      if (refToCharacterSpawnClass == null) {
+        const spawn = findObjectRecursevly(starSystemClass, characterSpawnName)
+
+        if (spawn != null) {
+          refToCharacterSpawnClass = spawn;
+        }
+      }
+    })
+
+    if (refToCharacterSpawnClass != null) {
+      CharacterClass_ = new CharacterClass(refToCharacterSpawnClass, characterCamera);
+      refToCharacterSpawnClass.threeGroup.add(CharacterClass_.Rig);
+      this._registerCandidatesWithLoop([CharacterClass_]);
+    }
+    console.log(Loop_)
   }
 
   start() { Loop_.start(); }

@@ -12,11 +12,13 @@ import { PlanetoidClass } from './Planetoid';
 
 
 class StarGroupClass {
+  nameId: string;
   _starSystemConfig: any;
   _threeGroup: any;
   _children: any;
 
   constructor(starSystemConfig: any) {
+    this.nameId = `${starSystemConfig.nameId}SystemClass`
     this._starSystemConfig = starSystemConfig;
     this._threeGroup = new Group();
     this._threeGroup.name = 'StarGroup'; // A group holds other objects but cannot be seen itself
@@ -67,9 +69,6 @@ class StarGroupClass {
 
   get children() {
     return this._children
-  }
-
-  tick(delta: number) {
   }
 }
 

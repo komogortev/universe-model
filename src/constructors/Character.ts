@@ -123,13 +123,13 @@ function _CalculateParentPosition(parentRadius: number, lat: number, lng: number
   return new Vector3(cartPos.x, cartPos.y, cartPos.z)
 }
 
-function clamp(number, min, max) {
+function clamp(number: number, min: number, max: number) {
   //return Math.max(min, Math.min(number, max));
   return Math.min(Math.max(number, min), max);
 }
 
-class Character {
-  characterRig: Group;
+class CharacterClass {
+  _threeGroup: Group;
   characterBody: any;
   characterCamera: PerspectiveCamera;
   _input: any;
@@ -143,16 +143,16 @@ class Character {
   phi_: number;
   theta_: number;
 
-  constructor(gravitationalParent: any, camera: PerspectiveCamera) {
-    this.characterRig = new Group();
-    this.characterRig.name = 'characterRig';
+  constructor(gravitationalParentClass: any, camera: PerspectiveCamera) {
+    this._threeGroup = new Group();
+    this._threeGroup.name = '_threeGroup';
     this.characterCamera = camera;
     this._latitude = 0;
     this._longitude = 0;
     this._lookAtDistance = -0.5
     // LookAt normally returns value in global plane scope
     this._lookAt = new Vector3(0, this._lookAtDistance, 0); // look straight north
-    this._parent = gravitationalParent;
+    this._parent = gravitationalParentClass;
     this._updateRigPosition()
     this.initCharacterBody()
     this.initCharacterCamera()
@@ -160,7 +160,7 @@ class Character {
 
     //this.buildDirectionArrow()
     this.buildAxesHelper(this.characterBody)
-    this.buildGridHelper(this.characterRig)
+    this.buildGridHelper(this._threeGroup)
     //this.buildGridHelper(this.characterBody)
     this.buildCenterLine(this.characterBody)
 
@@ -170,8 +170,8 @@ class Character {
     this.theta_ = 0;
   }
 
-  get Rig() {
-    return this.characterRig
+  get threeGroup() {
+    return this._threeGroup
   }
 
   initCharacterBody(){
@@ -181,7 +181,7 @@ class Character {
     });
 
     this.characterBody = new Mesh(golemGeometry, golemMaterial);
-    this.characterRig.add(this.characterBody)
+    this._threeGroup.add(this.characterBody)
     this.characterBody.position.set(0,.08,0)
   }
 
@@ -197,7 +197,7 @@ class Character {
   }
 
   /**
-   * Move characterRig on sphere surface
+   * Move _threeGroup on sphere surface
    */
   _updateRigPosition() {
     const planetDistanceOffset = this._parent != null && this._parent.mesh.scale.x > 0
@@ -214,21 +214,21 @@ class Character {
       this._longitude
     )
 
-    this.characterRig.position.copy(position)
+    this._threeGroup.position.copy(position)
   }
 
   /**
-   * Turn characterRig to "STAND" on the sphere surface
+   * Turn _threeGroup to "STAND" on the sphere surface
    */
   _updateBodyVerticalRotation() {
     var axis = new Vector3(0, 1, 0);
-    var vector = new Vector3(this.characterRig.position.x, this.characterRig.position.y, this.characterRig.position.z)
+    var vector = new Vector3(this._threeGroup.position.x, this._threeGroup.position.y, this._threeGroup.position.z)
     this.characterBody.quaternion.setFromUnitVectors(axis, vector.clone().normalize())
   }
 
   _updateCameraRotation() {
     this.characterCamera.quaternion.copy(this.rotation_)
-    //this.characterRig.lookAt(new Vector3(this.characterCamera.lookAt.z,this.characterCamera.lookAt.x,this.characterCamera.lookAt.y))
+    //this._threeGroup.lookAt(new Vector3(this.characterCamera.lookAt.z,this.characterCamera.lookAt.x,this.characterCamera.lookAt.y))
     // attempts to apply direction to the body movement
     //     const forward = new Vector3(0, this._lookAtDistance, 0);
     //     forward.applyQuaternion(this.rotation_);
@@ -321,7 +321,7 @@ class Character {
 
   buildDirectionArrow() {
     var targetVector = new Vector3(); // create once an reuse it
-    this.characterRig.getWorldPosition( targetVector );
+    this._threeGroup.getWorldPosition( targetVector );
 
     // const x = new Vector3(1, 0, 0);
     // const y = new Vector3(0, 1, 0);
@@ -342,7 +342,7 @@ class Character {
     const arrowHelperX = new ArrowHelper( targetVector, origin,  length, hexX );
     // const arrowHelperY = new ArrowHelper( y, origin, length, hexY );
     // const arrowHelperZ = new ArrowHelper( z, origin, length, hexZ );
-    this.characterRig.add( arrowHelperX );
+    this._threeGroup.add( arrowHelperX );
     console.log(arrowHelperX)
   }
 
@@ -364,7 +364,7 @@ class Character {
     //   this._parent.position.y,
     //   this._parent.position.z
     // ))
-    // points.push( new Vector3(-this.characterRig.position.x,-this.characterRig.position.y,-this.characterRig.position.z));
+    // points.push( new Vector3(-this._threeGroup.position.x,-this._threeGroup.position.y,-this._threeGroup.position.z));
     // const geometry = new BufferGeometry().setFromPoints( points );
     // const material = new LineBasicMaterial({
     //   color: 0xff0000, linewidth: 2
@@ -380,4 +380,4 @@ class Character {
   }
 }
 
-export { Character }
+export { CharacterClass }

@@ -76,3 +76,15 @@ export function decorateLog(label = 'empty label', msg = '', rest = '') {
     rest
   )
 }
+
+/**
+ *
+ */
+export function applyRecursevly(object: any, callback: (subChild: any)=>void):void {
+  for (const key in object) {
+
+    if (key === 'children') {
+      applyRecursevly(object[key], callback)
+    }
+  }
+}

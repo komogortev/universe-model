@@ -11,7 +11,7 @@ import {
 import { PlanetoidClass } from './Planetoid';
 
 
-class StarGroup {
+class StarGroupClass {
   _starSystemConfig: any;
   _threeGroup: any;
   _children: any;
@@ -73,4 +73,4 @@ class StarGroup {
   }
 }
 
-export { StarGroup }
+export { StarGroupClass }

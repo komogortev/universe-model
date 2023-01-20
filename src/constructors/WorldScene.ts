@@ -20,7 +20,7 @@ import useStarSystemsStore from "../stores/StarsSystemsStore";
 const { getStarConfig } = useStarSystemsStore();
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
 import { IPlanetoid, IStarConfig } from '../types/StarsStoreTypes';
-import { applyRecursevly } from '../utils/helpers';
+import { applyLoopRecursevly } from '../utils/helpers';
 const { worldSettings } = useWorldSettingsStore();
 
 // local WebGl systems
@@ -110,22 +110,21 @@ class WorldScene {
       const _starGroupClass = new StarGroupClass(planetoidConfig);
       // register new star group with the world core
       StarSystemsClass_.push(_starGroupClass);
-      // add star class THREE.Group portion to the scene
-      scene_.add(_starGroupClass.threeGroup);
     })
 
-    // register star groups with animation loop
-    Loop_.updatables.push(...StarSystemsClass_);
-
-    // also loop through children planetoid class instances (for tick method)
-    // and add them to Loop
+    // Register star system classes with animation Loop
     StarSystemsClass_.forEach((systemClass) => {
-      systemClass.children.forEach((childClass: any) => {
-        Loop_.updatables.push(childClass)
+      // add star class THREE.Group portion to the scene
+      scene_.add(systemClass.threeGroup);
 
-        if (childClass.children != null) {
-          applyRecursevly(childClass, (subChild) => Loop_.updatables.push(subChild))
-          //childClass.children.forEach((ch: any) => Loop_.updatables.push(ch))
+      // register star groups with animation loop
+      if (systemClass.tick != null) {
+        Loop_.updatables.push(systemClass);
+      }
+
+      applyLoopRecursevly(systemClass, (child) => {
+        if (systemClass.tick != null) {
+          Loop_.updatables.push(child)
         }
       })
     })
@@ -142,7 +141,6 @@ class WorldScene {
     const refToStarMesh = refToFirstStarSystem.threeGroup.children[3].children[0].children[6].children[0]
     const character = new Character(refToStarClass, characterCamera);
     refToStarMesh.add(character.Rig);
-    console.log(refToStarClass)
     Loop_.updatables.push(character);
   }
 

@@ -78,13 +78,12 @@ export function decorateLog(label = 'empty label', msg = '', rest = '') {
 }
 
 /**
- *
+ * Recursevly apply callback star system class and its qualifying children
  */
-export function applyRecursevly(object: any, callback: (subChild: any)=>void):void {
-  for (const key in object) {
+export function applyLoopRecursevly(systemClass: any, callback: (child: any) => void ) {
+  callback(systemClass)
 
-    if (key === 'children') {
-      applyRecursevly(object[key], callback)
-    }
+  if (systemClass.children != null) {
+    systemClass.children.forEach((child: any) => applyLoopRecursevly(child, callback))
   }
 }

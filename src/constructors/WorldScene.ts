@@ -20,7 +20,7 @@ import useStarSystemsStore from "../stores/StarsSystemsStore";
 const { getStarConfig } = useStarSystemsStore();
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
 import { IPlanetoid, IStarConfig } from '../types/StarsStoreTypes';
-import { applyLoopRecursevly } from '../utils/helpers';
+import { addToLoopRecursevly } from '../utils/helpers';
 const { worldSettings } = useWorldSettingsStore();
 
 // local WebGl systems
@@ -102,6 +102,17 @@ class WorldScene {
     activeCamera = SceneCameras_.children[0] as PerspectiveCamera;
   }
 
+  // register class with animation loop
+  _registerWithLoop(candidates: Array<any>) {
+    candidates.forEach((candidate) => {
+      addToLoopRecursevly(candidate, (_candidate) => {
+        if (_candidate.tick != null) {
+          Loop_.updatables.push(_candidate)
+        }
+      })
+    })
+  }
+
   initializeStarGroup() {
     StarSystemsClass_ = [];
     const _starStoreConfig: Array<IPlanetoid> = getStarConfig('Solar');
@@ -110,24 +121,12 @@ class WorldScene {
       const _starGroupClass = new StarGroupClass(planetoidConfig);
       // register new star group with the world core
       StarSystemsClass_.push(_starGroupClass);
+      // add star class THREE.Group portion to the scene
+      scene_.add(_starGroupClass.threeGroup);
     })
 
     // Register star system classes with animation Loop
-    StarSystemsClass_.forEach((systemClass) => {
-      // add star class THREE.Group portion to the scene
-      scene_.add(systemClass.threeGroup);
-
-      // register star groups with animation loop
-      if (systemClass.tick != null) {
-        Loop_.updatables.push(systemClass);
-      }
-
-      applyLoopRecursevly(systemClass, (child) => {
-        if (systemClass.tick != null) {
-          Loop_.updatables.push(child)
-        }
-      })
-    })
+    this._registerWithLoop(StarSystemsClass_)
   }
 
   // @Todo: move into separate generator based on json config

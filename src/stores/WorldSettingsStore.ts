@@ -1,25 +1,10 @@
 // store/world.js
 import { reactive, toRefs } from "vue";
-
-type sizeScalingType = {
-  multiplier: number
-}
-interface IWorldSettings {
-  timeSpeed: number,
-  size_scaling: sizeScalingType;
-  distance_scaling: sizeScalingType;
-  constants: {
-    [key: string]: string|number|{[key: string]: any}|Array<any>;
-  }
-}
-interface IWorldState {
-  loading: boolean;
-  worldSettings: IWorldSettings
-}
+import type { IWorldState, IWorldSettings } from "../types/WorldSettingsTypes";
 
 const state = reactive<IWorldState>({
   loading: true,
-  worldSettings: {
+  worldSettings: <IWorldSettings>{
     timeSpeed: 1,
     size_scaling: {
       multiplier: 0.0001
@@ -63,6 +48,7 @@ export default function useWorldSettingsStore() {
 
   return {
     ...toRefs(state), // convert to refs when returning
+    getWorldSettings,
     setTimeSpeed,
     setSizeScaleMultiplier,
     setDistanceScaleMultiplier

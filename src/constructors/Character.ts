@@ -129,13 +129,15 @@ function clamp(number: number, min: number, max: number) {
 }
 
 class CharacterClass {
+  nameId: string;
   _threeGroup: Group;
+  _children: Array<any>;
   characterBody: any;
   characterCamera: PerspectiveCamera;
-  _input: any;
+  _controls: any;
   _latitude: number;
   _longitude: number;
-  _parent: any;
+  _gravParentClass: any;
   _lookAtDistance: number;
   _lookAt: Vector3;
   rotation_: any;
@@ -144,25 +146,29 @@ class CharacterClass {
   theta_: number;
 
   constructor(gravitationalParentClass: any, camera: PerspectiveCamera) {
+    this.nameId = 'CharacterClass'
     this._threeGroup = new Group();
-    this._threeGroup.name = '_threeGroup';
+    this._threeGroup.name = 'CharacterGroup';
+    this._children = [];
     this.characterCamera = camera;
     this._latitude = 0;
     this._longitude = 0;
     this._lookAtDistance = -0.5
     // LookAt normally returns value in global plane scope
     this._lookAt = new Vector3(0, this._lookAtDistance, 0); // look straight north
-    this._parent = gravitationalParentClass;
+    this._gravParentClass = gravitationalParentClass;
+    this._controls = new _BasicGolemControllerInput(document.body);
+
     this._updateRigPosition()
     this.initCharacterBody()
     this.initCharacterCamera()
-    this._input = new _BasicGolemControllerInput(document.body);
+
 
     //this.buildDirectionArrow()
-    this.buildAxesHelper(this.characterBody)
     this.buildGridHelper(this._threeGroup)
-    //this.buildGridHelper(this.characterBody)
+    this.buildAxesHelper(this.characterBody)
     this.buildCenterLine(this.characterBody)
+    //this.buildGridHelper(this.characterBody)
 
     this.rotation_ = new Quaternion();
     this._bodyTranslation = new Vector3();
@@ -170,8 +176,18 @@ class CharacterClass {
     this.theta_ = 0;
   }
 
-  get threeGroup() {
-    return this._threeGroup
+  // Set character threeGroup position on gravParent (sphere) surface
+  // according to class position params (planetDistanceOffset, _latitude, _longitude)
+  _updateRigPosition() {
+    const newPosX = this._gravParentClass.threeGroup.children[0].scale.x
+
+    const position = _CalculateParentPosition(
+      newPosX,
+      this._latitude,
+      this._longitude
+    )
+
+    this._threeGroup.position.copy(position)
   }
 
   initCharacterBody(){
@@ -196,26 +212,7 @@ class CharacterClass {
     this.characterCamera.updateProjectionMatrix();
   }
 
-  /**
-   * Move _threeGroup on sphere surface
-   */
-  _updateRigPosition() {
-    const planetDistanceOffset = this._parent != null && this._parent.mesh.scale.x > 0
-      ? 0 //((this._parent.mesh.scale.x + 1) * 2)//1=this.characterBody.scale.x
-      : 0
 
-    const distanceFromLocalCenterInKm = this._parent.mesh.scale.x // config.distance.AU * _AU.km
-    const newPosX = (distanceFromLocalCenterInKm + planetDistanceOffset)
-
-
-    const position = _CalculateParentPosition(
-      1,//newPosX,//this._parent.mesh.scale.x
-      this._latitude,
-      this._longitude
-    )
-
-    this._threeGroup.position.copy(position)
-  }
 
   /**
    * Turn _threeGroup to "STAND" on the sphere surface
@@ -243,8 +240,8 @@ class CharacterClass {
   }
 
   _calculateMouseInputToRotation() {
-    const xh = this._input.current_.mouseXDelta / window.innerWidth;
-    const yh = this._input.current_.mouseYDelta / window.innerHeight;
+    const xh = this._controls.current_.mouseXDelta / window.innerWidth;
+    const yh = this._controls.current_.mouseYDelta / window.innerHeight;
 
     // turn mouse movement into spherical coordinates
     this.phi_ += -xh * 25;
@@ -266,7 +263,7 @@ class CharacterClass {
   _reactToInputs() {
     this._calculateMouseInputToRotation()
 
-    if (this._input.keys_.w) {
+    if (this._controls.keys_.w) {
       //get mouse direction by accessing camera lookAt after the rotation?
       // this._lookAt.x
       // this._lookAt.y
@@ -282,7 +279,7 @@ class CharacterClass {
       this._longitude = this._longitude + destinationY
     }
 
-    if (this._input.keys_.s) {
+    if (this._controls.keys_.s) {
       //get mouse direction by accessing camera lookAt after the rotation?
       // this._lookAt.x
       // this._lookAt.y
@@ -298,7 +295,7 @@ class CharacterClass {
       this._longitude = this._longitude + destinationY
     }
 
-    if (this._input.keys_.a) {
+    if (this._controls.keys_.a) {
       // get future position coordinates after "step" in the direction
       // do we lookAt 10 steps away?
       const destinationX = -((this._lookAt.x - .5) / 10)
@@ -308,7 +305,7 @@ class CharacterClass {
       this._longitude = this._longitude + destinationY
     }
 
-    if (this._input.keys_.d) {
+    if (this._controls.keys_.d) {
       // get future position coordinates after "step" in the direction
       // do we lookAt 10 steps away?
       const destinationX = -((this._lookAt.x + .5) / 10)
@@ -332,7 +329,7 @@ class CharacterClass {
     // z.normalize();
 
     const origin = new Vector3();
-    this._parent.mesh.getWorldPosition( origin );
+    this._gravParentClass.mesh.getWorldPosition( origin );
 
     const length = 1;
     const hexX = 0xffff00; // yellow
@@ -360,9 +357,9 @@ class CharacterClass {
     // this.characterBody.getWorldPosition( targetVector );
     // const points = [];
     // points.push(new Vector3(
-    //   this._parent.position.x,
-    //   this._parent.position.y,
-    //   this._parent.position.z
+    //   this._gravParentClass.position.x,
+    //   this._gravParentClass.position.y,
+    //   this._gravParentClass.position.z
     // ))
     // points.push( new Vector3(-this._threeGroup.position.x,-this._threeGroup.position.y,-this._threeGroup.position.z));
     // const geometry = new BufferGeometry().setFromPoints( points );
@@ -373,10 +370,16 @@ class CharacterClass {
     // target.add( line );
   }
 
+  get threeGroup() {
+    return this._threeGroup;
+  }
+  get children() {
+    return this._children;
+  }
   tick(delta: number) {
     this._reactToInputs()
     this._actualizeGroupOnSphere()
-    this._input.tick(delta)
+    this._controls.tick(delta)
   }
 }
 

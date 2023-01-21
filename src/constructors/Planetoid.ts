@@ -1,4 +1,4 @@
-import { data } from 'autoprefixer';
+import type { IPlanetoid } from './../types/StarsStoreTypes';
 import {
   SphereGeometry,
   BufferGeometry,
@@ -10,142 +10,150 @@ import {
   TextureLoader, Group, Color, MeshPhongMaterial,
 } from 'three'
 import { calcPosFromLatLngRad, convertRotationPerDayToRadians } from '../utils/helpers';
+
+import useWorldSettingsStore from "../stores/WorldSettingsStore";
+const { worldSettings } = useWorldSettingsStore();
+
 const loader = new TextureLoader();
-const _settings = {
-  timeSpeed: 1,
-  size_scaling: {
-    multiplier: 0.0001
-  },
-  distance_scaling: {
-    divider: 1000000
-  },
-};
-const _AU = {
-  km: 150000000,
-  mi: 93000000
-}
+
+type IAthmosphere<Mesh> = Mesh & { tick: () => void }
+
 class PlanetoidClass {
-  _planetoidConfig: any;
+  nameId: string;
+  _localConfig: IPlanetoid;
   _threeGroup: any;
   _children: any;
-  nameId: string;
-  planetGeometry: any;
-  planetMaterial: any;
-  planetMesh: any;
+  _sharedSphereGeometry: any;
+  _gravParentClass: any;
 
-  constructor(config: any, parent: any) {
-    this._planetoidConfig = config;
-    this._threeGroup = new Group(); // A group holds other objects but cannot be seen itself
-    this._threeGroup.name = `${config.nameId}Group`
-    this._children = [];
+  constructor(config: any, parentClass?: any) {
     this.nameId = config.nameId
+    this._localConfig = config;
+    this._threeGroup = new Group(); // A group holds other objects but cannot be seen itself
+    this._threeGroup.name = `${this._localConfig.nameId}Group`
+    this._children = [];
+    this._sharedSphereGeometry = new SphereGeometry(1, 132, 132); // shared planetoid geometry template
+    this._gravParentClass = parentClass;
+    this._initialize()
+  }
 
-    this.planetGeometry = new SphereGeometry(1, 132, 132);
-
-    // this.planetMaterial = new MeshBasicMaterial({
-    //   wireframe: true,
-    //   // map: new TextureLoader().load(map) //wireframe: true,
-    // });
-    // 1. Create material according to planetoid config
-    const sphereMaterial = config.emissive
-      ? new MeshPhongMaterial({
-        emissive: config.emissive,
-        emissiveMap: loader.load(config.emissiveMap),
-        emissiveIntensity: 1,
-      })
-      : new MeshPhongMaterial({
-        color: config.color ? new Color(config.color) : '#fff',
-        map: loader.load(config.textureMap),
-      })
-
-    if (config.displacementMap) {
-      sphereMaterial.displacementMap = loader.load(config.displacementMap)
-      sphereMaterial.displacementScale = config.displacementScale
-      // sphereMaterial.wireframe = true;
-    }
-
-    if (config.bumpMap) {
-      sphereMaterial.bumpMap = loader.load(config.bumpMap)
-      sphereMaterial.bumpScale = config.bumpScale
-    }
-
-    if (config.specularMap) {
-      sphereMaterial.specularMap = loader.load(config.specularMap)
-      sphereMaterial.shininess = config.shininess
-    }
-
-    // this.planetMesh = new Mesh(this.planetGeometry, this.planetMaterial);
-    // this.planetMesh.name = 'planet Mesh'
-    // this.planetMesh.mesh.position.set(0, 0, 0);
+  _initialize() {
     // 1. Create sphere mesh
-    this.planetMesh = new Mesh(this.planetGeometry, sphereMaterial);
-    this.planetMesh.name = `${config.nameId} MeshGroup`
+    const planetoidMesh = new Mesh(
+      this._sharedSphereGeometry,
+      this._generateMaterial(this._localConfig)
+    );
+    planetoidMesh.name = `${this._localConfig.nameId} MeshGroup`
+    planetoidMesh.scale.multiplyScalar(
+      (this._localConfig.radius.km as number) * (worldSettings.value.size_scaling.multiplier as number)
+    )
+    planetoidMesh.rotation.y = this._localConfig.tilt
 
-    // Scale mesh by planetoid config factor?
-    // Might need to either apply to group or decouple mesh altogether
-
-    this.planetMesh.scale.multiplyScalar(config.radius.km * _settings.size_scaling.multiplier)
-    // sphereMesh.rotation.z = config.tilt
-
-
-    const planetDistanceOffset = parent != null && parent.mesh.scale.x > 0
-      ? ((parent.mesh.scale.x + this.planetMesh.scale.x) * 2)
+    // offset parent and child radius from distance value
+    const planetDistanceOffset = this._gravParentClass != null && this._gravParentClass.threeGroup.children[0].scale.x > 0
+      ? ((this._gravParentClass.threeGroup.children[0].scale.x + planetoidMesh.scale.x) / 2)
       : 0
 
-    const distanceInKm = config.distance.AU * _AU.km
-    this.planetMesh.position.x = (distanceInKm + planetDistanceOffset) / _settings.distance_scaling.divider
+    const planetDistanceInKm = (this._localConfig.distance.AU as number) * worldSettings.value.constants.AU.km
+    planetoidMesh.position.x = (planetDistanceInKm + planetDistanceOffset) / worldSettings.value.distance_scaling.multiplier
 
     // /!\ radiants = degrees * (2 * Math.PI)
-    const radiansPerSecond = convertRotationPerDayToRadians(config.rotation_period.days)
+    const radiansPerSecond = convertRotationPerDayToRadians(this._localConfig.rotation_period.days as number)
 
     //Generate athmosphere
-    if (config.athmosphereMap != null) {
-      const materialClouds = new MeshBasicMaterial({
-        map: loader.load(config.athmosphereMap),
-        transparent: true,
-        opacity: config.athmosphereOpacity,
-      });
-      const athmosphereMesh = new Mesh(this.planetGeometry, materialClouds);
-      athmosphereMesh.name = 'Athmosphere Map';
-      athmosphereMesh.scale.set(this.planetMesh.scale.x + 0.5, this.planetMesh.scale.y + 0.5, this.planetMesh.scale.z + 0.5);
-      athmosphereMesh.scale.multiplyScalar(
-        this.planetMesh.scale.x + config.athmosphereDepth
+    if (this._localConfig.athmosphereMap != null) {
+      planetoidMesh.add(
+        this._generateAthmosphere(
+          planetoidMesh.scale.x,
+          this._localConfig.athmosphereMap,
+          radiansPerSecond
+        )
       );
-      athmosphereMesh.position.set(0, 0, 0);
-      athmosphereMesh.rotation.z = config.tilt;
-      athmosphereMesh.tick = (delta: number) => {
-        // rotate athmosphereMesh in anticlockwise direction (+=)
-        athmosphereMesh.rotation.y += delta * radiansPerSecond *  _settings.timeSpeed;
-      };
-      this.planetMesh.add(athmosphereMesh);
     }
 
     // Generate POI
-    if (config.POI != null) {
+    if (this._localConfig.POI != null) {
       const poiGeometry = new SphereGeometry(0.005, 6, 6);
       const poiMaterial = new MeshBasicMaterial({ color: 0xff0000 });
 
-      config.POI.forEach((poi: any) => {
+      this._localConfig.POI.forEach((poi: any) => {
         let poiMesh = new Mesh(poiGeometry, poiMaterial);
-        poiMesh.name = 'POI'
-        poiMesh.title = poi.name
+        poiMesh.name = `POI: ${poi.name}`
 
         const cartPos = calcPosFromLatLngRad(
           poi.lat,
           poi.lng,
-          (config.radius.km * _settings.size_scaling.multiplier) + 0.375
+          ((this._localConfig.radius.km as number) * worldSettings.value.size_scaling.multiplier) + 0.375
         );
         poiMesh.position.set(cartPos.x, cartPos.y, cartPos.z);
 
-        this.planetMesh.add(poiMesh);
+        planetoidMesh.add(poiMesh);
       });
     }
-    this._threeGroup.add(this.planetMesh)
+
+    this._threeGroup.add(planetoidMesh)
+    this.children.push()
+  }
+
+  // 1. Create material according to planetoid config
+  _generateMaterial(cfg: IPlanetoid) {
+    let sphereMaterial = cfg.emissive != null
+      ? new MeshPhongMaterial({
+        emissive: cfg.emissive,
+        emissiveIntensity: 1,
+      })
+      : new MeshPhongMaterial({
+        color: cfg.color ? new Color(cfg.color) : '#fff',
+      })
+
+    if (cfg.emissiveMap != null) {
+      sphereMaterial.emissiveMap = loader.load(cfg.emissiveMap);
+    }
+
+    if (cfg.displacementMap != null) {
+      sphereMaterial.displacementMap = loader.load(cfg.displacementMap)
+      sphereMaterial.displacementScale = cfg.displacementScale || 1
+    }
+
+    if (cfg.bumpMap != null) {
+      sphereMaterial.bumpMap = loader.load(cfg.bumpMap)
+      sphereMaterial.bumpScale = cfg.bumpScale || 1
+    }
+
+    if (cfg.specularMap != null) {
+      sphereMaterial.specularMap = loader.load(cfg.specularMap)
+      sphereMaterial.shininess = cfg.shininess || 0
+    }
+
+    return sphereMaterial;
+  }
+
+  _generateAthmosphere(parentScale: number, athmosphereMap: string, radiansPerSecond: number) {
+    const _athmosphereDepth = this._localConfig.athmosphereDepth != null ? this._localConfig.athmosphereDepth : 0.5
+    const materialClouds = new MeshBasicMaterial({
+      map: loader.load(athmosphereMap),
+      transparent: true,
+      opacity: this._localConfig.athmosphereOpacity,
+    });
+    const athmosphereMesh = new Mesh(this._sharedSphereGeometry, materialClouds);
+    athmosphereMesh.name = 'Athmosphere Map';
+    athmosphereMesh.scale.multiplyScalar(parentScale + _athmosphereDepth);
+
+    athmosphereMesh.position.set(0, 0, 0);
+    athmosphereMesh.rotation.z = this._localConfig.tilt;
+
+    // rotate athmosphereMesh in anticlockwise direction (+=)
+    athmosphereMesh.tick = (delta: number) => {
+      athmosphereMesh.rotation.y += delta * radiansPerSecond *  worldSettings.value.timeSpeed;
+    };
+
+    return athmosphereMesh;
   }
 
   get mesh() {
-    return this.planetMesh
+    return this._threeGroup[0]
   }
+
   get threeGroup() {
     return this._threeGroup
   }
@@ -155,7 +163,7 @@ class PlanetoidClass {
   }
 
   tick(delta: number) {
-    this.planetMesh.rotation.y += 0.0001
+    this._threeGroup.rotation.y += 0.0001
   }
 }
 

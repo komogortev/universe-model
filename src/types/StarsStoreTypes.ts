@@ -21,6 +21,8 @@ export interface IPlanetoid {
   orbital_period: IBaseDataObj,
   rotation_period: IBaseDataObj,
   tilt: number,
+  color?: Color|number,
+  textureMap?: string,
   emissive?: Color|number,
   emissiveMap?: string,
   emissiveIntensity?: number,

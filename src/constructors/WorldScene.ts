@@ -7,6 +7,7 @@ import { createScene } from '../utils/scene';
 import { createAmbientLight, createPointLight } from '../utils/lights';
 import { createPerspectiveCamera, ThirdPersonCamera, ConstructCameraRig } from "../utils/cameras"
 import { createOrbitControls } from "../utils/controls"
+import { addToLoopRecursevly, findObjectRecursevly } from '../utils/helpers';
 
 import { Loop } from '../systems/Loop';
 import { Resizer } from '../systems/Resizer';
@@ -14,13 +15,12 @@ import { Resizer } from '../systems/Resizer';
 import { StarGroupClass } from './StarGroup';
 import { CharacterClass } from './Character';
 import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js"
+import type { IPlanetoid } from '../types/StarsStoreTypes';
 
 // connect to app stores
 import useStarSystemsStore from "../stores/StarsSystemsStore";
 const { getStarConfig } = useStarSystemsStore();
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
-import { IPlanetoid, IStarConfig } from '../types/StarsStoreTypes';
-import { addToLoopRecursevly, findObjectRecursevly } from '../utils/helpers';
 const { worldSettings } = useWorldSettingsStore();
 
 // local WebGl systems
@@ -133,7 +133,7 @@ class WorldScene {
     const characterSpawnName = 'Sun';
     let refToCharacterSpawnClass: any;
 
-    // loopup through star systems for matching spawn class
+    // loopup through star systems for matching spawn PlanetoidClass
     StarSystemsClass_.forEach((starSystemClass: any) => {
       if (refToCharacterSpawnClass == null) {
         const spawn = findObjectRecursevly(starSystemClass, characterSpawnName)
@@ -146,7 +146,7 @@ class WorldScene {
 
     if (refToCharacterSpawnClass != null) {
       CharacterClass_ = new CharacterClass(refToCharacterSpawnClass, characterCamera);
-      refToCharacterSpawnClass.threeGroup.add(CharacterClass_.Rig);
+      refToCharacterSpawnClass.threeGroup.add(CharacterClass_.threeGroup);
       this._registerCandidatesWithLoop([CharacterClass_]);
     }
     console.log(Loop_)

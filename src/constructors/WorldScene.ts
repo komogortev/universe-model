@@ -1,6 +1,8 @@
 import { PerspectiveCamera } from 'three';
 import { Group } from 'three';
 import * as THREE from 'three'
+import GUI from 'lil-gui';
+
 // Scene utils
 import { createRenderer } from '../utils/renderer';
 import { createScene } from '../utils/scene';
@@ -21,11 +23,12 @@ import type { IPlanetoid } from '../types/StarsStoreTypes';
 import useStarSystemsStore from "../stores/StarsSystemsStore";
 const { getStarConfig } = useStarSystemsStore();
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
-const { worldSettings } = useWorldSettingsStore();
+const { getWorldSettings, setTimeSpeed } = useWorldSettingsStore();
 
 // local WebGl systems
 let renderer_: any,
 scene_: any,
+gui_: any,
 Loop_: any,
 Resizer_: any;
 
@@ -68,6 +71,24 @@ class WorldScene {
 
     // switch cameras on key press
     document.addEventListener('keydown', onKeyDown );
+
+    this._initLilGUI()
+  }
+
+  _initLilGUI() {
+    //Create gui instance
+    gui_ = new GUI();
+
+    //Create object for gui's properties
+    const settings = getWorldSettings()
+    const guiProperties = { ...settings };
+
+    gui_.add( document, 'title' );
+    gui_.add(guiProperties, "timeSpeed", -100, 100).onChange(
+      (value: number) => { setTimeSpeed(value);  }
+    )
+
+
   }
 
   _initLights() {
@@ -130,7 +151,7 @@ class WorldScene {
 
   initializeSceneObjects() {
     // Spot the spawn threejs object
-    const characterSpawnName = 'Sun';
+    const characterSpawnName = 'Earth';
     let refToCharacterSpawnClass: any;
 
     // loopup through star systems for matching spawn PlanetoidClass

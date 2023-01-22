@@ -1,3 +1,4 @@
+//Pinia Store
 import { defineStore } from 'pinia'
 
 export const useWorldSceneStore = defineStore('WorldSceneStore', {

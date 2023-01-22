@@ -12,16 +12,6 @@ import {
 import { calcPosFromLatLngRad } from '../utils/helpers'
 import map from '../assets/ironman.png'
 
-const _settings = {
-      timeSpeed: 1,
-      size_scaling: {
-        multiplier: 0.0001
-      },
-      distance_scaling: {
-        divider: 1000000
-      },
-    };
-
 class _BasicGolemControllerInput {
   current_: any;
   previous_: any;

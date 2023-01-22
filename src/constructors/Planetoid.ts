@@ -25,6 +25,7 @@ class PlanetoidClass {
   _children: any;
   _sharedSphereGeometry: any;
   _gravParentClass: any;
+  _radiansPerSecond: number;
 
   constructor(config: any, parentClass?: any) {
     this.nameId = config.nameId
@@ -34,6 +35,8 @@ class PlanetoidClass {
     this._children = [];
     this._sharedSphereGeometry = new SphereGeometry(1, 132, 132); // shared planetoid geometry template
     this._gravParentClass = parentClass;
+    // /!\ radiants = degrees * (2 * Math.PI)
+    this._radiansPerSecond = convertRotationPerDayToRadians(this._localConfig.rotation_period.days as number)
     this._initialize()
   }
 
@@ -57,16 +60,12 @@ class PlanetoidClass {
     const planetDistanceInKm = (this._localConfig.distance.AU as number) * worldSettings.value.constants.AU.km
     planetoidMesh.position.x = (planetDistanceInKm + planetDistanceOffset) / worldSettings.value.distance_scaling.multiplier
 
-    // /!\ radiants = degrees * (2 * Math.PI)
-    const radiansPerSecond = convertRotationPerDayToRadians(this._localConfig.rotation_period.days as number)
-
     //Generate athmosphere
     if (this._localConfig.athmosphereMap != null) {
       planetoidMesh.add(
         this._generateAthmosphere(
           planetoidMesh.scale.x,
           this._localConfig.athmosphereMap,
-          radiansPerSecond
         )
       );
     }
@@ -128,7 +127,7 @@ class PlanetoidClass {
     return sphereMaterial;
   }
 
-  _generateAthmosphere(parentScale: number, athmosphereMap: string, radiansPerSecond: number) {
+  _generateAthmosphere(parentScale: number, athmosphereMap: string) {
     const _athmosphereDepth = this._localConfig.athmosphereDepth != null ? this._localConfig.athmosphereDepth : 0.5
     const materialClouds = new MeshBasicMaterial({
       map: loader.load(athmosphereMap),
@@ -144,7 +143,7 @@ class PlanetoidClass {
 
     // rotate athmosphereMesh in anticlockwise direction (+=)
     athmosphereMesh.tick = (delta: number) => {
-      athmosphereMesh.rotation.y += delta * radiansPerSecond *  worldSettings.value.timeSpeed;
+      athmosphereMesh.rotation.y += delta * this._radiansPerSecond *  worldSettings.value.timeSpeed;
     };
 
     return athmosphereMesh;
@@ -164,6 +163,7 @@ class PlanetoidClass {
 
   tick(delta: number) {
     this._threeGroup.rotation.y += 0.0001
+    this._threeGroup.rotation.y += delta * this._radiansPerSecond *  worldSettings.value.timeSpeed;
   }
 }
 

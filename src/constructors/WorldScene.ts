@@ -23,7 +23,7 @@ import type { IPlanetoid } from '../types/StarsStoreTypes';
 import useStarSystemsStore from "../stores/StarsSystemsStore";
 const { getStarConfig } = useStarSystemsStore();
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
-const { getWorldSettings, setTimeSpeed } = useWorldSettingsStore();
+const { getWorldSettings, setTimeSpeed, setSizeScaleMultiplier } = useWorldSettingsStore();
 
 // local WebGl systems
 let renderer_: any,
@@ -87,7 +87,9 @@ class WorldScene {
     gui_.add(guiProperties, "timeSpeed", -100, 100).onChange(
       (value: number) => { setTimeSpeed(value);  }
     )
-
+    gui_.add(guiProperties.size_scaling, "multiplier", -guiProperties.size_scaling.multiplier*5, guiProperties.size_scaling.multiplier*5,guiProperties.size_scaling.multiplier ).onChange(
+      (value: number) => { setSizeScaleMultiplier(value);  }
+    )
 
   }
 

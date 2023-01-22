@@ -150,7 +150,7 @@ class PlanetoidClass {
   }
 
   get mesh() {
-    return this._threeGroup[0]
+    return this._threeGroup.children[0]
   }
 
   get threeGroup() {
@@ -162,8 +162,12 @@ class PlanetoidClass {
   }
 
   tick(delta: number) {
-    this._threeGroup.rotation.y += 0.0001
     this._threeGroup.rotation.y += delta * this._radiansPerSecond *  worldSettings.value.timeSpeed;
+
+    if (this._threeGroup.children[0].children != null && this._threeGroup.children[0].children[0] != null && this._threeGroup.children[0].children[0].name == 'Athmosphere Map') {
+      this._threeGroup.children[0].children[0].rotation.y += delta * this._radiansPerSecond *  worldSettings.value.timeSpeed;
+    }
+    // this.mesh.position.x = ((this._localConfig.distance.AU as number) * worldSettings.value.constants.AU.km) / worldSettings.value.distance_scaling.multiplier
   }
 }
 

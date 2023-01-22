@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from 'vue';
 import { WorldScene } from '../constructors/WorldScene';
-import { useWorldSceneStore } from "../stores/WorldSceneStore";
 
 async function init() {
   // Get a reference to the container element

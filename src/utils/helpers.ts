@@ -80,18 +80,18 @@ export function decorateLog(label = 'empty label', msg = '', rest = '') {
 /**
  * Recursevly apply callback star system class and its qualifying children
  */
-export function addToLoopRecursevly(candidate: any, callback: (candidate: any) => void ) {
+export function helperAddToLoopRecursevly(candidate: any, callback: (candidate: any) => void ) {
   callback(candidate)
 
   if (candidate.children != null) {
-    candidate.children.forEach((child: any) => addToLoopRecursevly(child, callback))
+    candidate.children.forEach((child: any) => helperAddToLoopRecursevly(child, callback))
   }
 }
 
 /**
  * Recursevly find class by nameId
  */
-export function findObjectRecursevly(object: any, lookupId: string): any | null {
+export function findClassByNameIdRecursevly(object: any, lookupId: string): any | null {
   let matchingClassObject: any = null;
 
   if (object.nameId != null && object.nameId == lookupId) {
@@ -99,7 +99,7 @@ export function findObjectRecursevly(object: any, lookupId: string): any | null 
   } else if (object.children != null) {
     object.children.forEach((child: any) => {
       if (matchingClassObject == null) {
-        const childObject = findObjectRecursevly(child, lookupId)
+        const childObject = findClassByNameIdRecursevly(child, lookupId)
         if (childObject != null) {
           matchingClassObject = childObject
         }

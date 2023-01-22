@@ -118,7 +118,7 @@ function clamp(number: number, min: number, max: number) {
   return Math.min(Math.max(number, min), max);
 }
 
-class CharacterClass {
+class CharacterGroupClass {
   nameId: string;
   _threeGroup: Group;
   _children: Array<any>;
@@ -135,7 +135,7 @@ class CharacterClass {
   phi_: number;
   theta_: number;
 
-  constructor(gravitationalParentClass: any, camera: PerspectiveCamera) {
+  constructor(camera: PerspectiveCamera, gravitationalParentClass?: any) {
     this.nameId = 'CharacterClass'
     this._threeGroup = new Group();
     this._threeGroup.name = 'CharacterGroup';
@@ -378,4 +378,4 @@ class CharacterClass {
   }
 }
 
-export { CharacterClass }
+export { CharacterGroupClass }

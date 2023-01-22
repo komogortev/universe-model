@@ -4,8 +4,7 @@ import { defineStore } from 'pinia'
 export const useWorldSceneStore = defineStore('WorldSceneStore', {
   state: () => ({
     starSystems: {
-      Solar: [
-        {
+      Solar: {
           nameId: 'Sun',
           type: 'star',
           radius:   { km: 700000 * 0.1 }, // multiply by additional scale down
@@ -325,8 +324,7 @@ export const useWorldSceneStore = defineStore('WorldSceneStore', {
               ]
             }
           ]
-        },
-      ]
+      }
     },
     settings: {
       timeSpeed: 1,

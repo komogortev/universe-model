@@ -1,131 +1,113 @@
-import { PerspectiveCamera } from 'three';
-import { Group } from 'three';
 import * as THREE from 'three'
 import GUI from 'lil-gui';
 
-// Scene utils
-import { createRenderer } from '../utils/renderer';
-import { createScene } from '../utils/scene';
-import { createAmbientLight, createPointLight } from '../utils/lights';
-import { createPerspectiveCamera, ThirdPersonCamera, ConstructCameraRig } from "../utils/cameras"
-import { createOrbitControls } from "../utils/controls"
-import { addToLoopRecursevly, findObjectRecursevly } from '../utils/helpers';
-
-import { Loop } from '../systems/Loop';
+// WorldScene systems
+import { createRenderer } from '../systems/Renderer';
+import { createScene } from '../systems/Scene';
 import { Resizer } from '../systems/Resizer';
-// Scene Objects
-import { StarGroupClass } from './StarGroup';
-import { CharacterClass } from './Character';
-import { PointerLockControls } from "three/examples/jsm/controls/PointerLockControls.js"
+import { Loop } from '../systems/Loop';
+
+// WorldScene instruments
+import { createPerspectiveCamera } from "../utils/cameras"
+import { createOrbitControls } from "../utils/controls"
+import { createAmbientLight, createPointLight } from '../utils/lights';
+import { helperAddToLoopRecursevly, findClassByNameIdRecursevly } from '../utils/helpers';
+
+// WorldScene decorations
 import type { IPlanetoid } from '../types/StarsStoreTypes';
+import { StarGroupClass } from './StarGroup';
+import { CharacterGroupClass } from './CharacterGroup';
 
-// connect to app stores
+// Connect to App stores
 import useStarSystemsStore from "../stores/StarsSystemsStore";
-const { getStarConfig } = useStarSystemsStore();
+const { getStarSystemConfigByName } = useStarSystemsStore();
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
-const { getWorldSettings, setTimeSpeed, setSizeScaleMultiplier } = useWorldSettingsStore();
+const { getWorldSettings, getWorldConstants, setTimeSpeed, setSizeScaleMultiplier } = useWorldSettingsStore();
 
-// local WebGl systems
-let renderer_: any,
-scene_: any,
-gui_: any,
-Loop_: any,
-Resizer_: any;
+// *WorldScene systems
+let Renderer_: THREE.WebGLRenderer;
+let Scene_: THREE.Scene;
+let GUI_: any;
+let Loop_: any;
+let Resizer_: any;
 
-// local scene tools
-let SceneCameras_: Group, cameraRig: any,
-activeCamera: PerspectiveCamera,
-universeCamera: PerspectiveCamera,
-characterCamera: PerspectiveCamera,
-universeControls: any, characterControls: any;
+// *WorldScene instruments
+let SceneCameras_: Array<THREE.PerspectiveCamera>;
+let DefaultCamera_: THREE.PerspectiveCamera;
+let ActiveCamera_: THREE.PerspectiveCamera;
+let DefaultControls_: any;
 
-// local scene objects
-let StarSystemsClass_: Array<any>, CharacterClass_: any;
+// *WorldScene decorations
+let StarGroupClass_: any;
+let CharacterGroupClass_: any;
 
 class WorldScene {
   container: HTMLElement;
   textureLoader: any;
 
   constructor(container: HTMLElement) {
-    // initialize barebones scene
-    this.container = container
-    renderer_ = createRenderer();
+    this.container = container;
     this.textureLoader = new THREE.TextureLoader();
-    scene_ = createScene(renderer_, this.textureLoader);
+    this._initLilGUI()
 
-    // initialize scene tools
-    this._initLights();
-    this._initCameras();
+    // initialize *WorldScene systems (1)
+    Renderer_ = createRenderer();
+    Scene_ = createScene(Renderer_, this.textureLoader);
 
-    Resizer_ = new Resizer(this.container, activeCamera, renderer_);
-    Loop_ = new Loop(activeCamera, scene_, renderer_);
+    {
+      // initialize *WorldScene instruments
+      SceneCameras_ = [];
+      DefaultCamera_ = createPerspectiveCamera();
+      DefaultControls_ = createOrbitControls(DefaultCamera_, Renderer_.domElement);
+      SceneCameras_.push(DefaultCamera_);
+      ActiveCamera_ = SceneCameras_[0];
 
-    // attach constructed scene to the WorldTheater view
-    this.container.appendChild(renderer_.domElement);
+      const defaultCameraHelper = new THREE.CameraHelper(DefaultCamera_);
+      Scene_.add(defaultCameraHelper);
 
-    // initialize scene elements
-    if (Loop_ != null) {
-      this.initializeStarGroup()
-      this.initializeSceneObjects();
+      this._initLights();
     }
 
+    // initialize *WorldScene systems (2)
+    Resizer_ = new Resizer(this.container, ActiveCamera_, Renderer_);
+    Loop_ = new Loop(ActiveCamera_, Scene_, Renderer_);
+
+    // initialize *WorldScene decorations
+    this.initializeStarGroup()
+    this.initializeCharacterGroup();
+
+    // attach constructed scene to the WorldTheater view
+    this.container.appendChild(Renderer_.domElement);
     // switch cameras on key press
     document.addEventListener('keydown', onKeyDown );
-
-    this._initLilGUI()
-  }
-
-  _initLilGUI() {
-    //Create gui instance
-    gui_ = new GUI();
-
-    //Create object for gui's properties
-    const settings = getWorldSettings()
-    const guiProperties = { ...settings };
-
-    gui_.add( document, 'title' );
-    gui_.add(guiProperties, "timeSpeed", -100, 100).onChange(
-      (value: number) => { setTimeSpeed(value);  }
-    )
-    gui_.add(guiProperties.size_scaling, "multiplier", -guiProperties.size_scaling.multiplier*5, guiProperties.size_scaling.multiplier*5,guiProperties.size_scaling.multiplier ).onChange(
-      (value: number) => { setSizeScaleMultiplier(value);  }
-    )
-
   }
 
   _initLights() {
     const ambLight_ = createAmbientLight(0xffffff, .5);
     const pointLight_ = createPointLight(0xffffff, 100);
-    scene_.add(ambLight_, pointLight_)
+    Scene_.add(ambLight_, pointLight_)
   }
 
-  _initCameras() {
-    SceneCameras_ = new THREE.Group()
-    const _camSettings = {
-      position: {x: 0, y: 0, z: 50},
-      aspect: window.innerWidth / window.innerHeight, // aspect ratio
-      near: 0.05, // near clipping plane
-      far: 10000 // far clipping plane
-    },
+  _initLilGUI() {
+    //Create gui instance
+    GUI_ = new GUI();
 
-    universeCamera = createPerspectiveCamera();
-    universeCamera.position.set(0, 0, 55); // move the camera back
-    universeCamera.lookAt(0, 0, 0); // so we can view the scene center
-    universeControls = createOrbitControls(universeCamera, renderer_.domElement)
-    const universeCameraHelper = new THREE.CameraHelper(universeCamera)
+    //Create object for gui's properties
+    const settings = getWorldSettings()
+    const guiProperties = { ...settings };
 
-    characterCamera = createPerspectiveCamera();
-    const characterCameraHelper = new THREE.CameraHelper(characterCamera)
-
-    SceneCameras_.add(universeCamera, characterCamera)
-    scene_.add(universeCameraHelper, characterCameraHelper)
-    // set universe camera as default
-    activeCamera = SceneCameras_.children[0] as PerspectiveCamera;
+    GUI_.add( document, 'title' );
+    GUI_.add(guiProperties, "timeSpeed", -100, 100).onChange(
+      (value: number) => { setTimeSpeed(value);  }
+    )
+    GUI_.add(guiProperties.size_scaling, "multiplier", -guiProperties.size_scaling.multiplier*5, guiProperties.size_scaling.multiplier*5,guiProperties.size_scaling.multiplier ).onChange(
+      (value: number) => { setSizeScaleMultiplier(value);  }
+    )
   }
 
-  _registerCandidatesWithLoop(candidates: Array<any>) {
-    candidates.forEach((candidate) => {
-      addToLoopRecursevly(candidate, (_candidate) => {
+  _registerCandidatesWithLoop(candidatesClass: Array<any>) {
+    candidatesClass.forEach((candidate) => {
+      helperAddToLoopRecursevly(candidate, (_candidate) => {
         if (_candidate.tick != null) {
           Loop_.updatables.push(_candidate)
         }
@@ -134,43 +116,57 @@ class WorldScene {
   }
 
   initializeStarGroup() {
-    StarSystemsClass_ = [];
-    const _starStoreConfig: Array<IPlanetoid> = getStarConfig('Solar');
-
-    _starStoreConfig.forEach((planetoidConfig: IPlanetoid, index: number) => {
-      const _starGroupClass = new StarGroupClass(planetoidConfig);
-      // register new star group with the world core
-      StarSystemsClass_.push(_starGroupClass);
-      // add star class THREE.Group portion to the scene
-      scene_.add(_starGroupClass.threeGroup);
-    })
+    const _starSystemConfig: IPlanetoid = getStarSystemConfigByName(getWorldConstants().STAR_SYSTEM);
+    StarGroupClass_ = new StarGroupClass(_starSystemConfig);
+    Scene_.add(StarGroupClass_.threeGroup);
 
     // Register star system classes with animation Loop
-    this._registerCandidatesWithLoop(StarSystemsClass_)
+    this._registerCandidatesWithLoop([StarGroupClass_])
   }
 
-  initializeSceneObjects() {
-    // Spot the spawn threejs object
-    const characterSpawnName = 'Sun';
-    let refToCharacterSpawnClass: any;
+  initializeCharacterGroup() {
+    const characterCamera = createPerspectiveCamera();
+    const parentNameid = getWorldConstants().CHARACTER_SPAWN;
+    CharacterGroupClass_ = new CharacterGroupClass(characterCamera);
 
-    // loopup through star systems for matching spawn PlanetoidClass
-    StarSystemsClass_.forEach((starSystemClass: any) => {
-      if (refToCharacterSpawnClass == null) {
-        const spawn = findObjectRecursevly(starSystemClass, characterSpawnName)
+    // attempt to spot spawn location (planetoid surface?)
 
-        if (spawn != null) {
-          refToCharacterSpawnClass = spawn;
-        }
-      }
-    })
+    // for (let potentialParentThreeGroup in [StarGroupClass_.threeGroup]) {
+    //   if (potentialParentThreeGroup.nameId != null) {
+    //     isParent = possibleSpawnClass.nameId == parentNameid
+    //   }
+    // }
 
-    if (refToCharacterSpawnClass != null) {
-      CharacterClass_ = new CharacterClass(refToCharacterSpawnClass, characterCamera);
-      refToCharacterSpawnClass.threeGroup.children[0].add(CharacterClass_.threeGroup);
-      this._registerCandidatesWithLoop([CharacterClass_]);
-    }
-    console.log(Loop_)
+    // const spawn = [StarGroupClass_].forEach((possibleSpawnClass: IPlanetoid) => {
+    //   let isParent = false;
+
+    // })
+
+    SceneCameras_.push(CharacterGroupClass_.camera)
+    Scene_.add(CharacterGroupClass_.CameraHelper)
+
+
+    // Spawn has to be at updatable (animated) Object?
+    // const spawnConfig = findClassByNameIdRecursevly(Loop_.updatables, getWorldConstants().CHARACTER_SPAWN);
+
+    // let refToCharacterSpawnClass: any;
+
+    // // loopup through star systems for matching spawn PlanetoidClass
+    // StarGroupClass_.forEach((starSystemClass: any) => {
+    //   if (refToCharacterSpawnClass == null) {
+    //     const spawn = findClassByNameIdRecursevly(starSystemClass, characterSpawnName)
+
+    //     if (spawn != null) {
+    //       refToCharacterSpawnClass = spawn;
+    //     }
+    //   }
+    // })
+
+    // if (refToCharacterSpawnClass != null) {
+    //   refToCharacterSpawnClass.threeGroup.children[0].add(CharacterClass_.threeGroup);
+    //   this._registerCandidatesWithLoop([CharacterClass_]);
+    // }
+    // console.log(Loop_)
   }
 
   start() { Loop_.start(); }

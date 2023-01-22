@@ -40,10 +40,6 @@ export interface IPlanetoid {
   BG_MAP?: string,
 }
 
-export interface IStarConfig {
-  [key: string]: Array<IPlanetoid>
-}
-
 export interface IStarSystemsConfig {
-  [key: string]: IStarConfig
+  StarSystemsConfig: { [key: string]: IPlanetoid }
 }

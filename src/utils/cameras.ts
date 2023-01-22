@@ -5,13 +5,16 @@ function createPerspectiveCamera(
   aspect: number = window.innerWidth / window.innerHeight,
   near: number = 0.05,
   far: number = 10000,
-  name: string = "Perspective Camera"
+  name: string = "Perspective Camera",
+  options?: any
 ) {
-
   const camera = new PerspectiveCamera(fov, aspect, near, far);
-  var cameraLayer = 1;
-
   camera.name = name
+  camera.lookAt(0, 0, 0);
+
+  if (options != null && options.position != null) {
+    camera.position.set(options.position.x, options.position.y, options.position.z); // move the camera back
+  }
 
   return camera;
 }

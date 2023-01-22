@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import SolarSystemView from './pages/SolarSystemView.vue'
+import SolarSystemPage from './pages/SolarSystemPage.vue'
 </script>
 
 <template>
-  <SolarSystemView />
+  <SolarSystemPage />
 </template>
 

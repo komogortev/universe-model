@@ -125,7 +125,7 @@ class WorldScene {
 
   _registerCandidatesWithLoop(candidates: Array<any>) {
     candidates.forEach((candidate) => {
-      addToLoopRecursevly(candidate, (_candidate) => {
+      addToLoopRecursevly(candidate, (_candidate: any) => {
         if (_candidate.tick != null) {
           Loop_.updatables.push(_candidate)
         }

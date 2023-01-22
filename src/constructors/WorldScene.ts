@@ -115,12 +115,10 @@ class WorldScene {
     const universeCameraHelper = new THREE.CameraHelper(universeCamera)
 
     characterCamera = createPerspectiveCamera();
-    characterControls = new PointerLockControls(characterCamera, document.body)
-    // characterControls.enabled = true
     const characterCameraHelper = new THREE.CameraHelper(characterCamera)
 
-    scene_.add(universeCameraHelper, characterCameraHelper)
     SceneCameras_.add(universeCamera, characterCamera)
+    scene_.add(universeCameraHelper, characterCameraHelper)
     // set universe camera as default
     activeCamera = SceneCameras_.children[0] as PerspectiveCamera;
   }
@@ -153,7 +151,7 @@ class WorldScene {
 
   initializeSceneObjects() {
     // Spot the spawn threejs object
-    const characterSpawnName = 'Earth';
+    const characterSpawnName = 'Sun';
     let refToCharacterSpawnClass: any;
 
     // loopup through star systems for matching spawn PlanetoidClass
@@ -169,7 +167,7 @@ class WorldScene {
 
     if (refToCharacterSpawnClass != null) {
       CharacterClass_ = new CharacterClass(refToCharacterSpawnClass, characterCamera);
-      refToCharacterSpawnClass.threeGroup.add(CharacterClass_.threeGroup);
+      refToCharacterSpawnClass.threeGroup.children[0].add(CharacterClass_.threeGroup);
       this._registerCandidatesWithLoop([CharacterClass_]);
     }
     console.log(Loop_)
@@ -185,7 +183,7 @@ function onKeyDown( event: KeyboardEvent ) {
   switch ( event.key ) {
     case 'o': /*O*/
       console.log('universeCamera')
-      activeCamera = universeCamera;
+      activeCamera = SceneCameras_.children[0] as PerspectiveCamera;
       universeControls.enabled = true;
       //characterControls.enabled = false;
 
@@ -196,7 +194,7 @@ function onKeyDown( event: KeyboardEvent ) {
       break;
     case 'p': /*P*/
       console.log('characterCamera')
-      activeCamera = characterCamera;
+      activeCamera = CharacterClass_.camera as PerspectiveCamera;
       universeControls.enabled = false;
       //characterControls.lock()
 

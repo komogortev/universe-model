@@ -169,7 +169,7 @@ class CharacterClass {
   // Set character threeGroup position on gravParent (sphere) surface
   // according to class position params (planetDistanceOffset, _latitude, _longitude)
   _updateRigPosition() {
-    const newPosX = this._gravParentClass.threeGroup.children[0].scale.x
+    const newPosX = this._gravParentClass.threeGroup.children[0].scale.x + .25
 
     const position = _CalculateParentPosition(
       newPosX,
@@ -181,7 +181,7 @@ class CharacterClass {
   }
 
   initCharacterBody(){
-    const golemGeometry = new SphereGeometry(.125, 12, 12);
+    const golemGeometry = new SphereGeometry(.11125, 12, 12);
     const golemMaterial = new MeshBasicMaterial({
       map: new TextureLoader().load(map)
     });
@@ -194,15 +194,14 @@ class CharacterClass {
   initCharacterCamera() {
     this.characterBody.add(this.characterCamera)
     this.characterCamera.position.set(
-      this.characterBody.position.x + 0.05,
-      this.characterBody.position.y + 0.05,
+      this.characterBody.position.x + 0.11125,
+      this.characterBody.position.y + 0.11125,
       this.characterBody.position.z
     )
+
     this.characterCamera.lookAt(this._lookAt)
     this.characterCamera.updateProjectionMatrix();
   }
-
-
 
   /**
    * Turn _threeGroup to "STAND" on the sphere surface
@@ -363,9 +362,15 @@ class CharacterClass {
   get threeGroup() {
     return this._threeGroup;
   }
+
   get children() {
     return this._children;
   }
+
+  get camera() {
+    return this.characterCamera
+  }
+
   tick(delta: number) {
     this._reactToInputs()
     this._actualizeGroupOnSphere()

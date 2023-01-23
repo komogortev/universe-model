@@ -23,7 +23,6 @@ class PlanetoidClass {
   nameId: string;
   _localConfig: IPlanetoid;
   _threeGroup: any;
-  _children: any;
   _sharedSphereGeometry: any;
   _gravParentThreeGroup: any;
   _OrbitalRadiansPerSecond: number;
@@ -34,7 +33,6 @@ class PlanetoidClass {
     this._localConfig = config;
     this._threeGroup = new Group(); // A group holds other objects but cannot be seen itself
     this._threeGroup.name = `${this._localConfig.nameId}Group`
-    this._children = [];
     this._sharedSphereGeometry = new SphereGeometry(1, 132, 132); // shared planetoid geometry template
     this._gravParentThreeGroup = parentClass;
     // /!\ radiants = degrees * (2 * Math.PI)
@@ -94,7 +92,6 @@ class PlanetoidClass {
     }
 
     this._threeGroup.add(planetoidMesh)
-    this.children.push()
   }
 
   // 1. Create material according to planetoid config
@@ -162,10 +159,6 @@ class PlanetoidClass {
 
   get threeGroup() {
     return this._threeGroup
-  }
-
-  get children() {
-    return this._children
   }
 
   tick(delta: number) {

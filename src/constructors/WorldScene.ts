@@ -75,7 +75,7 @@ class WorldScene {
 
     // initialize *WorldScene decorations
     this.initializeStarGroup()
-   // this.initializeCharacterGroup();
+    this.initializeCharacterGroup();
 
     // attach constructed scene to the WorldTheater view
     this.container.appendChild(Renderer_.domElement);
@@ -84,8 +84,8 @@ class WorldScene {
   }
 
   _initLights() {
-    const ambLight_ = createAmbientLight(0xffffff, .00000015);
-    Scene_.add(ambLight_)
+    // const ambLight_ = createAmbientLight(0xffffff, .00000015);
+    // Scene_.add(ambLight_)
 
     const pointLight_ = createPointLight(0xffffff, 1000, 100000);
     pointLight_.castShadow = false;
@@ -147,7 +147,7 @@ class WorldScene {
     // })
 
     SceneCameras_.push(CharacterGroupClass_.camera)
-    Scene_.add(CharacterGroupClass_.CameraHelper)
+    Scene_.add(CharacterGroupClass_.cameraHelper)
 
 
     // Spawn has to be at updatable (animated) Object?
@@ -182,26 +182,20 @@ class WorldScene {
 function onKeyDown( event: KeyboardEvent ) {
   switch ( event.key ) {
     case 'o': /*O*/
-      console.log('universeCamera')
-      activeCamera = SceneCameras_.children[0] as PerspectiveCamera;
-      universeControls.enabled = true;
-      //characterControls.enabled = false;
+      ActiveCamera_ = SceneCameras_[0];
+      ActiveCamera_.updateProjectionMatrix();
+      DefaultControls_.enabled = true;
 
-      activeCamera.updateProjectionMatrix();
-      Loop_.camera = activeCamera
-      Resizer_.camera = activeCamera
-      console.log('uni cam')
+      Loop_.camera = ActiveCamera_;
+      Resizer_.camera = ActiveCamera_;
       break;
     case 'p': /*P*/
-      console.log('characterCamera')
-      activeCamera = CharacterClass_.camera as PerspectiveCamera;
-      universeControls.enabled = false;
-      //characterControls.lock()
+      ActiveCamera_ = SceneCameras_[1];
+      ActiveCamera_.updateProjectionMatrix();
+      DefaultControls_.enabled = false;
 
-      activeCamera.updateProjectionMatrix();
-      Loop_.camera = activeCamera
-      Resizer_.camera = activeCamera
-      console.log('char cam')
+      Loop_.camera = ActiveCamera_
+      Resizer_.camera = ActiveCamera_
       break;
   }
 }

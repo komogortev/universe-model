@@ -58,6 +58,7 @@ class WorldScene {
       // initialize *WorldScene instruments
       SceneCameras_ = [];
       DefaultCamera_ = createPerspectiveCamera();
+      DefaultCamera_.position.set(0, 0, -55)
       DefaultControls_ = createOrbitControls(DefaultCamera_, Renderer_.domElement);
       SceneCameras_.push(DefaultCamera_);
       ActiveCamera_ = SceneCameras_[0];
@@ -74,7 +75,7 @@ class WorldScene {
 
     // initialize *WorldScene decorations
     this.initializeStarGroup()
-    this.initializeCharacterGroup();
+   // this.initializeCharacterGroup();
 
     // attach constructed scene to the WorldTheater view
     this.container.appendChild(Renderer_.domElement);
@@ -83,9 +84,11 @@ class WorldScene {
   }
 
   _initLights() {
-    const ambLight_ = createAmbientLight(0xffffff, .5);
-    const pointLight_ = createPointLight(0xffffff, 100);
-    Scene_.add(ambLight_, pointLight_)
+    const ambLight_ = createAmbientLight(0xffffff, .00000015);
+    Scene_.add(ambLight_)
+
+    const pointLight_ = createPointLight(0xffffff, 1000, 100000);
+    Scene_.add(pointLight_)
   }
 
   _initLilGUI() {
@@ -119,9 +122,9 @@ class WorldScene {
     const _starSystemConfig: IPlanetoid = getStarSystemConfigByName(getWorldConstants().STAR_SYSTEM);
     StarGroupClass_ = new PlanetoidGroupClass(_starSystemConfig);
     Scene_.add(StarGroupClass_.threeGroup);
-
     // Register star system classes with animation Loop
-    this._registerCandidatesWithLoop([StarGroupClass_])
+    this._registerCandidatesWithLoop(StarGroupClass_.updatables)
+    console.log(StarGroupClass_, Loop_)
   }
 
   initializeCharacterGroup() {

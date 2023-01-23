@@ -5,12 +5,15 @@ import type { IWorldState, IWorldSettings } from "../types/WorldSettingsTypes";
 const state = reactive<IWorldState>({
   loading: true,
   worldSettings: <IWorldSettings>{
-    timeSpeed: 0,
+    timeSpeed: 10,
+    timeScale: {
+      sec: 0.5
+    },
     size_scaling: {
       multiplier: 0.0001
     },
     distance_scaling: {
-      multiplier: 1000000
+      multiplier: 10000000
     },
     constants: {
       STAR_SYSTEM: 'SolarSystem',

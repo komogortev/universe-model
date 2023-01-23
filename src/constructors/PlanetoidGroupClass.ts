@@ -23,26 +23,22 @@ class PlanetoidGroupClass {
   }
 
   initPlanetoidsRecursevly (config: any, parentThreeGroup?: any | null): void {
-     // attempt generating current config planetoid class
-      const newPlanetoidClass = new PlanetoidClass(config, parent)
+    // attempt generating current config planetoid class
+    const newPlanetoidClass = new PlanetoidClass(config, parent)
+    this._updatables.push(newPlanetoidClass);
 
-      if (parentThreeGroup != null) {
-        parentThreeGroup.add(newPlanetoidClass.threeGroup)
-      } else {
-        this._threeGroup.add(newPlanetoidClass.threeGroup)
-      }
+    if (parentThreeGroup != null) {
+      parentThreeGroup.add(newPlanetoidClass.threeGroup)
+    } else {
+      this._threeGroup.add(newPlanetoidClass.threeGroup)
+    }
 
-      this._updatables.push(newPlanetoidClass);
-
-
-      // repeat for config.children
-      if (config.children != null) {
-        config.children.forEach((childConfig: any) => {
-          this.initPlanetoidsRecursevly(childConfig, newPlanetoidClass.threeGroup)
-        })
-      }
-
-
+    // repeat for config.children
+    if (config.children != null) {
+      config.children.forEach((childConfig: any) => {
+        this.initPlanetoidsRecursevly(childConfig, newPlanetoidClass.threeGroup)
+      })
+    }
   }
 
   get threeGroup() {

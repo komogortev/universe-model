@@ -4,6 +4,7 @@ import {
   BufferGeometry,
   MeshNormalMaterial,
   MeshBasicMaterial,
+  MeshStandardMaterial,
   Mesh,
   Raycaster,
   Vector3,
@@ -25,7 +26,8 @@ class PlanetoidClass {
   _children: any;
   _sharedSphereGeometry: any;
   _gravParentThreeGroup: any;
-  _radiansPerSecond: number;
+  _OrbitalRadiansPerSecond: number;
+  _RotationRadiansPerSecond: number;
 
   constructor(config: any, parentClass?: any) {
     this.nameId = config.nameId
@@ -36,7 +38,8 @@ class PlanetoidClass {
     this._sharedSphereGeometry = new SphereGeometry(1, 132, 132); // shared planetoid geometry template
     this._gravParentThreeGroup = parentClass;
     // /!\ radiants = degrees * (2 * Math.PI)
-    this._radiansPerSecond = convertRotationPerDayToRadians(this._localConfig.rotation_period.days as number)
+    this._OrbitalRadiansPerSecond = this._localConfig.orbital_period != null ? convertRotationPerDayToRadians(this._localConfig.orbital_period.days as number) : 0
+    this._RotationRadiansPerSecond = convertRotationPerDayToRadians(this._localConfig.rotation_period.days as number)
     this._initialize()
   }
 
@@ -101,9 +104,13 @@ class PlanetoidClass {
         emissive: cfg.emissive,
         emissiveIntensity: 1,
       })
-      : new MeshPhongMaterial({
+       : new MeshStandardMaterial({
         color: cfg.color ? new Color(cfg.color) : '#fff',
       })
+
+    if (cfg.map != null) {
+      sphereMaterial.map = loader.load(cfg.map);
+    }
 
     if (cfg.emissiveMap != null) {
       sphereMaterial.emissiveMap = loader.load(cfg.emissiveMap);
@@ -119,17 +126,17 @@ class PlanetoidClass {
       sphereMaterial.bumpScale = cfg.bumpScale || 1
     }
 
-    if (cfg.specularMap != null) {
-      sphereMaterial.specularMap = loader.load(cfg.specularMap)
-      sphereMaterial.shininess = cfg.shininess || 0
-    }
+    // if (cfg.emissive != null && cfg.specularMap != null) {
+    //   sphereMaterial.specularMap = loader.load(cfg.specularMap)
+    //   sphereMaterial.shininess = cfg.shininess || 0
+    // }
 
     return sphereMaterial;
   }
 
   _generateAthmosphere(parentScale: number, athmosphereMap: string) {
     const _athmosphereDepth = this._localConfig.athmosphereDepth != null ? this._localConfig.athmosphereDepth : 0.5
-    const materialClouds = new MeshBasicMaterial({
+    const materialClouds = new MeshStandardMaterial({
       map: loader.load(athmosphereMap),
       transparent: true,
       opacity: this._localConfig.athmosphereOpacity,
@@ -143,7 +150,7 @@ class PlanetoidClass {
 
     // rotate athmosphereMesh in anticlockwise direction (+=)
     athmosphereMesh.tick = (delta: number) => {
-      athmosphereMesh.rotation.y += delta * this._radiansPerSecond *  worldSettings.value.timeSpeed;
+      athmosphereMesh.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
     };
 
     return athmosphereMesh;
@@ -162,10 +169,11 @@ class PlanetoidClass {
   }
 
   tick(delta: number) {
-    this._threeGroup.rotation.y += delta * this._radiansPerSecond *  worldSettings.value.timeSpeed;
+    this._threeGroup.rotation.y += delta * this._OrbitalRadiansPerSecond *  worldSettings.value.timeSpeed;
+    this.mesh.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
 
     if (this._threeGroup.children[0].children != null && this._threeGroup.children[0].children[0] != null && this._threeGroup.children[0].children[0].name == 'Athmosphere Map') {
-      this._threeGroup.children[0].children[0].rotation.y += delta * this._radiansPerSecond *  worldSettings.value.timeSpeed;
+      this._threeGroup.children[0].children[0].rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
     }
     // this.mesh.position.x = ((this._localConfig.distance.AU as number) * worldSettings.value.constants.AU.km) / worldSettings.value.distance_scaling.multiplier
   }

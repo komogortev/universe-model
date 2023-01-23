@@ -21,12 +21,11 @@ const state = reactive<IStarSystemsConfig>({
       type: 'star',
       radius:   { km: 700000 * 0.1 }, // multiply by additional scale down
       distance: { AU: 0 },
-      orbital_period:  { days: 0 },
       rotation_period: { days: 27 },
       tilt: 0,
       emissive: 0xFFFF00,
       emissiveMap: 'models/solar-system/textures/sun/2k_sun.jpg',
-      emissiveIntensity: 10,
+      emissiveIntensity: 100000,
       BG_MAP: '/models/solar-system/textures/8k_stars_milky_way.jpg',
       children: [
         {
@@ -37,9 +36,8 @@ const state = reactive<IStarSystemsConfig>({
           orbital_period: { days: 87.97 },
           rotation_period: { days: 175.94 },
           tilt: 0.3,
-          emissive: 0xA6ACAF,
-          emissiveMap: 'models/solar-system/textures/mercury/mercury_2k.jpg',
-          emissiveIntensity: .5,
+          color: 0xA6ACAF,
+          map: 'models/solar-system/textures/mercury/mercury_2k.jpg',
           bumpMap: 'models/solar-system/textures/mercury/mercury_bump.jpg',
           bumpScale: 0.0125,
         },
@@ -51,9 +49,8 @@ const state = reactive<IStarSystemsConfig>({
           orbital_period:  { days: 224.7 },
           rotation_period: { days: 243 },
           tilt: 3.86,
-          emissive: 0xE67E22,
-          emissiveMap: 'models/solar-system/textures/venus/2k_venus_surface.jpg',
-          emissiveIntensity: .25,
+          color: 0xE67E22,
+          map: 'models/solar-system/textures/venus/2k_venus_surface.jpg',
           displacementMap: 'models/solar-system/textures/venus/venus_bump.jpg',
           displacementScale: 0.025,
           bumpMap: 'models/solar-system/textures/venus/venus_bump.jpg',
@@ -70,9 +67,8 @@ const state = reactive<IStarSystemsConfig>({
           orbital_period:  { days: 365 },
           rotation_period: { days: 1 },
           tilt: 0.41,
-          emissive: 0xEBF5FB,
-          emissiveMap: 'models/solar-system/textures/earth/earth_daymap_8k.jpg',
-          emissiveIntensity: .125,
+          color: 0xEBF5FB,
+          map: 'models/solar-system/textures/earth/earth_daymap_8k.jpg',
           displacementMap: 'models/solar-system/textures/earth/earth_bump_8k.jpg',
           displacementScale: 0.15,
           bumpMap: 'models/solar-system/textures/earth/EarthNormal.png',
@@ -91,9 +87,8 @@ const state = reactive<IStarSystemsConfig>({
               orbital_period:  { days: 28 },
               rotation_period: { days: 0 },
               tilt: 5.145,
-              emissive: 0xFEF9E7,
-              emissiveMap: 'models/solar-system/textures/earth/moons/moon_2k.jpg',
-              emissiveIntensity: .00125,
+              color: 0xFEF9E7,
+              map: 'models/solar-system/textures/earth/moons/moon_2k.jpg',
             }
           ],
           POI: [
@@ -132,9 +127,8 @@ const state = reactive<IStarSystemsConfig>({
           orbital_period:  { days: 687 },
           rotation_period: { days: 1.02 },
           tilt: 5.65,
-          emissive: 0x943126,
-          emissiveMap: 'models/solar-system/textures/mars/2k_mars.jpg',
-          emissiveIntensity: .000125,
+          color: 0x943126,
+          map: 'models/solar-system/textures/mars/2k_mars.jpg',
           bumpMap: 'models/solar-system/textures/mars/1k_mars_bump.jpg',
           bumpScale: 0.5,
         },
@@ -145,9 +139,8 @@ const state = reactive<IStarSystemsConfig>({
           distance: { AU: 5.2 },
           orbital_period:  { days: 4380 },
           rotation_period: { days: 0.413575 },
-          emissive: 0xFAE5D3,
-          emissiveMap: 'models/solar-system/textures/jupiter/2k_jupiter.jpg',
-          emissiveIntensity: .015,
+          color: 0xFAE5D3,
+          map: 'models/solar-system/textures/jupiter/2k_jupiter.jpg',
           children: [
             {
               nameId: 'Ganymede',
@@ -157,9 +150,8 @@ const state = reactive<IStarSystemsConfig>({
               orbital_period:  { days: 7.16 },
               rotation_period: { days: 0 },
               tilt: 0.33,
-              emissive: 0xFAE5D3,
-              emissiveMap: 'models/solar-system/textures/jupiter/moons/Ganymede-blinn.jpg',
-              emissiveIntensity: .015,
+              color: 0xFAE5D3,
+              map: 'models/solar-system/textures/jupiter/moons/Ganymede-blinn.jpg',
             }
           ]
         },
@@ -171,9 +163,8 @@ const state = reactive<IStarSystemsConfig>({
           orbital_period:  { days: 29 * 365 },
           rotation_period: { days: 0.43416 },
           tilt: 26.73,
-          emissive: 0xFAE5D3,
-          emissiveMap: 'models/solar-system/textures/2k_saturn.jpg',
-          emissiveIntensity: 0.001,
+          color: 0xFAE5D3,
+          map: 'models/solar-system/textures/2k_saturn.jpg',
           children: [
             {
               nameId: 'Titan',
@@ -254,9 +245,8 @@ const state = reactive<IStarSystemsConfig>({
           orbital_period:  { days: 30660 },
           rotation_period: { days: 0.71832 },
           tilt: 97.77,
-          emissive: 0x2E86C1,
-          emissiveMap: 'models/solar-system/textures/2k_uranus.jpg',
-          emissiveIntensity: 0.001,
+          color: 0x2E86C1,
+          map: 'models/solar-system/textures/2k_uranus.jpg',
           children: [
             {
               nameId: 'Titania',
@@ -318,9 +308,8 @@ const state = reactive<IStarSystemsConfig>({
           orbital_period:  { days: 165 * 365 },
           rotation_period: { days: 0.67083 },
           tilt: 28.32,
-          emissive: 0x154360,
-          emissiveMap: 'models/solar-system/textures/2k_neptune.jpg',
-          emissiveIntensity: 0.001,
+          color: 0x154360,
+          map: 'models/solar-system/textures/2k_neptune.jpg',
           children: [
             {
               nameId: 'Triton',

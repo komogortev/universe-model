@@ -35,8 +35,8 @@ function createDirectionalLight(color = 'white', intensity = 8) {
  * @param { Number } intensity
  * @returns { Object } light
  */
-function createPointLight(color = 0xFFFFFF, intensity = 1) {
-  const pointLight = new PointLight(color, intensity)
+function createPointLight(color = 0xFFFFFF, intensity = 1, distance = 300) {
+  const pointLight = new PointLight(color, intensity, distance)
   return pointLight;
 }
 

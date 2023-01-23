@@ -7,10 +7,11 @@ type wildcardObject = {
 }
 
 export interface IWorldSettings {
-  timeSpeed: number,
+  timeSpeed: number;
+  timeScale: { sec: number };
   size_scaling: sizeScalingType;
   distance_scaling: sizeScalingType;
-  constants: wildcardObject
+  constants: wildcardObject;
 }
 
 export interface IWorldState {

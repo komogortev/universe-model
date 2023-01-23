@@ -4,11 +4,21 @@
  * @returns { Number } radiansPerSecond
  */
 export function convertRotationPerDayToRadians(rotation_period: number) {
+  if (rotation_period == 0) {
+    return rotation_period
+  }
   const minutesInDay = 24 * 60
-  const fullRevolutionInMinutes = rotation_period * minutesInDay
-  const degreesPerMinute = 1 * 360 / fullRevolutionInMinutes
+  const secondsInDay = 24 * 60 * 60
+  // rotation period expressed in minutes
+  const amountOfMinutesInOneRotationPeriod = rotation_period * minutesInDay
+  const amountOfSecondsInOneRotationPeriod = rotation_period * minutesInDay
+
+
+  const degreesPerMinute = 1 * 360 / amountOfMinutesInOneRotationPeriod
+  const degreesPerSecond = 1 * 360 / amountOfSecondsInOneRotationPeriod
   const radiansPerMinute = degreesPerMinute * (2 * Math.PI)
-  const radiansPerSecond = radiansPerMinute / 60;
+  //const radiansPerSecond = radiansPerMinute / 60;
+  const radiansPerSecond = degreesPerSecond * (2 * Math.PI)
   return radiansPerSecond
 }
 
@@ -83,8 +93,8 @@ export function decorateLog(label = 'empty label', msg = '', rest = '') {
 export function helperAddToLoopRecursevly(candidate: any, callback: (candidate: any) => void ) {
   callback(candidate)
 
-  if (candidate.children != null) {
-    candidate.children.forEach((child: any) => helperAddToLoopRecursevly(child, callback))
+  if (candidate.updatables != null) {
+    candidate.updatables.forEach((child: any) => helperAddToLoopRecursevly(child, callback))
   }
 }
 

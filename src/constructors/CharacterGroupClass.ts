@@ -1,13 +1,6 @@
-import { PointerLockControls } from 'three/examples/jsm/controls/PointerLockControls';
-import { Group, ArrowHelper, AxesHelper, Quaternion, PerspectiveCamera } from "three"
-import {
-  SphereGeometry,
-  MeshNormalMaterial,
-  MeshBasicMaterial,
-  Mesh,
-  Raycaster,
-  Vector3,
-  TextureLoader, GridHelper, MathUtils, LineBasicMaterial, BufferGeometry, Line
+import { Group, ArrowHelper, AxesHelper, Quaternion, PerspectiveCamera,
+  SphereGeometry,  MeshNormalMaterial,  MeshBasicMaterial,  Mesh,  Raycaster,
+  Vector3,  TextureLoader, GridHelper, MathUtils, LineBasicMaterial, BufferGeometry, Line
 } from 'three'
 import { calcPosFromLatLngRad } from '../utils/helpers'
 import map from '../assets/ironman.png'

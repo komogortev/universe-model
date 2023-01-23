@@ -1,4 +1,4 @@
-import type { IPlanetoid } from './../types/StarsStoreTypes';
+import type { IPlanetoid } from '../types/StarsStoreTypes';
 import {
   SphereGeometry,
   BufferGeometry,
@@ -24,7 +24,7 @@ class PlanetoidClass {
   _threeGroup: any;
   _children: any;
   _sharedSphereGeometry: any;
-  _gravParentClass: any;
+  _gravParentThreeGroup: any;
   _radiansPerSecond: number;
 
   constructor(config: any, parentClass?: any) {
@@ -34,7 +34,7 @@ class PlanetoidClass {
     this._threeGroup.name = `${this._localConfig.nameId}Group`
     this._children = [];
     this._sharedSphereGeometry = new SphereGeometry(1, 132, 132); // shared planetoid geometry template
-    this._gravParentClass = parentClass;
+    this._gravParentThreeGroup = parentClass;
     // /!\ radiants = degrees * (2 * Math.PI)
     this._radiansPerSecond = convertRotationPerDayToRadians(this._localConfig.rotation_period.days as number)
     this._initialize()
@@ -53,9 +53,9 @@ class PlanetoidClass {
     planetoidMesh.rotation.y = this._localConfig.tilt
 
     // offset parent and child radius from distance value
-    const planetDistanceOffset = this._gravParentClass != null && this._gravParentClass.threeGroup.children[0].scale.x > 0
-      ? ((this._gravParentClass.threeGroup.children[0].scale.x + planetoidMesh.scale.x) / 2)
-      : 0
+    const planetDistanceOffset = 0//this._gravParentThreeGroup != null && this._gravParentThreeGroup.children[0].scale.x > 0
+     // ? 0//((this._gravParentThreeGroup.children[0].scale.x + planetoidMesh.scale.x) / 2)
+      //: 0
 
     const planetDistanceInKm = (this._localConfig.distance.AU as number) * worldSettings.value.constants.AU.km
     planetoidMesh.position.x = (planetDistanceInKm + planetDistanceOffset) / worldSettings.value.distance_scaling.multiplier

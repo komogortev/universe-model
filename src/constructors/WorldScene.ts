@@ -15,8 +15,8 @@ import { helperAddToLoopRecursevly, findClassByNameIdRecursevly } from '../utils
 
 // WorldScene decorations
 import type { IPlanetoid } from '../types/StarsStoreTypes';
-import { StarGroupClass } from './StarGroup';
-import { CharacterGroupClass } from './CharacterGroup';
+import { PlanetoidGroupClass } from './PlanetoidGroupClass';
+import { CharacterGroupClass } from './CharacterGroupClass';
 
 // Connect to App stores
 import useStarSystemsStore from "../stores/StarsSystemsStore";
@@ -117,7 +117,7 @@ class WorldScene {
 
   initializeStarGroup() {
     const _starSystemConfig: IPlanetoid = getStarSystemConfigByName(getWorldConstants().STAR_SYSTEM);
-    StarGroupClass_ = new StarGroupClass(_starSystemConfig);
+    StarGroupClass_ = new PlanetoidGroupClass(_starSystemConfig);
     Scene_.add(StarGroupClass_.threeGroup);
 
     // Register star system classes with animation Loop

@@ -5,7 +5,7 @@ import type { IWorldState, IWorldSettings } from "../types/WorldSettingsTypes";
 const state = reactive<IWorldState>({
   loading: true,
   worldSettings: <IWorldSettings>{
-    timeSpeed: 10,
+    timeSpeed: 1,
     timeScale: {
       sec: 0.5
     },

@@ -104,7 +104,7 @@ class PlanetoidClass {
         emissive: cfg.emissive,
         emissiveIntensity: 1,
       })
-       : new MeshStandardMaterial({
+       : new MeshPhongMaterial({
         color: cfg.color ? new Color(cfg.color) : '#fff',
       })
 

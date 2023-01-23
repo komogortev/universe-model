@@ -88,6 +88,7 @@ class WorldScene {
     Scene_.add(ambLight_)
 
     const pointLight_ = createPointLight(0xffffff, 1000, 100000);
+    pointLight_.castShadow = false;
     Scene_.add(pointLight_)
   }
 

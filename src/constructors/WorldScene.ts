@@ -70,7 +70,7 @@ class WorldScene {
       const defaultCameraHelper = new THREE.CameraHelper(DefaultCamera_);
       DefaultCamera_.add(defaultCameraHelper);
 
-      //this._initLights();
+      this._initLights();
     }
 
     // initialize *WorldScene systems (2)
@@ -90,40 +90,6 @@ class WorldScene {
   }
 
   _initLights() {
-   class ColorGUIHelper {
-      object: any;
-      prop: any;
-      constructor(object: any, prop: any) {
-        this.object = object;
-        this.prop = prop;
-      }
-      get value() {
-        return `#${this.object[this.prop].getHexString()}`;
-      }
-      set value(hexString) {
-        this.object[this.prop].set(hexString);
-      }
-    }
-
-    {
-      const color = 0xFFFFFF;
-      const intensity = 1;
-      const light = new THREE.PointLight(color, intensity);
-      light.position.set(0, 10, 0);
-      Scene_.add(light);
-
-      const helper = new THREE.PointLightHelper(light);
-      light.add(helper);
-
-      function updateLight() {
-        helper.update();
-      }
-
-      GUI_.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
-      GUI_.add(light, 'intensity', 0, 2, 0.01);
-      GUI_.add(light, 'distance', 0, 40).onChange(updateLight);
-      this.makeXYZGUI(GUI_, light.position, 'position', updateLight);
-    }
   }
 
   _initLilGUI() {

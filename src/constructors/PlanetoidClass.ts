@@ -8,7 +8,7 @@ import {
   Mesh,
   Raycaster,
   Vector3,
-  TextureLoader, Group, Color, MeshPhongMaterial,
+  TextureLoader, Group, Color, MeshPhongMaterial,PointLight,PointLightHelper
 } from 'three'
 import { calcPosFromLatLngRad, convertRotationPerDayToRadians } from '../utils/helpers';
 
@@ -126,6 +126,8 @@ class PlanetoidClass {
 
     if (cfg.emissiveMap != null) {
       sphereMaterial.emissiveMap = loader.load(cfg.emissiveMap);
+
+      this._initLight()
     }
 
     if (cfg.displacementMap != null) {
@@ -168,6 +170,33 @@ class PlanetoidClass {
     return athmosphereMesh;
   }
 
+  _initLight() {
+    class ColorGUIHelper {
+      object: any;
+      prop: any;
+      constructor(object: any, prop: any) {
+        this.object = object;
+        this.prop = prop;
+      }
+      get value() {
+        return `#${this.object[this.prop].getHexString()}`;
+      }
+      set value(hexString) {
+        this.object[this.prop].set(hexString);
+      }
+    }
+
+    {
+      const color = 0xFFFFFF;
+      const intensity = 1;
+      const light = new PointLight(color, intensity);
+      light.position.set(0, 0, 0);
+      this.threeGroup.add(light);
+
+      const helper = new PointLightHelper(light);
+      light.add(helper);
+    }
+  }
   get mesh() {
     return this._threeGroup.children[0]
   }
@@ -177,11 +206,12 @@ class PlanetoidClass {
   }
 
   tick(delta: number) {
-    this._threeGroup.rotation.y += delta * this._OrbitalRadiansPerSecond *  worldSettings.value.timeSpeed;
+    this.threeGroup.rotation.y += delta * this._OrbitalRadiansPerSecond *  worldSettings.value.timeSpeed;
     this.mesh.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
 
-    if (this._threeGroup.children[0].children != null && this._threeGroup.children[0].children[0] != null && this._threeGroup.children[0].children[0].name == 'Athmosphere Map') {
-      this._threeGroup.children[0].children[0].rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
+    // Athmosphere rotation
+    if (this.threeGroup.children[0].children != null && this._threeGroup.children[0].children[0] != null && this._threeGroup.children[0].children[0].name == 'Athmosphere Map') {
+      this.threeGroup.children[0].children[0].rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
     }
     // this.mesh.position.x = ((this._localConfig.distance.AU as number) * worldSettings.value.constants.AU.km) / worldSettings.value.distance_scaling.multiplier
   }

@@ -10,9 +10,7 @@ const state = reactive<IWorldState>({
       sec: 0.5
     },
     planetoidScale: 1000, // multiply planetoid AU/SceneUnits size
-    distance_scaling: {
-      multiplier: 1000000
-    },
+    distanceScale: 2,
     constants: {
       STAR_SYSTEM: 'SolarSystem',
       CHARACTER_SPAWN: 'Sun',
@@ -49,9 +47,7 @@ export default function useWorldSettingsStore() {
   const setDistanceScaleMultiplier = (value: number) => {
     state.worldSettings = {
       ...state.worldSettings,
-      distance_scaling: {
-        multiplier: value
-      }
+      distanceScale: value
     }
   }
 

@@ -23,7 +23,7 @@ import { CharacterGroupClass } from './CharacterGroupClass';
 import useStarSystemsStore from "../stores/StarsSystemsStore";
 const { getStarSystemConfigByName } = useStarSystemsStore();
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
-const { getWorldSettings, getWorldConstants, setTimeSpeed, setSizeScaleMultiplier } = useWorldSettingsStore();
+const { getWorldSettings, getWorldConstants, setTimeSpeed, setSizeScaleMultiplier, setDistanceScaleMultiplier } = useWorldSettingsStore();
 
 // *WorldScene systems
 let Renderer_: THREE.WebGLRenderer;
@@ -106,6 +106,9 @@ class WorldScene {
     )
     GUI_.add(guiProperties, "planetoidScale", 0, 10000, 1000 ).onChange(
       (value: number) => { setSizeScaleMultiplier(value);  }
+    )
+    GUI_.add(guiProperties, "distanceScale", -10, 10 ).onChange(
+      (value: number) => { setDistanceScaleMultiplier(value);  }
     )
   }
 

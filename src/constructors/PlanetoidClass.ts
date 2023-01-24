@@ -60,7 +60,7 @@ class PlanetoidClass {
     )
 
     // Set planetoid distance from group center
-    const planetDistanceInAU = (parseFloat(this._localConfig.distance.AU as string)) /* * worldSettings.value.constants.AU.km */
+    const planetDistanceInAU = (parseFloat(this._localConfig.distance.AU as string)) * worldSettings.value.distanceScale
     let planetDistanceInSceneUnits: number;
 
     if (this._localConfig.type !== 'moon') {
@@ -74,7 +74,7 @@ class PlanetoidClass {
       // if parent is not three group but a mesh we can calculate parent mesh offset
       && this._gravParentThreeGroup.children != null && this._gravParentThreeGroup.children[0] != null
       && this._gravParentThreeGroup.children[0].scale.x > 0
-     ? ((this._gravParentThreeGroup.children[0].scale.x + planetoidMesh.scale.x))
+     ? (this._gravParentThreeGroup.children[0].scale.x + planetoidMesh.scale.x)
       : 0
 
     planetoidMesh.position.x = planetDistanceInSceneUnits + planetDistanceOffset

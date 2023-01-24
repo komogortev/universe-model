@@ -10,7 +10,7 @@ export interface IWorldSettings {
   timeSpeed: number;
   timeScale: { sec: number };
   planetoidScale: number;
-  distance_scaling: sizeScalingType;
+  distanceScale: number;
   constants: wildcardObject;
 }
 

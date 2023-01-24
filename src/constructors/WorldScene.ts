@@ -62,7 +62,7 @@ class WorldScene {
     {
       SceneCameras_ = [];
       DefaultCamera_ = createPerspectiveCamera();
-      DefaultCamera_.position.set(0, 0, -55)
+      DefaultCamera_.position.set(0, 0, -15)
       DefaultControls_ = createOrbitControls(DefaultCamera_, Renderer_.domElement);
       SceneCameras_.push(DefaultCamera_);
       ActiveCamera_ = SceneCameras_[0];
@@ -81,7 +81,7 @@ class WorldScene {
     // initialize *WorldScene decorations
     this.initGymTools()
     this.initializeStarGroup()
-    this.initializeCharacterGroup();
+    //this.initializeCharacterGroup();
 
     // attach constructed scene to the WorldTheater view
     this.container.appendChild(Renderer_.domElement);
@@ -138,7 +138,7 @@ class WorldScene {
     GUI_.add(guiProperties, "timeSpeed", -100, 100).onChange(
       (value: number) => { setTimeSpeed(value);  }
     )
-    GUI_.add(guiProperties.size_scaling, "multiplier", -guiProperties.size_scaling.multiplier*5, guiProperties.size_scaling.multiplier*5,guiProperties.size_scaling.multiplier ).onChange(
+    GUI_.add(guiProperties, "planetoidScale", 0, 10000, 1000 ).onChange(
       (value: number) => { setSizeScaleMultiplier(value);  }
     )
   }
@@ -237,7 +237,8 @@ class WorldScene {
     mesh.rotation.x = Math.PI * -.5;
     Scene_.add(mesh);
   }
-  tick(delta) {
+
+  tick(delta: number) {
     this.stats.update(delta);
   }
 

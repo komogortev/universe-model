@@ -27,40 +27,43 @@ class PlanetoidClass {
   _gravParentThreeGroup: any;
   _OrbitalRadiansPerSecond: number;
   _RotationRadiansPerSecond: number;
+  geometry: any;
 
-  constructor(config: any, parentClass?: any) {
+  constructor(config: any, parentClass?: any, options?: any) {
     this.nameId = config.nameId
     this._localConfig = config;
     this._threeGroup = new Group(); // A group holds other objects but cannot be seen itself
     this._threeGroup.name = `${this._localConfig.nameId}Group`
-    this._sharedSphereGeometry = new SphereGeometry(1, 132, 132); // shared planetoid geometry template
     this._gravParentThreeGroup = parentClass;
+    this.geometry = options != null && options.geometry != null ? options.geometry : new SphereGeometry(1, 32, 32);
     // /!\ radiants = degrees * (2 * Math.PI)
     this._OrbitalRadiansPerSecond = this._localConfig.orbital_period != null ? convertRotationPerDayToRadians(this._localConfig.orbital_period.days as number) : 0
     this._RotationRadiansPerSecond = convertRotationPerDayToRadians(this._localConfig.rotation_period.days as number)
+
     this._initialize()
   }
 
   _initialize() {
     // 1. Create sphere mesh
     const planetoidMesh = new Mesh(
-      this._sharedSphereGeometry,
+      this.geometry,
       this._generateMaterial(this._localConfig)
     );
     planetoidMesh.name = `${this._localConfig.nameId} MeshGroup`
-    planetoidMesh.scale.multiplyScalar(
-      (this._localConfig.radius.km as number) * (worldSettings.value.size_scaling.multiplier as number)
-    )
+
     planetoidMesh.rotation.y = this._localConfig.tilt
+    planetoidMesh.scale.multiplyScalar(
+      (parseFloat(this._localConfig.radius.AU as string))  * (worldSettings.value.planetoidScale as number)
+    )
 
     // Set planetoid distance from group center
-    const planetDistanceInKm = (parseFloat(this._localConfig.distance.AU as string)) * worldSettings.value.constants.AU.km
+    const planetDistanceInAU = (parseFloat(this._localConfig.distance.AU as string)) /* * worldSettings.value.constants.AU.km */
     let planetDistanceInSceneUnits: number;
 
     if (this._localConfig.type !== 'moon') {
-      planetDistanceInSceneUnits = planetDistanceInKm / worldSettings.value.distance_scaling.multiplier
+      planetDistanceInSceneUnits = planetDistanceInAU /* / worldSettings.value.distance_scaling.multiplier */
     } else {
-      planetDistanceInSceneUnits = planetDistanceInKm / (worldSettings.value.distance_scaling.multiplier / 10)
+      planetDistanceInSceneUnits = planetDistanceInAU /* / (worldSettings.value.distance_scaling.multiplier / 10) */
     }
 
     // offset parent and child radius from distance value
@@ -95,7 +98,7 @@ class PlanetoidClass {
         const cartPos = calcPosFromLatLngRad(
           poi.lat,
           poi.lng,
-          ((this._localConfig.radius.km as number) * worldSettings.value.size_scaling.multiplier) + 0.375
+          ((this._localConfig.radius.km as number) * worldSettings.value.planetoidScale) + 0.375
         );
         poiMesh.position.set(cartPos.x, cartPos.y, cartPos.z);
 

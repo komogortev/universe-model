@@ -9,7 +9,7 @@ type wildcardObject = {
 export interface IWorldSettings {
   timeSpeed: number;
   timeScale: { sec: number };
-  size_scaling: sizeScalingType;
+  planetoidScale: number;
   distance_scaling: sizeScalingType;
   constants: wildcardObject;
 }

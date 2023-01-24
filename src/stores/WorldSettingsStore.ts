@@ -9,9 +9,7 @@ const state = reactive<IWorldState>({
     timeScale: {
       sec: 0.5
     },
-    size_scaling: {
-      multiplier: 0.0001
-    },
+    planetoidScale: 1000, // multiply planetoid AU/SceneUnits size
     distance_scaling: {
       multiplier: 1000000
     },
@@ -27,13 +25,13 @@ const state = reactive<IWorldState>({
       position: {x: 0, y: 0, z: 50},
       aspect: window.innerWidth / window.innerHeight, // aspect ratio
       near: 0.05, // near clipping plane
-      far: 10000 // far clipping plane
+      far: 1000 // far clipping plane
     },
   },
 });
 
 export default function useWorldSettingsStore() {
-  const getWorldSettings = (() => state.worldSettings );
+  const getWorldSettings = (() => ({ ...state.worldSettings }));
 
   const getWorldConstants = (() => ({ ...state.worldSettings.constants }) );
 
@@ -44,9 +42,7 @@ export default function useWorldSettingsStore() {
   const setSizeScaleMultiplier = (value: number) => {
     state.worldSettings = {
       ...state.worldSettings,
-      size_scaling: {
-        multiplier: value
-      }
+      planetoidScale: value
     }
   }
 

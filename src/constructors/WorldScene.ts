@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import GUI from 'lil-gui';
+import Stats from 'three/examples/jsm/libs/stats.module.js';
 
 // WorldScene systems
 import { createRenderer } from '../systems/Renderer';
@@ -44,11 +45,14 @@ let CharacterGroupClass_: any;
 class WorldScene {
   container: HTMLElement;
   textureLoader: any;
+  stats: any;
 
   constructor(container: HTMLElement) {
     this.container = container;
     this.textureLoader = new THREE.TextureLoader();
     this._initLilGUI()
+    this.stats = new Stats();
+    this.container.appendChild(this.stats.dom);
 
     // initialize *WorldScene systems (1)
     Renderer_ = createRenderer();
@@ -72,7 +76,7 @@ class WorldScene {
     // initialize *WorldScene systems (2)
     Resizer_ = new Resizer(this.container, ActiveCamera_, Renderer_);
     Loop_ = new Loop(ActiveCamera_, Scene_, Renderer_);
-
+Loop_.updatables.push(this)
     // initialize *WorldScene decorations
     this.initGymTools()
     this.initializeStarGroup()
@@ -170,7 +174,6 @@ class WorldScene {
     const parentNameid = `${getWorldConstants().CHARACTER_SPAWN}GroupClass`;
     const parent = Loop_.updatables.find(u => u.nameId === parentNameid)
     CharacterGroupClass_ = new CharacterGroupClass(characterCamera, parent);
-    this.makeXYZGUI(GUI_, CharacterGroupClass_.threeGroup.position, 'character', () => {console.log('char')})
 
     // attempt to spot spawn location (planetoid surface?)
 
@@ -232,6 +235,9 @@ class WorldScene {
     mesh.position.set(0,-2,0)
     mesh.rotation.x = Math.PI * -.5;
     Scene_.add(mesh);
+  }
+  tick(delta) {
+    this.stats.update(delta);
   }
 
   start() { Loop_.start(); }

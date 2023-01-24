@@ -183,7 +183,7 @@ class WorldScene {
   }
 
   initGymTools() {
-    const planeSize = 500;
+    const planeSize = 200;
 
     const loader = new THREE.TextureLoader();
     const texture = loader.load('https://threejs.org/manual/examples/resources/images/checker.png');

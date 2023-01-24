@@ -8,7 +8,7 @@ import {
   Mesh,
   Raycaster,
   Vector3,
-  TextureLoader, Group, Color, MeshPhongMaterial,PointLight,PointLightHelper
+  TextureLoader, Group, Color, MeshPhongMaterial,PointLight,PointLightHelper, Light
 } from 'three'
 import { calcPosFromLatLngRad, convertRotationPerDayToRadians } from '../utils/helpers';
 
@@ -51,6 +51,9 @@ class PlanetoidClass {
     );
     planetoidMesh.name = `${this._localConfig.nameId} MeshGroup`
 
+    if (this._localConfig.emissive != null) {
+      planetoidMesh.add(this._createLight());
+    }
     planetoidMesh.rotation.y = this._localConfig.tilt
     planetoidMesh.scale.multiplyScalar(
       (parseFloat(this._localConfig.radius.AU as string))  * (worldSettings.value.planetoidScale as number)
@@ -126,8 +129,6 @@ class PlanetoidClass {
 
     if (cfg.emissiveMap != null) {
       sphereMaterial.emissiveMap = loader.load(cfg.emissiveMap);
-
-      this._initLight()
     }
 
     if (cfg.displacementMap != null) {
@@ -170,7 +171,7 @@ class PlanetoidClass {
     return athmosphereMesh;
   }
 
-  _initLight() {
+  _createLight() {
     class ColorGUIHelper {
       object: any;
       prop: any;
@@ -186,17 +187,18 @@ class PlanetoidClass {
       }
     }
 
-    {
-      const color = 0xFFFFFF;
-      const intensity = 1;
-      const light = new PointLight(color, intensity);
-      light.position.set(0, 0, 0);
-      this.threeGroup.add(light);
+    const color = 0xFFFFFF;
+    const intensity = 1;
+    const light = new PointLight(color, intensity);
+    light.position.set(0, 0, 0);
 
-      const helper = new PointLightHelper(light);
-      light.add(helper);
-    }
+    const helper = new PointLightHelper(light);
+    light.add(helper);
+
+
+    return light;
   }
+
   get mesh() {
     return this._threeGroup.children[0]
   }

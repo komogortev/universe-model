@@ -195,32 +195,6 @@ class WorldScene {
     mesh.rotation.x = Math.PI * -.5;
     Scene_.add(mesh);
 
-    const color = 0xFFFFFF;
-    const intensity = 1;
-    const light = new THREE.DirectionalLight(color, intensity);
-    light.position.set(0, 10, 0);
-    light.target.position.set(-5, 0, 0);
-    Scene_.add(light);
-    Scene_.add(light.target);
-
-
-    const helper = new THREE.DirectionalLightHelper(light);
-    Scene_.add(helper);
-
-    function updateLight() {
-      light.target.updateMatrixWorld();
-      helper.update();
-    }
-    updateLight();
-
-    function makeXYZGUI(gui: any, vector3: any, name: any, onChangeFn: any) {
-      const folder = gui.addFolder(name);
-      folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
-      folder.add(vector3, 'y', 0, 10).onChange(onChangeFn);
-      folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
-      folder.open();
-    }
-
     class ColorGUIHelper {
       object: any;
       prop: any;
@@ -236,31 +210,52 @@ class WorldScene {
       }
     }
 
-    GUI_.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
-    GUI_.add(light, 'intensity', 0, 2, 0.01);
+    function makeXYZGUI(gui, vector3, name, onChangeFn) {
+      const folder = gui.addFolder(name);
+      folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
+      folder.add(vector3, 'y', 0, 10).onChange(onChangeFn);
+      folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
+      folder.open();
+    }
 
-    makeXYZGUI(GUI_, light.position, 'position', updateLight);
-    makeXYZGUI(GUI_, light.target.position, 'target', updateLight);
+    {
+      const color = 0xFFFFFF;
+      const intensity = 1;
+      const light = new THREE.PointLight(color, intensity);
+      light.position.set(0, 10, 0);
+      Scene_.add(light);
 
+      const helper = new THREE.PointLightHelper(light);
+      light.add(helper);
 
-     {
+      function updateLight() {
+        helper.update();
+      }
+
+      GUI_.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
+      GUI_.add(light, 'intensity', 0, 2, 0.01);
+      GUI_.add(light, 'distance', 0, 40).onChange(updateLight);
+      makeXYZGUI(GUI_, light.position, 'position', updateLight);
+    }
+
+    {
     const cubeSize = 4;
     const cubeGeo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
     const cubeMat = new THREE.MeshPhongMaterial({color: '#8AC'});
     const mesh = new THREE.Mesh(cubeGeo, cubeMat);
     mesh.position.set(cubeSize + 1, cubeSize / 2, 0);
     Scene_.add(mesh);
-  }
-  {
-    const sphereRadius = 3;
-    const sphereWidthDivisions = 32;
-    const sphereHeightDivisions = 16;
-    const sphereGeo = new THREE.SphereGeometry(sphereRadius, sphereWidthDivisions, sphereHeightDivisions);
-    const sphereMat = new THREE.MeshPhongMaterial({color: '#CA8'});
-    const mesh = new THREE.Mesh(sphereGeo, sphereMat);
-    mesh.position.set(-sphereRadius - 1, sphereRadius + 2, 0);
-    Scene_.add(mesh);
-  }
+    }
+    {
+      const sphereRadius = 3;
+      const sphereWidthDivisions = 32;
+      const sphereHeightDivisions = 16;
+      const sphereGeo = new THREE.SphereGeometry(sphereRadius, sphereWidthDivisions, sphereHeightDivisions);
+      const sphereMat = new THREE.MeshPhongMaterial({color: '#CA8'});
+      const mesh = new THREE.Mesh(sphereGeo, sphereMat);
+      mesh.position.set(-sphereRadius - 1, sphereRadius + 2, 0);
+      Scene_.add(mesh);
+    }
 
 
 

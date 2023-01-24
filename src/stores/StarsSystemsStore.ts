@@ -19,7 +19,7 @@ const state = reactive<IStarSystemsConfig>({
     SolarSystem: <IPlanetoid>{
       nameId: 'Sun',
       type: 'star',
-      radius:   { km: 700000 * 0.1 }, // multiply by additional scale down
+      radius:   { AU: 0.0046, km: 700000 }, // multiply by additional scale down
       distance: { AU: 0 },
       rotation_period: { days: 27 },
       tilt: 0,
@@ -31,7 +31,7 @@ const state = reactive<IStarSystemsConfig>({
         {
           nameId: 'Mercury',
           type: 'planet',
-          radius:   { km: 2440 },
+          radius:   { AU: 0.00001626, km: 2440 },
           distance: { AU: 0.4 },
           orbital_period: { days: 87.97 },
           rotation_period: { days: 175.94 },
@@ -44,7 +44,7 @@ const state = reactive<IStarSystemsConfig>({
         {
           nameId: 'Venus',
           type: 'planet',
-          radius: { km: 6052 },
+          radius: { AU: 0.000040346, km: 6052 },
           distance: { AU: 0.7 },
           orbital_period:  { days: 224.7 },
           rotation_period: { days: 243 },
@@ -62,7 +62,7 @@ const state = reactive<IStarSystemsConfig>({
         {
           nameId: 'Earth',
           type: 'planet',
-          radius:   { km: 6371 },
+          radius:   { AU: 0.000042473, km: 6371 },
           distance: { AU: 1 },
           orbital_period:  { days: 365 },
           rotation_period: { days: 1 },
@@ -82,8 +82,8 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Moon',
               type: 'moon',
-              radius:   { km: 1737.4 },
-              distance: { AU: 0.00257 * 8, km: 385000 }, //0.00257, 385000
+              radius:   { AU: 0.0000115826, km: 1737.4 },
+              distance: { AU: 0.00257, km: 385000 }, //0.00257, 385000
               orbital_period:  { days: 28 },
               rotation_period: { days: 0 },
               tilt: 5.145,
@@ -122,7 +122,7 @@ const state = reactive<IStarSystemsConfig>({
         {
           nameId: 'Mars',
           type: 'planet',
-          radius:   { km: 3396 },
+          radius:   { AU: 0.00002264, km: 3396 },
           distance: { AU: 1.5 },
           orbital_period:  { days: 687 },
           rotation_period: { days: 1.02 },
@@ -135,7 +135,7 @@ const state = reactive<IStarSystemsConfig>({
         {
           nameId: 'Jupiter',
           type: 'planet',
-          radius:   { km: 69911 },
+          radius:   { AU: 0.000466073, km: 69911 },
           distance: { AU: 5.2 },
           orbital_period:  { days: 4380 },
           rotation_period: { days: 0.413575 },
@@ -145,7 +145,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Ganymede',
               type: 'moon',
-              radius:   { km: 2634.1 },
+              radius:   { AU: 0.0000175606, km: 2634.1 },
               distance: { AU: 0.007152508221 * 4 },
               orbital_period:  { days: 7.16 },
               rotation_period: { days: 0 },
@@ -158,7 +158,7 @@ const state = reactive<IStarSystemsConfig>({
         {
           nameId: 'Saturn',
           type: 'planet',
-          radius:   { km: 58232 },
+          radius:   { AU: 0.000388213, km: 58232 },
           distance: { AU: 9.5 },
           orbital_period:  { days: 29 * 365 },
           rotation_period: { days: 0.43416 },
@@ -169,7 +169,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Titan',
               type: 'moon',
-              radius:   { km: 2574.73 },
+              radius:   { AU: 0.00001716486, km: 2574.73 },
               distance: { AU: 0.008021504547 },
               orbital_period:  { days: 15.945 },
               rotation_period: { days: 0 },
@@ -179,7 +179,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Enceladus',
               type: 'moon',
-              radius:   { km: 252.1 },
+              radius:   { AU: 0.0000016806, km: 252.1 },
               distance: { AU: 0.00159106543},
               orbital_period:  { days: 1.375 },
               rotation_period: { days: 0 },
@@ -188,7 +188,7 @@ const state = reactive<IStarSystemsConfig>({
             },
             {
               nameId: 'Iapetus',
-              radius:   { km: 734.5 },
+              radius:   { AU: 0.000004896, km: 734.5 },
               distance: { AU: 0.02380381474 },
               orbital_period:  { days: 79 },
               rotation_period: { days: 0},
@@ -198,7 +198,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Rhea',
               type: 'moon',
-              radius:   { km: 763.8 },
+              radius:   { AU: 0.000005092, km: 763.8 },
               distance: { AU: 0.00352277741 },
               orbital_period:  { days: 4.5 },
               rotation_period: { days: 0 },
@@ -208,7 +208,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Dione',
               type: 'moon',
-              radius:   { km: 561.4 },
+              radius:   { AU: 0.0000037426, km: 561.4 },
               distance: { AU: 0.00252276318 },
               orbital_period:  { days: 2.75 },
               rotation_period: { days: 0 },
@@ -218,7 +218,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Tethys',
               type: 'moon',
-              radius:   { km: 531 },
+              radius:   { AU: 0.00000354, km: 531 },
               distance: { AU: 0.0019719532 },
               orbital_period:  { days: 1.875 },
               rotation_period: { days: 0 },
@@ -228,7 +228,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Mimas',
               type: 'moon',
-              radius:   { km: 198.2 },
+              radius:   { AU: 0.0000013213, km: 198.2 },
               distance: { AU: 0.0012433332 },
               orbital_period:  { days: 0.96 },
               rotation_period: { days: 0 },
@@ -240,7 +240,7 @@ const state = reactive<IStarSystemsConfig>({
         {
           nameId: 'Uranus',
           type: 'planet',
-          radius:   { km: 25362 },
+          radius:   { AU: 0.00016908, km: 25362 },
           distance: { AU: 19.2 },
           orbital_period:  { days: 30660 },
           rotation_period: { days: 0.71832 },
@@ -251,7 +251,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Titania',
               type: 'moon',
-              radius:   { km: 788.4 },
+              radius:   { AU: 0.000005256, km: 788.4 },
               distance: { AU: 0.00291648536 },
               orbital_period:  { days: 8.7 },
               rotation_period: { days: 0 },
@@ -261,7 +261,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Oberon',
               type: 'moon',
-              radius:   { km: 761.4 },
+              radius:   { AU: 0.000005076, km: 761.4 },
               distance: { AU: 0.00390045659 },
               orbital_period:  { days: 13 },
               rotation_period: { days: 0 },
@@ -271,7 +271,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Umbriel',
               type: 'moon',
-              radius:   { km: 584.7 },
+              radius:   { AU: 0.000003898, km: 584.7 },
               distance: { AU: 0.00177810017 },
               orbital_period:  { days: 4.125 },
               rotation_period: { days: 0 },
@@ -281,7 +281,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Ariel',
               type: 'moon',
-              radius:   { km: 578.9 },
+              radius:   { AU: 0.0000038593, km: 578.9 },
               distance: { AU: 0.00127608768 },
               orbital_period:  { days: 2.5 },
               rotation_period: { days: 0 },
@@ -291,7 +291,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Miranda',
               type: 'moon',
-              radius:   { km: 235.8 },
+              radius:   { AU: 0.000001572, km: 235.8 },
               distance: { AU: 0.000868327867 },
               orbital_period:  { days: 1.413479 },
               rotation_period: { days: 0 },
@@ -303,7 +303,7 @@ const state = reactive<IStarSystemsConfig>({
         {
           nameId: 'Neptun',
           type: 'planet',
-          radius:   { km: 24622 },
+          radius:   { AU: 0.000164146, km: 24622 },
           distance: { AU: 30.1 },
           orbital_period:  { days: 165 * 365 },
           rotation_period: { days: 0.67083 },
@@ -314,7 +314,7 @@ const state = reactive<IStarSystemsConfig>({
             {
               nameId: 'Triton',
               type: 'moon',
-              radius:   { km: 1353.4 },
+              radius:   { AU: 0.0000090226, km: 1353.4 },
               distance: { AU: 0.002371417443 },
               orbital_period:  { days: 5.875 },
               rotation_period: { days: 0 },

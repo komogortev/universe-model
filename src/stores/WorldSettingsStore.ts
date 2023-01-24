@@ -13,7 +13,7 @@ const state = reactive<IWorldState>({
       multiplier: 0.0001
     },
     distance_scaling: {
-      multiplier: 10000000
+      multiplier: 1000000
     },
     constants: {
       STAR_SYSTEM: 'SolarSystem',

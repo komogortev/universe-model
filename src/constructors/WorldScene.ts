@@ -87,7 +87,7 @@ class WorldScene {
     // const ambLight_ = createAmbientLight(0xffffff, .00000015);
     // Scene_.add(ambLight_)
 
-    const pointLight_ = createPointLight(0xffffff, 1000, 100000);
+    const pointLight_ = createPointLight(0xffffff, 2, 1000);
     pointLight_.castShadow = false;
     Scene_.add(pointLight_)
   }
@@ -130,8 +130,9 @@ class WorldScene {
 
   initializeCharacterGroup() {
     const characterCamera = createPerspectiveCamera();
-    const parentNameid = getWorldConstants().CHARACTER_SPAWN;
-    CharacterGroupClass_ = new CharacterGroupClass(characterCamera);
+    const parentNameid = `${getWorldConstants().CHARACTER_SPAWN}GroupClass`;
+    const parent = Loop_.updatables.find(u => u.nameId === parentNameid)
+    CharacterGroupClass_ = new CharacterGroupClass(characterCamera, parent);
 
     // attempt to spot spawn location (planetoid surface?)
 
@@ -148,7 +149,7 @@ class WorldScene {
 
     SceneCameras_.push(CharacterGroupClass_.camera)
     Scene_.add(CharacterGroupClass_.cameraHelper)
-
+    Loop_.updatables.push(CharacterGroupClass_)
 
     // Spawn has to be at updatable (animated) Object?
     // const spawnConfig = findClassByNameIdRecursevly(Loop_.updatables, getWorldConstants().CHARACTER_SPAWN);

@@ -9,7 +9,7 @@ class PlanetoidGroupClass {
   _updatables: Array<any>
 
   constructor(planetoidConfig: any) {
-    this.nameId = `${planetoidConfig.nameId}GroupClass`
+    this.nameId = `PlanetoidGroupClass`
     this._localConfig = planetoidConfig;
     this._threeGroup = new Group();
     this._threeGroup.nameId = `Three${planetoidConfig.nameId}Group`; // A group holds other objects but cannot be seen itself
@@ -27,10 +27,13 @@ class PlanetoidGroupClass {
     const newPlanetoidClass = new PlanetoidClass(config, parent)
     this._updatables.push(newPlanetoidClass);
 
-    if (parentThreeGroup != null) {
-      parentThreeGroup.add(newPlanetoidClass.threeGroup)
-    } else {
+    if (parentThreeGroup == null) {
+      // no parent - attach to this! (root) group container
       this._threeGroup.add(newPlanetoidClass.threeGroup)
+    } else {
+      // parent presented - attach to parent mesh! (it is positioned relative to its group container)
+      const parentMainMesh = parentThreeGroup.children[0]
+      parentMainMesh.add(newPlanetoidClass.threeGroup)
     }
 
     // repeat for config.children

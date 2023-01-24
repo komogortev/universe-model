@@ -54,8 +54,8 @@ class WorldScene {
     Renderer_ = createRenderer();
     Scene_ = createScene(Renderer_, this.textureLoader);
 
+    // initialize *WorldScene instruments (Cameras, Lights)
     {
-      // initialize *WorldScene instruments
       SceneCameras_ = [];
       DefaultCamera_ = createPerspectiveCamera();
       DefaultCamera_.position.set(0, 0, -55)
@@ -64,7 +64,7 @@ class WorldScene {
       ActiveCamera_ = SceneCameras_[0];
 
       const defaultCameraHelper = new THREE.CameraHelper(DefaultCamera_);
-      Scene_.add(defaultCameraHelper);
+      DefaultCamera_.add(defaultCameraHelper);
 
       this._initLights();
     }
@@ -75,8 +75,8 @@ class WorldScene {
 
     // initialize *WorldScene decorations
     this.initGymTools()
-    //this.initializeStarGroup()
-    //this.initializeCharacterGroup();
+    this.initializeStarGroup()
+    this.initializeCharacterGroup();
 
     // attach constructed scene to the WorldTheater view
     this.container.appendChild(Renderer_.domElement);
@@ -85,11 +85,40 @@ class WorldScene {
   }
 
   _initLights() {
-    // const ambLight_ = createAmbientLight(0xffffff, .00000015);
-    // Scene_.add(ambLight_)
+   class ColorGUIHelper {
+      object: any;
+      prop: any;
+      constructor(object: any, prop: any) {
+        this.object = object;
+        this.prop = prop;
+      }
+      get value() {
+        return `#${this.object[this.prop].getHexString()}`;
+      }
+      set value(hexString) {
+        this.object[this.prop].set(hexString);
+      }
+    }
 
-    const pointLight_ = createPointLight(0xffffff, 2);
-    //Scene_.add(pointLight_)
+    {
+      const color = 0xFFFFFF;
+      const intensity = 1;
+      const light = new THREE.PointLight(color, intensity);
+      light.position.set(0, 10, 0);
+      Scene_.add(light);
+
+      const helper = new THREE.PointLightHelper(light);
+      light.add(helper);
+
+      function updateLight() {
+        helper.update();
+      }
+
+      GUI_.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
+      GUI_.add(light, 'intensity', 0, 2, 0.01);
+      GUI_.add(light, 'distance', 0, 40).onChange(updateLight);
+      this.makeXYZGUI(GUI_, light.position, 'position', updateLight);
+    }
   }
 
   _initLilGUI() {
@@ -119,6 +148,14 @@ class WorldScene {
     })
   }
 
+  makeXYZGUI(gui: any, vector3: THREE.Vector3, name: string, onChangeFn: () => {}) {
+    const folder = gui.addFolder(name);
+    folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
+    folder.add(vector3, 'y', 0, 10).onChange(onChangeFn);
+    folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
+    folder.open();
+  }
+
   initializeStarGroup() {
     const _starSystemConfig: IPlanetoid = getStarSystemConfigByName(getWorldConstants().STAR_SYSTEM);
     StarGroupClass_ = new PlanetoidGroupClass(_starSystemConfig);
@@ -133,6 +170,7 @@ class WorldScene {
     const parentNameid = `${getWorldConstants().CHARACTER_SPAWN}GroupClass`;
     const parent = Loop_.updatables.find(u => u.nameId === parentNameid)
     CharacterGroupClass_ = new CharacterGroupClass(characterCamera, parent);
+    this.makeXYZGUI(GUI_, CharacterGroupClass_.threeGroup.position, 'character', () => {console.log('char')})
 
     // attempt to spot spawn location (planetoid surface?)
 
@@ -194,71 +232,6 @@ class WorldScene {
     mesh.position.set(0,-2,0)
     mesh.rotation.x = Math.PI * -.5;
     Scene_.add(mesh);
-
-    class ColorGUIHelper {
-      object: any;
-      prop: any;
-      constructor(object: any, prop: any) {
-        this.object = object;
-        this.prop = prop;
-      }
-      get value() {
-        return `#${this.object[this.prop].getHexString()}`;
-      }
-      set value(hexString) {
-        this.object[this.prop].set(hexString);
-      }
-    }
-
-    function makeXYZGUI(gui, vector3, name, onChangeFn) {
-      const folder = gui.addFolder(name);
-      folder.add(vector3, 'x', -10, 10).onChange(onChangeFn);
-      folder.add(vector3, 'y', 0, 10).onChange(onChangeFn);
-      folder.add(vector3, 'z', -10, 10).onChange(onChangeFn);
-      folder.open();
-    }
-
-    {
-      const color = 0xFFFFFF;
-      const intensity = 1;
-      const light = new THREE.PointLight(color, intensity);
-      light.position.set(0, 10, 0);
-      Scene_.add(light);
-
-      const helper = new THREE.PointLightHelper(light);
-      light.add(helper);
-
-      function updateLight() {
-        helper.update();
-      }
-
-      GUI_.addColor(new ColorGUIHelper(light, 'color'), 'value').name('color');
-      GUI_.add(light, 'intensity', 0, 2, 0.01);
-      GUI_.add(light, 'distance', 0, 40).onChange(updateLight);
-      makeXYZGUI(GUI_, light.position, 'position', updateLight);
-    }
-
-    {
-    const cubeSize = 4;
-    const cubeGeo = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize);
-    const cubeMat = new THREE.MeshPhongMaterial({color: '#8AC'});
-    const mesh = new THREE.Mesh(cubeGeo, cubeMat);
-    mesh.position.set(cubeSize + 1, cubeSize / 2, 0);
-    Scene_.add(mesh);
-    }
-    {
-      const sphereRadius = 3;
-      const sphereWidthDivisions = 32;
-      const sphereHeightDivisions = 16;
-      const sphereGeo = new THREE.SphereGeometry(sphereRadius, sphereWidthDivisions, sphereHeightDivisions);
-      const sphereMat = new THREE.MeshPhongMaterial({color: '#CA8'});
-      const mesh = new THREE.Mesh(sphereGeo, sphereMat);
-      mesh.position.set(-sphereRadius - 1, sphereRadius + 2, 0);
-      Scene_.add(mesh);
-    }
-
-
-
   }
 
   start() { Loop_.start(); }

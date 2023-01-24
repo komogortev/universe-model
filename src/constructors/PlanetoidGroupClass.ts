@@ -29,7 +29,19 @@ class PlanetoidGroupClass {
 
     // group assigned to group sets child position to root position
     // to calculate child position relative to actual parent we need to assign it to mesh
-    parentThreeGroup.add(newPlanetoidClass.threeGroup)
+
+
+    if (config.type == 'star') {
+        parentThreeGroup.add(newPlanetoidClass.threeGroup)
+
+    } else if (config.type == 'planet') {
+      // planet gets attached to root Star group
+      parentThreeGroup.add(newPlanetoidClass.threeGroup)
+    } else {
+      //moon gets attached to planet
+      parentThreeGroup.children[0].add(newPlanetoidClass.threeGroup)
+      //this._children.push(newPlanetoidClass)
+    }
 
 
     // repeat for config.children

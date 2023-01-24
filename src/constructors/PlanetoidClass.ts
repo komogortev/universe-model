@@ -71,7 +71,7 @@ class PlanetoidClass {
      ? ((this._gravParentThreeGroup.children[0].scale.x + planetoidMesh.scale.x))
       : 0
 
-    this._threeGroup.position.x = planetDistanceInSceneUnits + planetDistanceOffset
+    planetoidMesh.position.x = planetDistanceInSceneUnits + planetDistanceOffset
 
     //Generate athmosphere
     if (this._localConfig.athmosphereMap != null) {

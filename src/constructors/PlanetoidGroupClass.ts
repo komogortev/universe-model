@@ -1,4 +1,4 @@
-import { Group, SphereGeometry } from 'three'
+import { Group, SphereGeometry, PointLight, PointLightHelper } from 'three'
 import type { IPlanetoid } from '../types/StarsStoreTypes';
 import { PlanetoidClass } from './PlanetoidClass';
 
@@ -31,7 +31,40 @@ class PlanetoidGroupClass {
     // group assigned to group sets child position to root position
     // to calculate child position relative to actual parent we need to assign it to mesh
     if (config.type == 'star') {
-        parentThreeGroup.add(newPlanetoidClass.threeGroup)
+      parentThreeGroup.add(newPlanetoidClass.threeGroup)
+      {
+        class ColorGUIHelper {
+        object: any;
+        prop: any;
+        constructor(object: any, prop: any) {
+          this.object = object;
+          this.prop = prop;
+        }
+        get value() {
+          return `#${this.object[this.prop].getHexString()}`;
+        }
+        set value(hexString) {
+          this.object[this.prop].set(hexString);
+        }
+      }
+
+      {
+        const color = 0xFFFFFF;
+        const intensity = 1;
+        const light = new PointLight(color, intensity);
+        light.position.set(0, 0, 0);
+        parentThreeGroup.add(light);
+
+        const helper = new PointLightHelper(light);
+        light.add(helper);
+
+        function updateLight() {
+          helper.update();
+        }
+
+
+      }
+    }
 
     } else if (config.type == 'planet') {
       // planet gets attached to root Star group

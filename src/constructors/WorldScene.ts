@@ -70,7 +70,7 @@ class WorldScene {
       const defaultCameraHelper = new THREE.CameraHelper(DefaultCamera_);
       DefaultCamera_.add(defaultCameraHelper);
 
-      this._initLights();
+      //this._initLights();
     }
 
     // initialize *WorldScene systems (2)

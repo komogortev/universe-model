@@ -27,7 +27,10 @@ class PlanetoidGroupClass {
     const newPlanetoidClass = new PlanetoidClass(config, parentThreeGroup)
     this._updatables.push(newPlanetoidClass);
 
+    // group assigned to group sets child position to root position
+    // to calculate child position relative to actual parent we need to assign it to mesh
     parentThreeGroup.add(newPlanetoidClass.threeGroup)
+
 
     // repeat for config.children
     if (config.children != null) {

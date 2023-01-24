@@ -53,13 +53,25 @@ class PlanetoidClass {
     )
     planetoidMesh.rotation.y = this._localConfig.tilt
 
-    // offset parent and child radius from distance value
-    const planetDistanceOffset = 0//this._gravParentThreeGroup != null && this._gravParentThreeGroup.children[0].scale.x > 0
-     // ? 0//((this._gravParentThreeGroup.children[0].scale.x + planetoidMesh.scale.x) / 2)
-      //: 0
+    // Set planetoid distance from group center
+    const planetDistanceInKm = (parseFloat(this._localConfig.distance.AU as string)) * worldSettings.value.constants.AU.km
+    let planetDistanceInSceneUnits: number;
 
-    const planetDistanceInKm = (this._localConfig.distance.AU as number) * worldSettings.value.constants.AU.km
-    planetoidMesh.position.x = (planetDistanceInKm + planetDistanceOffset) / worldSettings.value.distance_scaling.multiplier
+    if (this._localConfig.type !== 'moon') {
+      planetDistanceInSceneUnits = planetDistanceInKm / worldSettings.value.distance_scaling.multiplier
+    } else {
+      planetDistanceInSceneUnits = planetDistanceInKm / (worldSettings.value.distance_scaling.multiplier / 10)
+    }
+
+    // offset parent and child radius from distance value
+    const planetDistanceOffset = this._gravParentThreeGroup != null
+      // if parent is not three group but a mesh we can calculate parent mesh offset
+      && this._gravParentThreeGroup.children != null && this._gravParentThreeGroup.children[0] != null
+      && this._gravParentThreeGroup.children[0].scale.x > 0
+     ? ((this._gravParentThreeGroup.children[0].scale.x + planetoidMesh.scale.x))
+      : 0
+
+    planetoidMesh.position.x = planetDistanceInSceneUnits + planetDistanceOffset
 
     //Generate athmosphere
     if (this._localConfig.athmosphereMap != null) {
@@ -102,7 +114,8 @@ class PlanetoidClass {
         emissiveIntensity: 1,
       })
        : new MeshPhongMaterial({
-        color: cfg.color ? new Color(cfg.color) : '#fff',
+        wireframe: true,
+        //color: cfg.color ? new Color(cfg.color) : '#fff',
       })
 
     if (cfg.map != null) {

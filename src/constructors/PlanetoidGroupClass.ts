@@ -9,32 +9,25 @@ class PlanetoidGroupClass {
   _updatables: Array<any>
 
   constructor(planetoidConfig: any) {
-    this.nameId = `PlanetoidGroupClass`
+    this.nameId = `PlanetoidRootGroupClass`
     this._localConfig = planetoidConfig;
     this._threeGroup = new Group();
-    this._threeGroup.nameId = `Three${planetoidConfig.nameId}Group`; // A group holds other objects but cannot be seen itself
+    this._threeGroup.nameId = `Three${planetoidConfig.nameId}SceneRootGroup`; // A group holds other objects but cannot be seen itself
     this._updatables = [];
 
     this._intialize();
   }
 
   _intialize() {
-    this.initPlanetoidsRecursevly(this._localConfig);
+    this.initPlanetoidsRecursevly(this._localConfig, this.threeGroup);
   }
 
   initPlanetoidsRecursevly (config: any, parentThreeGroup?: any | null): void {
     // attempt generating current config planetoid class
-    const newPlanetoidClass = new PlanetoidClass(config, parent)
+    const newPlanetoidClass = new PlanetoidClass(config, parentThreeGroup)
     this._updatables.push(newPlanetoidClass);
 
-    if (parentThreeGroup == null) {
-      // no parent - attach to this! (root) group container
-      this._threeGroup.add(newPlanetoidClass.threeGroup)
-    } else {
-      // parent presented - attach to parent mesh! (it is positioned relative to its group container)
-      const parentMainMesh = parentThreeGroup.children[0]
-      parentMainMesh.add(newPlanetoidClass.threeGroup)
-    }
+    parentThreeGroup.add(newPlanetoidClass.threeGroup)
 
     // repeat for config.children
     if (config.children != null) {

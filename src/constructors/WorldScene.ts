@@ -76,7 +76,8 @@ class WorldScene {
     // initialize *WorldScene systems (2)
     Resizer_ = new Resizer(this.container, ActiveCamera_, Renderer_);
     Loop_ = new Loop(ActiveCamera_, Scene_, Renderer_);
-Loop_.updatables.push(this)
+    Loop_.updatables.push(this)
+
     // initialize *WorldScene decorations
     this.initGymTools()
     this.initializeStarGroup()

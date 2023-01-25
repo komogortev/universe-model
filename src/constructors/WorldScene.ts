@@ -19,6 +19,7 @@ import type { IPlanetoid } from '../types/StarsStoreTypes';
 import { PlanetoidGroupClass } from './PlanetoidGroupClass';
 import { SpaceCraftClass } from './SpaceCraftClass';
 import { CharacterGroupClass } from './CharacterGroupClass';
+import { UfoClass } from '../constructors/Models/Vehicles/UfoClass';
 
 // Connect to App stores
 import useStarSystemsStore from "../stores/StarsSystemsStore";
@@ -97,25 +98,31 @@ class WorldScene {
   }
 
   initSpaceCraft() {
-    const _cam = createPerspectiveCamera();
-     const params = {
-      camera: _cam,
-      scene: Scene_,
-    }
-    const _controls = new BasicCharacterController(params);
-    const spaceCraftCamera_ = new ThirdPersonCamera({
-      camera: _cam,
-      target: _controls,
-    });
-    ActiveCamera_ = SceneCameras_[1];
+    // const _cam = createPerspectiveCamera();
+    //  const params = {
+    //   camera: _cam,
+    //   scene: Scene_,
+    // }
+    // const _controls = new BasicCharacterController(params);
+    // const spaceCraftCamera_ = new ThirdPersonCamera({
+    //   camera: _cam,
+    //   target: _controls,
+    // });
+    // ActiveCamera_ = SceneCameras_[1];
 
-    SceneCameras_.push(spaceCraftCamera_._camera);
-    const SpaceCraft = new SpaceCraftClass(spaceCraftCamera_._camera);
-    Scene_.add(SpaceCraft.threeGroup)
-    Loop_.updatables.push(SpaceCraft, _controls)
+    // SceneCameras_.push(spaceCraftCamera_._camera);
+    // const SpaceCraft = new SpaceCraftClass(spaceCraftCamera_._camera);
+    // Scene_.add(SpaceCraft.threeGroup)
+    // Loop_.updatables.push(SpaceCraft, _controls)
+
+    const spaceCraft = new UfoClass();
+    spaceCraft.threeGroup.position.set(0, 4, 0);
+    Scene_.add(spaceCraft.threeGroup)
+    Loop_.updatables.push(spaceCraft)
   }
 
   _initLights() {
+
   }
 
   _initLilGUI() {
@@ -139,25 +146,33 @@ class WorldScene {
   }
 
   _initGymTools() {
-    const planeSize = 200;
+    // Checkers workdesk
+    {
+      const planeSize = 200;
 
-    const loader = new THREE.TextureLoader();
-    const texture = loader.load('https://threejs.org/manual/examples/resources/images/checker.png');
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.magFilter = THREE.NearestFilter;
-    const repeats = planeSize / 2;
-    texture.repeat.set(repeats, repeats);
+      const loader = new THREE.TextureLoader();
+      const texture = loader.load('https://threejs.org/manual/examples/resources/images/checker.png');
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.wrapT = THREE.RepeatWrapping;
+      texture.magFilter = THREE.NearestFilter;
+      const repeats = planeSize / 2;
+      texture.repeat.set(repeats, repeats);
 
-    const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
-    const planeMat = new THREE.MeshPhongMaterial({
-      map: texture,
-      side: THREE.DoubleSide,
-    });
-    const mesh = new THREE.Mesh(planeGeo, planeMat);
-    mesh.position.set(0,-2,0)
-    mesh.rotation.x = Math.PI * -.5;
-    Scene_.add(mesh);
+      const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
+      const planeMat = new THREE.MeshPhongMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+      });
+      const mesh = new THREE.Mesh(planeGeo, planeMat);
+      mesh.position.set(0,0,0)
+      mesh.rotation.x = Math.PI * -.5;
+      Scene_.add(mesh);
+    }
+    // Ambient worklights
+    {
+      const ambientLight = createAmbientLight()
+      Scene_.add(ambientLight)
+    }
   }
 
   _registerCandidatesWithLoop(candidatesClass: Array<any>) {

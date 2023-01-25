@@ -87,7 +87,7 @@ class WorldScene {
     {
       this._initGymTools()
       this.initSpaceCraft();
-      //this.initializeStarGroup()
+      this.initializeStarGroup()
       //this.initializeCharacterGroup();
     }
 
@@ -112,7 +112,8 @@ class WorldScene {
 
     SceneCameras_.push(spaceCraftCamera_._camera);
     const SpaceCraft = new SpaceCraftClass(spaceCraftCamera_._camera);
-    SpaceCraft.threeGroup.position.set(0, 8, -5);
+    SpaceCraft.threeGroup.position.set(0, 5, -5);
+    SpaceCraft.threeGroup.scale.set(0.125, 0.125, 0.125);
 
     Scene_.add(SpaceCraft.threeGroup)
     Loop_.updatables.push(SpaceCraft, _controls)
@@ -201,10 +202,8 @@ class WorldScene {
 
   initializeCharacterGroup() {
     const characterCamera = createPerspectiveCamera();
-    const parentNameid = `${getWorldConstants().CHARACTER_SPAWN}GroupClass`;
-    const parent = Loop_.updatables.find(u => u.nameId === parentNameid)
     CharacterGroupClass_ = new CharacterGroupClass(characterCamera, parent);
-
+    CharacterGroupClass_.threeGroup.scale(.5, .5, .5)
     // attempt to spot spawn location (planetoid surface?)
 
     // for (let potentialParentThreeGroup in [StarGroupClass_.threeGroup]) {

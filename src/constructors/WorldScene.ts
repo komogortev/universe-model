@@ -9,7 +9,7 @@ import { Resizer } from '../systems/Resizer';
 import { Loop } from '../systems/Loop';
 
 // WorldScene instruments
-import { createPerspectiveCamera } from "../utils/cameras"
+import { createPerspectiveCamera, ThirdPersonCamera } from "../utils/cameras"
 import { createOrbitControls } from "../utils/controls"
 import { createAmbientLight, createPointLight } from '../utils/lights';
 import { helperAddToLoopRecursevly, findClassByNameIdRecursevly } from '../utils/helpers';
@@ -17,12 +17,14 @@ import { helperAddToLoopRecursevly, findClassByNameIdRecursevly } from '../utils
 // WorldScene decorations
 import type { IPlanetoid } from '../types/StarsStoreTypes';
 import { PlanetoidGroupClass } from './PlanetoidGroupClass';
+import { SpaceCraftClass } from './SpaceCraftClass';
 import { CharacterGroupClass } from './CharacterGroupClass';
 
 // Connect to App stores
 import useStarSystemsStore from "../stores/StarsSystemsStore";
 const { getStarSystemConfigByName } = useStarSystemsStore();
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
+import { BasicCharacterController } from '../systems/BasicCharacterController';
 const { getWorldSettings, getWorldConstants, setTimeSpeed, setSizeScaleMultiplier, setDistanceScaleMultiplier } = useWorldSettingsStore();
 
 // *WorldScene systems
@@ -64,6 +66,7 @@ class WorldScene {
       DefaultCamera_ = createPerspectiveCamera();
       DefaultCamera_.position.set(0, 0, -15)
       DefaultControls_ = createOrbitControls(DefaultCamera_, Renderer_.domElement);
+
       SceneCameras_.push(DefaultCamera_);
       ActiveCamera_ = SceneCameras_[0];
 
@@ -81,12 +84,32 @@ class WorldScene {
     // initialize *WorldScene decorations
     this._initGymTools()
     this.initializeStarGroup()
+    this.initSpaceCraft();
     //this.initializeCharacterGroup();
 
     // attach constructed scene to the WorldTheater view
     this.container.appendChild(Renderer_.domElement);
     // switch cameras on key press
     document.addEventListener('keydown', onKeyDown );
+  }
+
+  initSpaceCraft() {
+    const _cam = createPerspectiveCamera();
+     const params = {
+      camera: _cam,
+      scene: Scene_,
+    }
+    const _controls = new BasicCharacterController(params);
+    const spaceCraftCamera_ = new ThirdPersonCamera({
+      camera: _cam,
+      target: _controls,
+    });
+    ActiveCamera_ = SceneCameras_[1];
+
+    SceneCameras_.push(spaceCraftCamera_._camera);
+    const SpaceCraft = new SpaceCraftClass(spaceCraftCamera_._camera);
+    Scene_.add(SpaceCraft.threeGroup)
+    Loop_.updatables.push(SpaceCraft, _controls)
   }
 
   _initLights() {
@@ -221,7 +244,7 @@ class WorldScene {
 
 function onKeyDown( event: KeyboardEvent ) {
   switch ( event.key ) {
-    case 'o': /*O*/
+    case '1':
       ActiveCamera_ = SceneCameras_[0];
       ActiveCamera_.updateProjectionMatrix();
       DefaultControls_.enabled = true;
@@ -229,13 +252,21 @@ function onKeyDown( event: KeyboardEvent ) {
       Loop_.camera = ActiveCamera_;
       Resizer_.camera = ActiveCamera_;
       break;
-    case 'p': /*P*/
+    case '2':
       ActiveCamera_ = SceneCameras_[1];
       ActiveCamera_.updateProjectionMatrix();
       DefaultControls_.enabled = false;
 
       Loop_.camera = ActiveCamera_
       Resizer_.camera = ActiveCamera_
+      break;
+    case '3':
+      // ActiveCamera_ = SceneCameras_[2];
+      // ActiveCamera_.updateProjectionMatrix();
+      // DefaultControls_.enabled = false;
+
+      // Loop_.camera = ActiveCamera_
+      // Resizer_.camera = ActiveCamera_
       break;
   }
 }

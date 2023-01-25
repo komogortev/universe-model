@@ -19,7 +19,7 @@ const state = reactive<IStarSystemsConfig>({
     SolarSystem: <IPlanetoid>{
       nameId: 'Sun',
       type: 'star',
-      radius:   { AU: 0.0046 * 0.05, km: 700000 }, // additionally scale down Sun against other planets
+      radius:   { AU: 0.0046, km: 700000 }, // additionally scale down Sun against other planets
       distance: { AU: 0 },
       rotation_period: { days: 27 },
       tilt: 0,

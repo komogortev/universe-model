@@ -8,7 +8,7 @@ import {
   Mesh,
   Raycaster,
   Vector3,
-  TextureLoader, Group, Color, MeshPhongMaterial,PointLight,PointLightHelper, Light
+  TextureLoader, Group, Color, MeshPhongMaterial,PointLight,PointLightHelper, Light, AxesHelper, GridHelper
 } from 'three'
 import { calcPosFromLatLngRad, convertRotationPerDayToRadians } from '../utils/helpers';
 
@@ -64,9 +64,9 @@ class PlanetoidClass {
     let planetDistanceInSceneUnits: number;
 
     if (this._localConfig.type !== 'moon') {
-      planetDistanceInSceneUnits = planetDistanceInAU /* / worldSettings.value.distance_scaling.multiplier */
+      planetDistanceInSceneUnits = planetDistanceInAU  * worldSettings.value.distanceScale
     } else {
-      planetDistanceInSceneUnits = planetDistanceInAU /* / (worldSettings.value.distance_scaling.multiplier / 10) */
+      planetDistanceInSceneUnits = planetDistanceInAU * (worldSettings.value.distanceScale )
     }
 
     // offset parent and child radius from distance value
@@ -109,6 +109,13 @@ class PlanetoidClass {
       });
     }
 
+    // axes Helper
+    const axesHelper = new AxesHelper( 5 );
+    planetoidMesh.add( axesHelper );
+
+    // Grid Helper
+    planetoidMesh.add(new GridHelper(6, 6, "#666666", "#222222"));
+
     this._threeGroup.add(planetoidMesh)
   }
 
@@ -120,7 +127,8 @@ class PlanetoidClass {
         emissiveIntensity: 1,
       })
        : new MeshPhongMaterial({
-        color: cfg.color ? new Color(cfg.color) : '#fff',
+        wireframe: true,
+        //color: cfg.color ? new Color(cfg.color) : '#fff',
       })
 
     if (cfg.map != null) {

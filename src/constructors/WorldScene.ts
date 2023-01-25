@@ -65,13 +65,14 @@ class WorldScene {
       SceneCameras_ = [];
       DefaultCamera_ = createPerspectiveCamera();
       DefaultCamera_.position.set(0, 0, -15)
-      DefaultControls_ = createOrbitControls(DefaultCamera_, Renderer_.domElement);
 
-      SceneCameras_.push(DefaultCamera_);
-      ActiveCamera_ = SceneCameras_[0];
+      DefaultControls_ = createOrbitControls(DefaultCamera_, Renderer_.domElement);
 
       const defaultCameraHelper = new THREE.CameraHelper(DefaultCamera_);
       DefaultCamera_.add(defaultCameraHelper);
+
+      SceneCameras_.push(DefaultCamera_);
+      ActiveCamera_ = SceneCameras_[0];
 
       this._initLights();
     }
@@ -82,10 +83,12 @@ class WorldScene {
     Loop_.updatables.push(this)
 
     // initialize *WorldScene decorations
-    this._initGymTools()
-    this.initializeStarGroup()
-    this.initSpaceCraft();
-    //this.initializeCharacterGroup();
+    {
+      this._initGymTools()
+      this.initSpaceCraft();
+      //this.initializeStarGroup()
+      //this.initializeCharacterGroup();
+    }
 
     // attach constructed scene to the WorldTheater view
     this.container.appendChild(Renderer_.domElement);
@@ -229,8 +232,6 @@ class WorldScene {
     // }
     // console.log(Loop_)
   }
-
-
 
   tick(delta: number) {
     this.stats.update(delta);

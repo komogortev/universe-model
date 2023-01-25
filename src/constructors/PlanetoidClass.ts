@@ -66,7 +66,7 @@ class PlanetoidClass {
     if (this._localConfig.type !== 'moon') {
       planetDistanceInSceneUnits = planetDistanceInAU  * worldSettings.value.distanceScale
     } else {
-      planetDistanceInSceneUnits = planetDistanceInAU * (worldSettings.value.distanceScale )
+      planetDistanceInSceneUnits = planetDistanceInAU * (worldSettings.value.distanceScale * 10)
     }
 
     // offset parent and child radius from distance value
@@ -110,13 +110,14 @@ class PlanetoidClass {
     }
 
     // axes Helper
-    const axesHelper = new AxesHelper( 5 );
+    const axesHelper = new AxesHelper( 15 );
     planetoidMesh.add( axesHelper );
 
     // Grid Helper
     planetoidMesh.add(new GridHelper(6, 6, "#666666", "#222222"));
 
     this._threeGroup.add(planetoidMesh)
+    console.log(planetoidMesh.name, `scale ${planetoidMesh.scale.x}`, `distance ${planetoidMesh.position.x}`, 'DistanceInSceneUnits',planetDistanceInSceneUnits, 'offset', planetDistanceOffset)
   }
 
   // 1. Create material according to planetoid config

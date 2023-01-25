@@ -79,7 +79,7 @@ class WorldScene {
     Loop_.updatables.push(this)
 
     // initialize *WorldScene decorations
-    this.initGymTools()
+    this._initGymTools()
     this.initializeStarGroup()
     //this.initializeCharacterGroup();
 
@@ -110,6 +110,28 @@ class WorldScene {
     GUI_.add(guiProperties, "distanceScale", -10, 10 ).onChange(
       (value: number) => { setDistanceScaleMultiplier(value);  }
     )
+  }
+
+  _initGymTools() {
+    const planeSize = 200;
+
+    const loader = new THREE.TextureLoader();
+    const texture = loader.load('https://threejs.org/manual/examples/resources/images/checker.png');
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = THREE.RepeatWrapping;
+    texture.magFilter = THREE.NearestFilter;
+    const repeats = planeSize / 2;
+    texture.repeat.set(repeats, repeats);
+
+    const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
+    const planeMat = new THREE.MeshPhongMaterial({
+      map: texture,
+      side: THREE.DoubleSide,
+    });
+    const mesh = new THREE.Mesh(planeGeo, planeMat);
+    mesh.position.set(0,-2,0)
+    mesh.rotation.x = Math.PI * -.5;
+    Scene_.add(mesh);
   }
 
   _registerCandidatesWithLoop(candidatesClass: Array<any>) {
@@ -185,27 +207,7 @@ class WorldScene {
     // console.log(Loop_)
   }
 
-  initGymTools() {
-    const planeSize = 200;
 
-    const loader = new THREE.TextureLoader();
-    const texture = loader.load('https://threejs.org/manual/examples/resources/images/checker.png');
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.magFilter = THREE.NearestFilter;
-    const repeats = planeSize / 2;
-    texture.repeat.set(repeats, repeats);
-
-    const planeGeo = new THREE.PlaneGeometry(planeSize, planeSize);
-    const planeMat = new THREE.MeshPhongMaterial({
-      map: texture,
-      side: THREE.DoubleSide,
-    });
-    const mesh = new THREE.Mesh(planeGeo, planeMat);
-    mesh.position.set(0,-2,0)
-    mesh.rotation.x = Math.PI * -.5;
-    Scene_.add(mesh);
-  }
 
   tick(delta: number) {
     this.stats.update(delta);

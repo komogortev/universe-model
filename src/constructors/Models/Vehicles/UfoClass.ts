@@ -33,18 +33,18 @@ class UfoClass {
     // ConeGeometry 'Top'
     {
       const radius = 8;  // ui: radius
-      const height = -2;  // ui: height
-      const radialSegments = 16;  // ui: radialSegments
-      this._addSolidGeometry(body_, 0, -1, new ConeGeometry(radius, height, radialSegments), silver_);
-    }
-    // ConeGeometry 'Bottom'
-    {
-      const radius = 8;  // ui: radius
       const height = 2;  // ui: height
       const radialSegments = 16;  // ui: radialSegments
       this._addSolidGeometry(body_, 0, 1, new ConeGeometry(radius, height, radialSegments), silver_);
     }
-
+    // ConeGeometry 'Bottom'
+    {
+      const radius = 8;  // ui: radius
+      const height = -2;  // ui: height
+      const radialSegments = 16;  // ui: radialSegments
+      this._addSolidGeometry(body_, 0, -1, new ConeGeometry(radius, height, radialSegments), silver2_);
+    }
+    // CylinderGeometry 'Cabin'
     {
       const radiusTop = 2;  // ui: radiusTop
       const radiusBottom = 4;  // ui: radiusBottom
@@ -69,8 +69,6 @@ class UfoClass {
       const luminance = .5;
       material.color.setHSL(hue, saturation, luminance);
     }
-
-
 
     return material;
   }

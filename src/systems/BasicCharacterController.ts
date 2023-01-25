@@ -1,5 +1,5 @@
 import { Vector3 } from "three"
-import {FBXLoader} from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 
 class BasicCharacterControllerProxy {
   _animations: any;
@@ -13,6 +13,9 @@ class BasicCharacterControllerProxy {
   }
 };
 
+/**
+ * Represents single character movement
+*/
 class BasicCharacterController {
   _params: any;
   _decceleration: any;
@@ -20,27 +23,24 @@ class BasicCharacterController {
   _velocity: any;
   _position: any;
 
-  _animations: any;
   _input: any;
   _stateMachine: any;
+  _animations: any;
 
-    constructor(params: any) {
-    this._Init(params);
-  }
-
-  _Init(params: any) {
+  constructor(params: any) {
     this._params = params;
     this._decceleration = new Vector3(-0.0005, -0.0001, -5.0);
     this._acceleration = new Vector3(1, 0.25, 50.0);
     this._velocity = new Vector3(0, 0, 0);
     this._position = new Vector3();
 
-    this._animations = {};
     this._input = new BasicCharacterControllerInput();
     this._stateMachine = new CharacterFSM(
-        new BasicCharacterControllerProxy(this._animations));
+      new BasicCharacterControllerProxy(this._animations));
+    this._animations = {};
     //this._LoadModels();
   }
+
 
   _LoadModels() {
     const loader = new FBXLoader();
@@ -169,13 +169,28 @@ class BasicCharacterController {
 };
 
 class BasicCharacterControllerInput {
-  _keys: any;
+  _keys: {
+    forward: boolean,
+    backward: boolean,
+    left: boolean,
+    right: boolean,
+    space: boolean,
+    shift: boolean,
+  };
+  current_: {
+    leftButton: boolean,
+    rightButton: boolean,
+    mouseXDelta: number,
+    mouseYDelta: number,
+    mouseX: number,
+    mouseY: number
+  };
+  previous_: any;
+  previousKeys_: any;
+  target_: any;
 
-  constructor() {
-    this._Init();
-  }
-
-  _Init() {
+  constructor(target: any) {
+    this.target_ = target || document;
     this._keys = {
       forward: false,
       backward: false,
@@ -184,10 +199,65 @@ class BasicCharacterControllerInput {
       space: false,
       shift: false,
     };
-    document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
-    document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
+    this.current_ = {
+      leftButton: false,
+      rightButton: false,
+      mouseXDelta: 0,
+      mouseYDelta: 0,
+      mouseX: 0,
+      mouseY: 0
+    }
+    this.previous_ = null;
+    this.previousKeys_ = {};
+
+    this.target_.addEventListener('mousedown', (e) => this.onMouseDown_(e), false);
+    this.target_.addEventListener('mousemove', (e) => this.onMouseMove_(e), false);
+    this.target_.addEventListener('mouseup', (e) => this.onMouseUp_(e), false);
+    this.target_.addEventListener('keydown', (e) => this._onKeyDown(e), false);
+    this.target_.addEventListener('keyup', (e) => this._onKeyUp(e), false);
   }
 
+  onMouseDown_(e: MouseEvent) {
+    switch(e.button) {
+      case 0: {
+        this.current_.leftButton = true;
+        console.log('left mouse dwn')
+        break;
+      }
+      case 2: {
+        this.current_.rightButton = true;
+        console.log('right mouse dwn')
+        break;
+      }
+    }
+  }
+
+  onMouseUp_(e: MouseEvent) {
+    switch(e.button) {
+      case 0: {
+        this.current_.leftButton = false;
+        break;
+      }
+      case 2: {
+        this.current_.rightButton = false;
+        break;
+      }
+    }
+  }
+
+  onMouseMove_(e: MouseEvent) {
+    // we reduce screen size to figure mouse going up/down or left/right from the center
+    this.current_.mouseX = e.pageX - window.innerWidth / 2;
+    this.current_.mouseY = e.pageY - window.innerHeight / 2;
+
+    if (this.previous_ === null) {
+      this.previous_ = {...this.current_};
+    }
+
+    // Compute mouse move delta substracting current pos from previous
+    this.current_.mouseXDelta = this.current_.mouseX - (this.previous_.mouseX != null ? this.previous_.mouseX : 0);
+    this.current_.mouseYDelta = this.current_.mouseY - (this.previous_.mouseY != null ? this.previous_.mouseY : 0);
+  }
   _onKeyDown(event: KeyboardEvent) {
     switch (event.keyCode) {
       case 87: // w
@@ -244,7 +314,7 @@ class FiniteStateMachine {
     this._currentState = null;
   }
 
-  _AddState(name: string, type: string) {
+  _AddState(name: string, type: any) {
     this._states[name] = type;
   }
 
@@ -266,10 +336,12 @@ class FiniteStateMachine {
 
   tick(delta: number, input: any) {
     if (this._currentState) {
-      this._currentState.Update(delta, input);
+      this._currentState.tick(delta, input);
     }
   }
 };
+
+
 
 class CharacterFSM extends FiniteStateMachine {
   _proxy: any;
@@ -297,7 +369,7 @@ class State {
 
   Enter() {}
   Exit() {}
-  Update() {}
+  tick(delta: number) {}
 };
 
 class IdleState extends State {
@@ -335,8 +407,9 @@ class IdleState extends State {
     }
   }
 };
+
 class WalkState extends State {
-  constructor(parent) {
+  constructor(parent: any) {
     super(parent);
   }
 
@@ -344,7 +417,7 @@ class WalkState extends State {
     return 'walk';
   }
 
-  Enter(prevState) {
+  Enter(prevState: any) {
     const curAction = this._parent._proxy._animations['walk'].action;
     if (prevState) {
       const prevAction = this._parent._proxy._animations[prevState.Name].action;
@@ -370,7 +443,7 @@ class WalkState extends State {
   Exit() {
   }
 
-  Update(timeElapsed, input) {
+  tick(delta: number, input: any) {
     if (input._keys.forward || input._keys.backward) {
       if (input._keys.shift) {
         this._parent.SetState('run');

@@ -19,7 +19,6 @@ import type { IPlanetoid } from '../types/StarsStoreTypes';
 import { PlanetoidGroupClass } from './PlanetoidGroupClass';
 import { SpaceCraftClass } from './SpaceCraftClass';
 import { CharacterGroupClass } from './CharacterGroupClass';
-import { UfoClass } from '../constructors/Models/Vehicles/UfoClass';
 
 // Connect to App stores
 import useStarSystemsStore from "../stores/StarsSystemsStore";
@@ -38,6 +37,7 @@ let Resizer_: any;
 // *WorldScene instruments
 let SceneCameras_: Array<THREE.PerspectiveCamera>;
 let DefaultCamera_: THREE.PerspectiveCamera;
+let DefaultCameraHelper_: THREE.CameraHelper;
 let ActiveCamera_: THREE.PerspectiveCamera;
 let DefaultControls_: any;
 
@@ -65,12 +65,12 @@ class WorldScene {
     {
       SceneCameras_ = [];
       DefaultCamera_ = createPerspectiveCamera();
-      DefaultCamera_.position.set(0, 0, -15)
+      DefaultCamera_.position.set(0, 15, -25)
 
       DefaultControls_ = createOrbitControls(DefaultCamera_, Renderer_.domElement);
 
-      const defaultCameraHelper = new THREE.CameraHelper(DefaultCamera_);
-      DefaultCamera_.add(defaultCameraHelper);
+      DefaultCameraHelper_ = new THREE.CameraHelper(DefaultCamera_);
+      DefaultCamera_.add(DefaultCameraHelper_);
 
       SceneCameras_.push(DefaultCamera_);
       ActiveCamera_ = SceneCameras_[0];
@@ -98,27 +98,24 @@ class WorldScene {
   }
 
   initSpaceCraft() {
-    // const _cam = createPerspectiveCamera();
-    //  const params = {
-    //   camera: _cam,
-    //   scene: Scene_,
-    // }
-    // const _controls = new BasicCharacterController(params);
-    // const spaceCraftCamera_ = new ThirdPersonCamera({
-    //   camera: _cam,
-    //   target: _controls,
-    // });
-    // ActiveCamera_ = SceneCameras_[1];
+    const _cam = createPerspectiveCamera();
+     const params = {
+      camera: _cam,
+      scene: Scene_,
+    }
+    const _controls = new BasicCharacterController(params);
+    const spaceCraftCamera_ = new ThirdPersonCamera({
+      camera: _cam,
+      target: _controls,
+    });
+    ActiveCamera_ = SceneCameras_[1];
 
-    // SceneCameras_.push(spaceCraftCamera_._camera);
-    // const SpaceCraft = new SpaceCraftClass(spaceCraftCamera_._camera);
-    // Scene_.add(SpaceCraft.threeGroup)
-    // Loop_.updatables.push(SpaceCraft, _controls)
+    SceneCameras_.push(spaceCraftCamera_._camera);
+    const SpaceCraft = new SpaceCraftClass(spaceCraftCamera_._camera);
+    SpaceCraft.threeGroup.position.set(0, 8, -5);
 
-    const spaceCraft = new UfoClass();
-    spaceCraft.threeGroup.position.set(0, 4, 0);
-    Scene_.add(spaceCraft.threeGroup)
-    Loop_.updatables.push(spaceCraft)
+    Scene_.add(SpaceCraft.threeGroup)
+    Loop_.updatables.push(SpaceCraft, _controls)
   }
 
   _initLights() {
@@ -250,6 +247,7 @@ class WorldScene {
 
   tick(delta: number) {
     this.stats.update(delta);
+    DefaultCameraHelper_.update();
   }
 
   start() { Loop_.start(); }

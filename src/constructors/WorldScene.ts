@@ -121,7 +121,6 @@ class WorldScene {
   }
 
   _initLights() {
-
   }
 
   _initLilGUI() {

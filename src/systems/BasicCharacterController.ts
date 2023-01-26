@@ -168,7 +168,7 @@ class BasicCharacterController {
   }
 
   tick(delta: number) {
-    this._reactToRecordedTickInputs();
+    this._reactToRecordedTickInputs(delta);
   }
 };
 

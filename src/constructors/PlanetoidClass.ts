@@ -11,6 +11,7 @@ import {
   TextureLoader, Group, Color, MeshPhongMaterial,PointLight,PointLightHelper, Light, AxesHelper, GridHelper
 } from 'three'
 import { calcPosFromLatLngRad, convertRotationPerDayToRadians } from '../utils/helpers';
+import { WarpGateClass } from './Models/Structures/WarpGateClasss';
 
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
 const { worldSettings } = useWorldSettingsStore();
@@ -23,6 +24,8 @@ class PlanetoidClass {
   nameId: string;
   _localConfig: IPlanetoid;
   _threeGroup: any;
+  _updatables: Array<any>;
+  _mesh: any;
   _sharedSphereGeometry: any;
   _gravParentThreeGroup: any;
   _OrbitalRadiansPerSecond: number;
@@ -34,28 +37,30 @@ class PlanetoidClass {
     this._localConfig = config;
     this._threeGroup = new Group(); // A group holds other objects but cannot be seen itself
     this._threeGroup.name = `${this._localConfig.nameId}Group`
+    this._updatables = [];
     this._gravParentThreeGroup = parentClass;
     this.geometry = options != null && options.geometry != null ? options.geometry : new SphereGeometry(1, 32, 32);
     // /!\ radiants = degrees * (2 * Math.PI)
     this._OrbitalRadiansPerSecond = this._localConfig.orbital_period != null ? convertRotationPerDayToRadians(this._localConfig.orbital_period.days as number) : 0
     this._RotationRadiansPerSecond = convertRotationPerDayToRadians(this._localConfig.rotation_period.days as number)
 
-    this._initialize()
+    this._initialize();
+    this.initializeWarpGate();
   }
 
   _initialize() {
     // 1. Create sphere mesh
-    const planetoidMesh = new Mesh(
+    this._mesh = new Mesh(
       this.geometry,
       this._generateMaterial(this._localConfig)
     );
-    planetoidMesh.name = `${this._localConfig.nameId} MeshGroup`
+    this._mesh.name = `${this._localConfig.nameId} MeshGroup`
 
     if (this._localConfig.emissive != null) {
-      planetoidMesh.add(this._createLight());
+      this._mesh.add(this._createLight());
     }
-    planetoidMesh.rotation.y = this._localConfig.tilt
-    planetoidMesh.scale.multiplyScalar(
+    this._mesh.rotation.y = this._localConfig.tilt
+    this._mesh.scale.multiplyScalar(
       (parseFloat(this._localConfig.radius.AU as string))  * (worldSettings.value.planetoidScale as number)
     )
 
@@ -74,19 +79,19 @@ class PlanetoidClass {
       // if parent is not three group but a mesh we can calculate parent mesh offset
       && this._gravParentThreeGroup.children != null && this._gravParentThreeGroup.children[0] != null
       && this._gravParentThreeGroup.children[0].scale.x > 0
-     ? (this._gravParentThreeGroup.children[0].scale.x + planetoidMesh.scale.x)
+     ? (this._gravParentThreeGroup.children[0].scale.x + this._mesh.scale.x)
       : 0
 
-    planetoidMesh.position.x = planetDistanceInSceneUnits + planetDistanceOffset
+    this._mesh.position.x = planetDistanceInSceneUnits + planetDistanceOffset
 
     //Generate athmosphere
     if (this._localConfig.athmosphereMap != null) {
-      planetoidMesh.add(
-        this._generateAthmosphere(
-          planetoidMesh.scale.x,
+      const athmosphere = this._generateAthmosphere(
+          this._mesh.scale.x,
           this._localConfig.athmosphereMap,
         )
-      );
+      this._mesh.add(athmosphere);
+      this._updatables.push(athmosphere);
     }
 
     // Generate POI
@@ -105,19 +110,35 @@ class PlanetoidClass {
         );
         poiMesh.position.set(cartPos.x, cartPos.y, cartPos.z);
 
-        planetoidMesh.add(poiMesh);
+        this._mesh.add(poiMesh);
       });
     }
 
     // axes Helper
     const axesHelper = new AxesHelper( 15 );
-    planetoidMesh.add( axesHelper );
+    this._mesh.add( axesHelper );
 
     // Grid Helper
-    planetoidMesh.add(new GridHelper(6, 6, "#666666", "#222222"));
+    this._mesh.add(new GridHelper(6, 6, "#666666", "#222222"));
 
-    this._threeGroup.add(planetoidMesh)
-    console.log(planetoidMesh.name, `scale ${planetoidMesh.scale.x}`, `distance ${planetoidMesh.position.x}`, 'DistanceInSceneUnits',planetDistanceInSceneUnits, 'offset', planetDistanceOffset)
+    this._threeGroup.add(this._mesh)
+    //console.log(this._mesh.name, `scale ${this._mesh.scale.x}`, `distance ${this._mesh.position.x}`, 'DistanceInSceneUnits',planetDistanceInSceneUnits, 'offset', planetDistanceOffset)
+  }
+
+  initializeWarpGate() {
+    const warpGates = new WarpGateClass();
+
+    // axes Helper
+    const axesHelper = new AxesHelper( 15 );
+    this.threeGroup.add( axesHelper );
+    // Grid Helper
+    this.threeGroup.add(new GridHelper(6, 6, "#666666", "#222222"));
+
+
+    this.mesh.add(warpGates.threeGroup)
+    this._updatables.push(warpGates)
+    warpGates.mesh.position.set(this.mesh.scale.x * 1.15, this.mesh.scale.y * 0.55, 0);
+    warpGates.mesh.scale.multiplyScalar(this.mesh.scale.x / 10);
   }
 
   // 1. Create material according to planetoid config
@@ -150,10 +171,10 @@ class PlanetoidClass {
       sphereMaterial.bumpScale = cfg.bumpScale || 1
     }
 
-    // if (cfg.emissive != null && cfg.specularMap != null) {
-    //   sphereMaterial.specularMap = loader.load(cfg.specularMap)
-    //   sphereMaterial.shininess = cfg.shininess || 0
-    // }
+    if (cfg.emissive != null && cfg.specularMap != null) {
+      sphereMaterial.specularMap = loader.load(cfg.specularMap)
+      sphereMaterial.shininess = cfg.shininess || 0
+    }
 
     return sphereMaterial;
   }
@@ -204,27 +225,33 @@ class PlanetoidClass {
     const helper = new PointLightHelper(light);
     light.add(helper);
 
-
     return light;
   }
 
   get mesh() {
-    return this._threeGroup.children[0]
+    return this._mesh;
   }
 
   get threeGroup() {
     return this._threeGroup
   }
 
+  get updatables() {
+    return this._updatables;
+  }
+
   tick(delta: number) {
+    // spin planetoid group according to its configured orbital speed
     this.threeGroup.rotation.y += delta * this._OrbitalRadiansPerSecond *  worldSettings.value.timeSpeed;
+    // spin planetoid according to its configured rotation cycle
     this.mesh.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
 
     // Athmosphere rotation
-    if (this.threeGroup.children[0].children != null && this._threeGroup.children[0].children[0] != null && this._threeGroup.children[0].children[0].name == 'Athmosphere Map') {
-      this.threeGroup.children[0].children[0].rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
-    }
-    // this.mesh.position.x = ((this._localConfig.distance.AU as number) * worldSettings.value.constants.AU.km) / worldSettings.value.distance_scaling.multiplier
+    // if (this.threeGroup.children[0].children != null && this._threeGroup.children[0].children[0] != null && this._threeGroup.children[0].children[0].name == 'Athmosphere Map') {
+    //   this.threeGroup.children[0].children[0].rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
+    // }
+
+    this.updatables.forEach(u => u.tick(delta))
   }
 }
 

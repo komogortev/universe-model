@@ -1,4 +1,4 @@
-import { Vector3 } from "three"
+import { Vector3, Quaternion } from "three"
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 
 class BasicCharacterControllerProxy {
@@ -91,7 +91,7 @@ class BasicCharacterController {
     return this._target.quaternion;
   }
 
-  _reactToRecordedTickInputs() {
+  _reactToRecordedTickInputs(delta) {
     if (!this._stateMachine._currentState) {
       return;
     }
@@ -111,8 +111,8 @@ class BasicCharacterController {
     velocity.add(frameDecceleration);
 
     const controlObject = this._target;
-    const _Q = new THREE.Quaternion();
-    const _A = new THREE.Vector3();
+    const _Q = new Quaternion();
+    const _A = new Vector3();
     const _R = controlObject.quaternion.clone();
 
     const acc = this._acceleration.clone();
@@ -125,37 +125,37 @@ class BasicCharacterController {
     }
 
     if (this._input._keys.forward) {
-      velocity.z += acc.z * timeInSeconds;
+      velocity.z += acc.z * delta;
     }
     if (this._input._keys.backward) {
-      velocity.z -= acc.z * timeInSeconds;
+      velocity.z -= acc.z * delta;
     }
     if (this._input._keys.left) {
       _A.set(0, 1, 0);
-      _Q.setFromAxisAngle(_A, 4.0 * Math.PI * timeInSeconds * this._acceleration.y);
+      _Q.setFromAxisAngle(_A, 4.0 * Math.PI * delta * this._acceleration.y);
       _R.multiply(_Q);
     }
     if (this._input._keys.right) {
       _A.set(0, 1, 0);
-      _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * timeInSeconds * this._acceleration.y);
+      _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * delta * this._acceleration.y);
       _R.multiply(_Q);
     }
 
     controlObject.quaternion.copy(_R);
 
-    const oldPosition = new THREE.Vector3();
+    const oldPosition = new Vector3();
     oldPosition.copy(controlObject.position);
 
-    const forward = new THREE.Vector3(0, 0, 1);
+    const forward = new Vector3(0, 0, 1);
     forward.applyQuaternion(controlObject.quaternion);
     forward.normalize();
 
-    const sideways = new THREE.Vector3(1, 0, 0);
+    const sideways = new Vector3(1, 0, 0);
     sideways.applyQuaternion(controlObject.quaternion);
     sideways.normalize();
 
-    sideways.multiplyScalar(velocity.x * timeInSeconds);
-    forward.multiplyScalar(velocity.z * timeInSeconds);
+    sideways.multiplyScalar(velocity.x * delta);
+    forward.multiplyScalar(velocity.z * delta);
 
     controlObject.position.add(forward);
     controlObject.position.add(sideways);
@@ -163,7 +163,7 @@ class BasicCharacterController {
     this._position.copy(controlObject.position);
 
     if (this._mixer) {
-      this._mixer.update(timeInSeconds);
+      this._mixer.update(delta);
     }
   }
 
@@ -274,12 +274,52 @@ class BasicCharacterControllerInput {
     this.current_.mouseYDelta = this.current_.mouseY - (this.previous_.mouseY != null ? this.previous_.mouseY : 0);
   }
 
-  _onKeyDown(event: KeyboardEvent) {
-    this.keys_[e.key] = true;
+  _onKeyDown(e: KeyboardEvent) {
+    //this.keys_[e.key] = true;
+    switch(e.key) {
+      case 'w':
+        this.keys_.forward = true;
+        break;
+      case 's':
+        this.keys_.backward = true;
+        break;
+      case 'a':
+        this.keys_.left = true;
+        break;
+      case 'd':
+        this.keys_.right = true;
+        break;
+      case 'shift':
+        this.keys_.shift = true;
+        break;
+      case 'space':
+        this.keys_.space = true;
+        break;
+    }
   }
 
-  _onKeyUp(event: KeyboardEvent) {
-    this.keys_[e.key] = false;
+  _onKeyUp(e: KeyboardEvent) {
+    //this.keys_[e.key] = false;
+    switch(e.key) {
+      case 'w':
+        this.keys_.forward = false;
+        break;
+      case 's':
+        this.keys_.backward = false;
+        break;
+      case 'a':
+        this.keys_.left = false;
+        break;
+      case 'd':
+        this.keys_.right = false;
+        break;
+      case 'shift':
+        this.keys_.shift = false;
+        break;
+      case 'space':
+        this.keys_.space = false;
+        break;
+    }
   }
 
   key(keyCode) {

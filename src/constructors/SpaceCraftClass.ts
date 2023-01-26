@@ -25,21 +25,34 @@ class SpaceCraftClass {
   phi_: number;
   theta_: number;
 
+  _decceleration: any;
+  _acceleration: any;
+  _velocity: any;
+  _position: any;
+
   constructor(camera: PerspectiveCamera, gravitationalParent?: any|null) {
+    // class infrastructure
     this.nameId = 'SpaceCraftClass'
     this._threeGroup = new Group();
     this._threeGroup.name = 'CharacterGroup';
     this._updatables = [];
 
+    // class tools
     this._Camera = camera;
     this._CameraHelper = new CameraHelper(this._Camera);
     this._Controls = new BasicCharacterControllerInput(document.body);
     this._Controls.enabled = false
     this._GravParent = gravitationalParent != null ? gravitationalParent: null;
 
+    // mouse camera controls
     this.rotationQ_ = new Quaternion();
     this.phi_ = 0,
     this.theta_ = 0
+    // keyboard body controls
+    this._decceleration = new Vector3(-0.0005, -0.0001, -5.0);
+    this._acceleration = new Vector3(1, 0.25, 50.0);
+    this._velocity = new Vector3(0, 0, 0);
+    this._position = new Vector3();
 
     this._initCharacterBody()
     this._initCharacterCamera()
@@ -50,11 +63,11 @@ class SpaceCraftClass {
     this._threeGroup.add(this._CharacterBody.threeGroup);
     this._updatables.push(this._CharacterBody);
 
-    // // axes Helper
-    // const axesHelper = new AxesHelper( 15 );
-    // this._CharacterBody.threeGroup.add( axesHelper );
-    // // Grid Helper
-    // this._CharacterBody.threeGroup.add(new GridHelper(12, 12, "#666666", "#222222"));
+    // axes Helper
+    const axesHelper = new AxesHelper( 15 );
+    this._CharacterBody.threeGroup.add( axesHelper );
+    // Grid Helper
+    this._CharacterBody.threeGroup.add(new GridHelper(12, 12, "#666666", "#222222"));
   }
 
   _initCharacterCamera() {
@@ -65,7 +78,7 @@ class SpaceCraftClass {
     this._Camera.updateProjectionMatrix();
   }
 
-  _updateBodyRotation() {
+  _updateCameraRotation() {
     this._Camera.quaternion.copy(this.rotationQ_)
   }
 
@@ -74,7 +87,7 @@ class SpaceCraftClass {
     const yh = this._Controls.current_.mouseYDelta / window.innerHeight;
 
     // turn mouse movement into spherical coordinates
-    this.phi_ += -xh * 25;
+    this.phi_ += -xh * 10;
     this.theta_ = clamp(this.theta_ + -yh * 5, -Math.PI / 3, -Math.PI / 3)
 
     const qx = new Quaternion();
@@ -90,8 +103,74 @@ class SpaceCraftClass {
     this.rotationQ_.copy(q);
   }
 
-  _reactToRecordedTickInputs() {
+  _reactToRecordedTickInputs(delta: number) {
     this._calculateMouseInputToRotation()
+
+    if (this._Controls.keys_.w) {}
+    if (this._Controls.keys_.s) {}
+    if (this._Controls.keys_.a) {}
+    if (this._Controls.keys_.d) {}
+
+    const velocity = this._velocity;
+    const frameDecceleration = new Vector3(
+        velocity.x * this._decceleration.x,
+        velocity.y * this._decceleration.y,
+        velocity.z * this._decceleration.z
+    );
+
+    frameDecceleration.multiplyScalar(delta);
+    frameDecceleration.z = Math.sign(frameDecceleration.z) * Math.min(
+        Math.abs(frameDecceleration.z), Math.abs(velocity.z));
+
+    velocity.add(frameDecceleration);
+
+    const controlObject = this.threeGroup;
+    const _Q = new Quaternion();
+    const _A = new Vector3();
+    const _R = controlObject.quaternion.clone();
+
+    const acc = this._acceleration.clone();
+    if (this._Controls.keys_.shift) {
+      acc.multiplyScalar(2.0);
+    }
+
+    if (this._Controls.keys_.forward) {
+      velocity.z += acc.z * delta;
+    }
+    if (this._Controls.keys_.backward) {
+      velocity.z -= acc.z * delta;
+    }
+    if (this._Controls.keys_.left) {
+      _A.set(0, 1, 0);
+      _Q.setFromAxisAngle(_A, 4.0 * Math.PI * delta * this._acceleration.y);
+      _R.multiply(_Q);
+    }
+    if (this._Controls.keys_.right) {
+      _A.set(0, 1, 0);
+      _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * delta * this._acceleration.y);
+      _R.multiply(_Q);
+    }
+
+    controlObject.quaternion.copy(_R);
+
+    const oldPosition = new Vector3();
+    oldPosition.copy(controlObject.position);
+
+    const forward = new Vector3(0, 0, 1);
+    forward.applyQuaternion(controlObject.quaternion);
+    forward.normalize();
+
+    const sideways = new Vector3(1, 0, 0);
+    sideways.applyQuaternion(controlObject.quaternion);
+    sideways.normalize();
+
+    sideways.multiplyScalar(velocity.x * delta);
+    forward.multiplyScalar(velocity.z * delta);
+
+    controlObject.position.add(forward);
+    controlObject.position.add(sideways);
+
+    this._position.copy(controlObject.position);
   }
 
   get threeGroup() {
@@ -115,9 +194,11 @@ class SpaceCraftClass {
   }
 
   tick(delta: number) {
-    this._reactToRecordedTickInputs()
-    this._updateBodyRotation()
-    this._Controls.tick(delta)
+    if (this._Controls.enabled) {
+      this._reactToRecordedTickInputs(delta)
+      this._updateCameraRotation()
+      this._Controls.tick(delta)
+    }
   }
 }
 

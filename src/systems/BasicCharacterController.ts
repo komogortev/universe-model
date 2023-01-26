@@ -322,7 +322,7 @@ class BasicCharacterControllerInput {
     }
   }
 
-  key(keyCode) {
+  key(keyCode: any) {
     return !!this.keys_[keyCode];
   }
 

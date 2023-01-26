@@ -149,7 +149,6 @@ class SpaceCraftClass {
     }
     if (this._Controls.keys_.space) {
       velocity.y += acc.y * delta;
-      console.log(velocity.y)
     }
 
     controlObject.quaternion.copy(_R);

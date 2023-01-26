@@ -128,8 +128,8 @@ class PlanetoidClass {
         emissiveIntensity: 1,
       })
        : new MeshPhongMaterial({
-        wireframe: true,
-        //color: cfg.color ? new Color(cfg.color) : '#fff',
+        //wireframe: true,
+        color: cfg.color ? new Color(cfg.color) : '#fff',
       })
 
     if (cfg.map != null) {

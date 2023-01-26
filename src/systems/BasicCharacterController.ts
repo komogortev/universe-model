@@ -289,10 +289,10 @@ class BasicCharacterControllerInput {
       case 'd':
         this.keys_.right = true;
         break;
-      case 'shift':
+      case 'Shift':
         this.keys_.shift = true;
         break;
-      case 'space':
+      case ' ':
         this.keys_.space = true;
         break;
     }
@@ -313,10 +313,10 @@ class BasicCharacterControllerInput {
       case 'd':
         this.keys_.right = false;
         break;
-      case 'shift':
+      case 'Shift':
         this.keys_.shift = false;
         break;
-      case 'space':
+      case ' ':
         this.keys_.space = false;
         break;
     }

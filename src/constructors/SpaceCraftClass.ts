@@ -106,11 +106,6 @@ class SpaceCraftClass {
   _reactToRecordedTickInputs(delta: number) {
     this._calculateMouseInputToRotation()
 
-    if (this._Controls.keys_.w) {}
-    if (this._Controls.keys_.s) {}
-    if (this._Controls.keys_.a) {}
-    if (this._Controls.keys_.d) {}
-
     const velocity = this._velocity;
     const frameDecceleration = new Vector3(
         velocity.x * this._decceleration.x,
@@ -121,6 +116,8 @@ class SpaceCraftClass {
     frameDecceleration.multiplyScalar(delta);
     frameDecceleration.z = Math.sign(frameDecceleration.z) * Math.min(
         Math.abs(frameDecceleration.z), Math.abs(velocity.z));
+    frameDecceleration.y = Math.sign(frameDecceleration.y) * Math.min(
+        Math.abs(frameDecceleration.y), Math.abs(velocity.y));
 
     velocity.add(frameDecceleration);
 
@@ -130,10 +127,6 @@ class SpaceCraftClass {
     const _R = controlObject.quaternion.clone();
 
     const acc = this._acceleration.clone();
-    if (this._Controls.keys_.shift) {
-      acc.multiplyScalar(2.0);
-    }
-
     if (this._Controls.keys_.forward) {
       velocity.z += acc.z * delta;
     }
@@ -150,6 +143,14 @@ class SpaceCraftClass {
       _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * delta * this._acceleration.y);
       _R.multiply(_Q);
     }
+    if (this._Controls.keys_.shift) {
+      velocity.y -= acc.y * delta;
+      // acc.multiplyScalar(2.0);
+    }
+    if (this._Controls.keys_.space) {
+      velocity.y += acc.y * delta;
+      console.log(velocity.y)
+    }
 
     controlObject.quaternion.copy(_R);
 
@@ -164,10 +165,16 @@ class SpaceCraftClass {
     sideways.applyQuaternion(controlObject.quaternion);
     sideways.normalize();
 
+    const vertical = new Vector3(0, 1, 0);
+    vertical.applyQuaternion(controlObject.quaternion);
+    vertical.normalize();
+
     sideways.multiplyScalar(velocity.x * delta);
+    vertical.multiplyScalar(velocity.y * delta);
     forward.multiplyScalar(velocity.z * delta);
 
     controlObject.position.add(forward);
+    controlObject.position.add(vertical);
     controlObject.position.add(sideways);
 
     this._position.copy(controlObject.position);

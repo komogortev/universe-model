@@ -12,11 +12,8 @@ class _BasicGolemControllerInput {
   previousKeys_: any;
 
   constructor(target: any) {
-    this.target_ = target || document;
-    this.initialize_()
-  }
+    const target_ = target || document;
 
-  initialize_() {
     this.current_ = {
       leftButton: false,
       rightButton: false,
@@ -27,11 +24,11 @@ class _BasicGolemControllerInput {
     this.keys_ = {};
     this.previousKeys_ = {};
 
-    this.target_.addEventListener('mousedown', (e) => this.onMouseDown_(e), false);
-    this.target_.addEventListener('mousemove', (e) => this.onMouseMove_(e), false);
-    this.target_.addEventListener('mouseup', (e) => this.onMouseUp_(e), false);
-    this.target_.addEventListener('keydown', (e) => this.onKeyDown_(e), false);
-    this.target_.addEventListener('keyup', (e) => this.onKeyUp_(e), false);
+    target_.addEventListener('mousedown', (e) => this.onMouseDown_(e), false);
+    target_.addEventListener('mousemove', (e) => this.onMouseMove_(e), false);
+    target_.addEventListener('mouseup', (e) => this.onMouseUp_(e), false);
+    target_.addEventListener('keydown', (e) => this.onKeyDown_(e), false);
+    target_.addEventListener('keyup', (e) => this.onKeyUp_(e), false);
   }
 
   onMouseDown_(e: MouseEvent) {
@@ -130,7 +127,7 @@ class CharacterGroupClass {
   rotationQ_: any;
   phi_: number;
   theta_: number;
-  lookAt_: any;
+
 
   _bodyTranslation: any;
 
@@ -145,7 +142,6 @@ class CharacterGroupClass {
     }
 
     this._Camera = camera;
-    this._Camera.lookAt(0, 0, -0.5);
     this._CameraHelper = new CameraHelper(this._Camera);
     this._Controls = new _BasicGolemControllerInput(document.body);
     this._GravParent = gravitationalParent != null ? gravitationalParent: null;
@@ -158,7 +154,6 @@ class CharacterGroupClass {
     this.rotationQ_ = new Quaternion();
     this.phi_ = 0,
     this.theta_ = 0
-    this.lookAt_ = new Vector3(0, 0, -0.5)
 
     this._bodyTranslation = new Vector3();
   }
@@ -252,6 +247,7 @@ class CharacterGroupClass {
   }
 
   _reactToRecordedTickInputs() {
+    console.log('react to input')
     this._calculateMouseInputToRotation()
 
     if (this._Controls.keys_.w) {
@@ -263,8 +259,8 @@ class CharacterGroupClass {
 
       // get future position coordinates after "step" in the direction
       // do we lookAt 10 steps away?
-      const destinationX = this.lookAt_.x / 10
-      const destinationY = this.lookAt_.z / 10
+      const destinationX = this._Camera.lookAt.x / 10
+      const destinationY = this._Camera.lookAt.z / 10
 
       this._characterGroupPosition._latitude = this._characterGroupPosition._latitude + destinationX
       this._characterGroupPosition._longitude = this._characterGroupPosition._longitude + destinationY
@@ -272,15 +268,15 @@ class CharacterGroupClass {
 
     if (this._Controls.keys_.s) {
       //get mouse direction by accessing camera lookAt after the rotation?
-      // this.lookAt_.x
-      // this.lookAt_.y
+      // this._lookAt.x
+      // this._lookAt.y
 
       // calculate step distance: relative to sphere size vs static step size
 
       // get future position coordinates after "step" in the direction
       // do we lookAt 10 steps away?
-      const destinationX = -(this.lookAt_.x / 10)
-      const destinationY = -(this.lookAt_.y / 10)
+      const destinationX = -(this._lookAt.x / 10)
+      const destinationY = -(this._lookAt.y / 10)
 
       this._characterGroupPosition._latitude = this._characterGroupPosition._latitude + destinationX
       this._characterGroupPosition._longitude = this._characterGroupPosition._longitude + destinationY
@@ -289,8 +285,8 @@ class CharacterGroupClass {
     if (this._Controls.keys_.a) {
       // get future position coordinates after "step" in the direction
       // do we lookAt 10 steps away?
-      const destinationX = -((this.lookAt_.x - .5) / 10)
-      const destinationY = -((this.lookAt_.y - .5) / 10)
+      const destinationX = -((this._lookAt.x - .5) / 10)
+      const destinationY = -((this._lookAt.y - .5) / 10)
 
       this._characterGroupPosition._latitude = this._characterGroupPosition._latitude + destinationX
       this._characterGroupPosition._longitude = this._characterGroupPosition._longitude + destinationY
@@ -299,8 +295,8 @@ class CharacterGroupClass {
     if (this._Controls.keys_.d) {
       // get future position coordinates after "step" in the direction
       // do we lookAt 10 steps away?
-      const destinationX = -((this.lookAt_.x + .5) / 10)
-      const destinationY = -((this.lookAt_.y + .5) / 10)
+      const destinationX = -((this._lookAt.x + .5) / 10)
+      const destinationY = -((this._lookAt.y + .5) / 10)
 
       this._characterGroupPosition._latitude = this._characterGroupPosition._latitude + destinationX
       this._characterGroupPosition._longitude = this._characterGroupPosition._longitude + destinationY

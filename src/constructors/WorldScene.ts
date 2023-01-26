@@ -43,6 +43,7 @@ let DefaultControls_: any;
 
 // *WorldScene decorations
 let StarGroupClass_: any;
+let SpaceCraft_: any;
 let CharacterGroupClass_: any;
 
 class WorldScene {
@@ -111,12 +112,12 @@ class WorldScene {
     ActiveCamera_ = SceneCameras_[1];
 
     SceneCameras_.push(spaceCraftCamera_._camera);
-    const SpaceCraft = new SpaceCraftClass(spaceCraftCamera_._camera);
-    SpaceCraft.threeGroup.position.set(0, 5, -5);
-    SpaceCraft.threeGroup.scale.set(0.125, 0.125, 0.125);
+    SpaceCraft_ = new SpaceCraftClass(spaceCraftCamera_._camera);
+    SpaceCraft_.threeGroup.position.set(0, 5, -5);
+    SpaceCraft_.threeGroup.scale.set(0.125, 0.125, 0.125);
 
-    Scene_.add(SpaceCraft.threeGroup)
-    Loop_.updatables.push(SpaceCraft, _controls)
+    Scene_.add(SpaceCraft_.threeGroup)
+    Loop_.updatables.push(SpaceCraft_)
   }
 
   _initLights() {
@@ -261,6 +262,7 @@ function onKeyDown( event: KeyboardEvent ) {
       ActiveCamera_ = SceneCameras_[0];
       ActiveCamera_.updateProjectionMatrix();
       DefaultControls_.enabled = true;
+      SpaceCraft_.enabled = false
 
       Loop_.camera = ActiveCamera_;
       Resizer_.camera = ActiveCamera_;
@@ -269,6 +271,7 @@ function onKeyDown( event: KeyboardEvent ) {
       ActiveCamera_ = SceneCameras_[1];
       ActiveCamera_.updateProjectionMatrix();
       DefaultControls_.enabled = false;
+      SpaceCraft_.enabled = true
 
       Loop_.camera = ActiveCamera_
       Resizer_.camera = ActiveCamera_

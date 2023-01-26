@@ -93,6 +93,7 @@ class UfoClass {
   }
 
   tick(delta: number) {
+    this.threeGroup.rotation.y += 0.01
   }
 }
 export { UfoClass }

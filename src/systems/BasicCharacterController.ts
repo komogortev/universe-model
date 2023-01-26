@@ -34,7 +34,7 @@ class BasicCharacterController {
     this._velocity = new Vector3(0, 0, 0);
     this._position = new Vector3();
 
-    this._input = new BasicCharacterControllerInput();
+    this._input = new BasicCharacterControllerInput(document.body);
     this._stateMachine = new CharacterFSM(
       new BasicCharacterControllerProxy(this._animations));
     this._animations = {};
@@ -91,7 +91,7 @@ class BasicCharacterController {
     return this._target.quaternion;
   }
 
-  tick(delta: number) {
+  _reactToRecordedTickInputs() {
     if (!this._stateMachine._currentState) {
       return;
     }
@@ -166,10 +166,14 @@ class BasicCharacterController {
       this._mixer.update(timeInSeconds);
     }
   }
+
+  tick(delta: number) {
+    this._reactToRecordedTickInputs();
+  }
 };
 
 class BasicCharacterControllerInput {
-  _keys: {
+  keys_: {
     forward: boolean,
     backward: boolean,
     left: boolean,
@@ -187,11 +191,11 @@ class BasicCharacterControllerInput {
   };
   previous_: any;
   previousKeys_: any;
-  target_: any;
+  _enabled: boolean;
 
   constructor(target: any) {
-    this.target_ = target || document;
-    this._keys = {
+    const target_ = target || document;
+    this.keys_ = {
       forward: false,
       backward: false,
       left: false,
@@ -209,12 +213,23 @@ class BasicCharacterControllerInput {
     }
     this.previous_ = null;
     this.previousKeys_ = {};
+    this._enabled = true;
 
-    this.target_.addEventListener('mousedown', (e) => this.onMouseDown_(e), false);
-    this.target_.addEventListener('mousemove', (e) => this.onMouseMove_(e), false);
-    this.target_.addEventListener('mouseup', (e) => this.onMouseUp_(e), false);
-    this.target_.addEventListener('keydown', (e) => this._onKeyDown(e), false);
-    this.target_.addEventListener('keyup', (e) => this._onKeyUp(e), false);
+    target_.addEventListener('mousedown', (e: MouseEvent) => {
+      if (this._enabled) this.onMouseDown_(e)
+    }, false);
+    target_.addEventListener('mousemove', (e: MouseEvent) => {
+      if (this._enabled) this.onMouseMove_(e)
+    }, false);
+    target_.addEventListener('mouseup', (e: MouseEvent) => {
+      if (this._enabled) this.onMouseUp_(e)
+    }, false);
+    target_.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (this._enabled) this._onKeyDown(e)
+    }, false);
+    target_.addEventListener('keyup', (e: KeyboardEvent) => {
+      if (this._enabled) this._onKeyUp(e)
+    }, false);
   }
 
   onMouseDown_(e: MouseEvent) {
@@ -258,49 +273,38 @@ class BasicCharacterControllerInput {
     this.current_.mouseXDelta = this.current_.mouseX - (this.previous_.mouseX != null ? this.previous_.mouseX : 0);
     this.current_.mouseYDelta = this.current_.mouseY - (this.previous_.mouseY != null ? this.previous_.mouseY : 0);
   }
+
   _onKeyDown(event: KeyboardEvent) {
-    switch (event.keyCode) {
-      case 87: // w
-        this._keys.forward = true;
-        break;
-      case 65: // a
-        this._keys.left = true;
-        break;
-      case 83: // s
-        this._keys.backward = true;
-        break;
-      case 68: // d
-        this._keys.right = true;
-        break;
-      case 32: // SPACE
-        this._keys.space = true;
-        break;
-      case 16: // SHIFT
-        this._keys.shift = true;
-        break;
-    }
+    this.keys_[e.key] = true;
   }
 
   _onKeyUp(event: KeyboardEvent) {
-    switch(event.keyCode) {
-      case 87: // w
-        this._keys.forward = false;
-        break;
-      case 65: // a
-        this._keys.left = false;
-        break;
-      case 83: // s
-        this._keys.backward = false;
-        break;
-      case 68: // d
-        this._keys.right = false;
-        break;
-      case 32: // SPACE
-        this._keys.space = false;
-        break;
-      case 16: // SHIFT
-        this._keys.shift = false;
-        break;
+    this.keys_[e.key] = false;
+  }
+
+  key(keyCode) {
+    return !!this.keys_[keyCode];
+  }
+
+  isReady() {
+    return this.previous_ !== null;
+  }
+
+  get enabled() {
+    return this._enabled;
+  }
+
+  set enabled(enabled: boolean) {
+    this._enabled = enabled
+  }
+
+  tick(delta: number) {
+    // push current keyboard/mouse snapshot into previous
+    if (this.previous_ !== null) {
+      this.current_.mouseXDelta = this.current_.mouseX - this.previous_.mouseX;
+      this.current_.mouseYDelta = this.current_.mouseY - this.previous_.mouseY;
+
+      this.previous_ = { ...this.current_ }
     }
   }
 };
@@ -340,8 +344,6 @@ class FiniteStateMachine {
     }
   }
 };
-
-
 
 class CharacterFSM extends FiniteStateMachine {
   _proxy: any;
@@ -455,7 +457,6 @@ class WalkState extends State {
   }
 };
 
-
 class RunState extends State {
   constructor(parent) {
     super(parent);
@@ -502,4 +503,5 @@ class RunState extends State {
     this._parent.SetState('idle');
   }
 };
-export { BasicCharacterController }
+
+export { BasicCharacterController, BasicCharacterControllerInput }

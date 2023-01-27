@@ -1,5 +1,6 @@
 import { Group, SphereGeometry } from 'three'
 import type { IPlanetoid } from '../types/StarsStoreTypes';
+import { WarpGateClass } from './Models/Structures/WarpGateClasss';
 import { PlanetoidClass } from './PlanetoidClass';
 
 class PlanetoidGroupClass {
@@ -26,7 +27,24 @@ class PlanetoidGroupClass {
   initPlanetoidsRecursevly (config: any, parentThreeGroup?: any | null): void {
     // attempt generating current config planetoid class
     const newPlanetoidClass = new PlanetoidClass(config, parentThreeGroup, { geometry: this._sharedSphereGeometry })
-    this._updatables.concat(newPlanetoidClass.updatables);
+    this._updatables.push(newPlanetoidClass);
+
+
+    {
+      const warpGates = new WarpGateClass(`${newPlanetoidClass.threeGroup.name} WarpGateGroup`);
+      console.log(warpGates._nameId, warpGates);
+      //attach warp gate to planetoid mesh
+      newPlanetoidClass.mesh.add(warpGates.threeGroup)
+      //position warp gate against planetoid and scaledown
+
+      // offset parent and child radius from distance value
+      const planetDistanceOffset = newPlanetoidClass.mesh.scale.x + 1
+      warpGates.threeGroup.children[0].position.set(planetDistanceOffset + warpGates.threeGroup.children[0].scale.x, 0, 0);
+      warpGates.threeGroup.children[0].scale.multiplyScalar(newPlanetoidClass.mesh.scale.x / 4);
+      //subscribe to animation loop
+      console.log(newPlanetoidClass.nameId, newPlanetoidClass.mesh);
+      this._updatables.push(warpGates)
+    }
 
     // group assigned to group sets child position to root position
     // to calculate child position relative to actual parent we need to assign it to mesh
@@ -36,7 +54,7 @@ class PlanetoidGroupClass {
       // planet gets attached to root Star group
       parentThreeGroup.add(newPlanetoidClass.threeGroup)
     } else {
-      // moon gets attached to planet
+      // moon gets attached to planet mesh
       parentThreeGroup.children[0].add(newPlanetoidClass.threeGroup)
     }
 
@@ -47,6 +65,7 @@ class PlanetoidGroupClass {
       })
     }
   }
+
 
   get threeGroup() {
     return this._threeGroup;

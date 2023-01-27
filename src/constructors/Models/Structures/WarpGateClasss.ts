@@ -6,7 +6,9 @@ import {
   Color,
   CircleGeometry,
   LatheGeometry,
-  Vector2
+  Vector2,
+  AxesHelper,
+  GridHelper
 } from 'three'
 
 class WarpGateClass {
@@ -20,8 +22,10 @@ class WarpGateClass {
     this._threeGroup = new Group();
     this._threeGroup.name = 'Warp Gate Root Group';
     this._updatables = [];
-    this._updatables.push(this)
+
     this.initialize()
+
+    //this._threeGroup.position.set(parentScale.x * 1.1, 0, 0);
   }
 
   initialize() {
@@ -32,6 +36,16 @@ class WarpGateClass {
 
   createBodyModel() {
     const body_: Group = new Group();
+
+    {
+      // axes Helper
+      const axesHelper = new AxesHelper( 15 );
+      body_.add( axesHelper );
+      // Grid Helper
+      body_.add(new GridHelper(16, 16, "#666666", "#222222"));
+    }
+
+
     const silver_ = new Color(0xE0DFDC);
     const silver2_ = new Color(0xCFCFCE);
     // CircleGeometry 'Gate Mirror'
@@ -39,7 +53,7 @@ class WarpGateClass {
       const radius = 2;  // ui: radius
       const segments = 12;  // ui: segments
       const mesh = this._createSolidGeometry(new CircleGeometry(radius, segments));
-      this._addObject(body_, mesh.scale.x / 2, mesh.scale.y / 2, mesh.scale.z / 2, mesh);
+      this._addObject(body_, 0, 0, 0, mesh);
     }
     // LatheGeometry 'Frame'
     {
@@ -49,7 +63,7 @@ class WarpGateClass {
       }
       const mesh = this._createSolidGeometry(new LatheGeometry(points), silver_);
       mesh.rotation.x = Math.PI / 2;
-      this._addObject(body_, mesh.scale.x / 2, mesh.scale.y / 2, -0.75, mesh);
+      this._addObject(body_, 0,0, -1, mesh);
     }
 
     return body_;
@@ -97,7 +111,7 @@ class WarpGateClass {
   }
 
   tick(delta: number) {
-    this.threeGroup.rotation.y += 0.01
+    this._mesh.rotation.z += 0.0001
   }
 }
 export { WarpGateClass }

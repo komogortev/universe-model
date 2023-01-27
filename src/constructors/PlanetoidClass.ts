@@ -11,7 +11,6 @@ import {
   TextureLoader, Group, Color, MeshPhongMaterial,PointLight,PointLightHelper, Light, AxesHelper, GridHelper
 } from 'three'
 import { calcPosFromLatLngRad, convertRotationPerDayToRadians } from '../utils/helpers';
-import { WarpGateClass } from './Models/Structures/WarpGateClasss';
 
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
 const { worldSettings } = useWorldSettingsStore();
@@ -45,7 +44,6 @@ class PlanetoidClass {
     this._RotationRadiansPerSecond = convertRotationPerDayToRadians(this._localConfig.rotation_period.days as number)
 
     this._initialize();
-    this.initializeWarpGate();
   }
 
   _initialize() {
@@ -114,31 +112,16 @@ class PlanetoidClass {
       });
     }
 
-    // axes Helper
-    const axesHelper = new AxesHelper( 15 );
-    this._mesh.add( axesHelper );
-
-    // Grid Helper
-    this._mesh.add(new GridHelper(6, 6, "#666666", "#222222"));
+    {
+      // axes Helper
+      const axesHelper = new AxesHelper( 15 );
+      this._mesh.add( axesHelper );
+      // Grid Helper
+      this._mesh.add(new GridHelper(6, 6, "#666666", "#222222"));
+    }
 
     this._threeGroup.add(this._mesh)
     //console.log(this._mesh.name, `scale ${this._mesh.scale.x}`, `distance ${this._mesh.position.x}`, 'DistanceInSceneUnits',planetDistanceInSceneUnits, 'offset', planetDistanceOffset)
-  }
-
-  initializeWarpGate() {
-    const warpGates = new WarpGateClass();
-
-    // axes Helper
-    const axesHelper = new AxesHelper( 15 );
-    this.threeGroup.add( axesHelper );
-    // Grid Helper
-    this.threeGroup.add(new GridHelper(6, 6, "#666666", "#222222"));
-
-
-    this.mesh.add(warpGates.threeGroup)
-    this._updatables.push(warpGates)
-    warpGates.mesh.position.set(this.mesh.scale.x * 1.15, this.mesh.scale.y * 0.55, 0);
-    warpGates.mesh.scale.multiplyScalar(this.mesh.scale.x / 10);
   }
 
   // 1. Create material according to planetoid config
@@ -149,8 +132,8 @@ class PlanetoidClass {
         emissiveIntensity: 1,
       })
        : new MeshPhongMaterial({
-        //wireframe: true,
-        color: cfg.color ? new Color(cfg.color) : '#fff',
+        wireframe: true,
+        //color: cfg.color ? new Color(cfg.color) : '#fff',
       })
 
     if (cfg.map != null) {

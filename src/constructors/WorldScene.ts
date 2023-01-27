@@ -98,28 +98,6 @@ class WorldScene {
     document.addEventListener('keydown', onKeyDown );
   }
 
-  initSpaceCraft() {
-    const _cam = createPerspectiveCamera();
-     const params = {
-      camera: _cam,
-      scene: Scene_,
-    }
-    const _controls = new BasicCharacterController(params);
-    const spaceCraftCamera_ = new ThirdPersonCamera({
-      camera: _cam,
-      target: _controls,
-    });
-    ActiveCamera_ = SceneCameras_[1];
-
-    SceneCameras_.push(spaceCraftCamera_._camera);
-    SpaceCraft_ = new SpaceCraftClass(spaceCraftCamera_._camera);
-    SpaceCraft_.threeGroup.position.set(0, 5, -5);
-    SpaceCraft_.threeGroup.scale.set(0.125, 0.125, 0.125);
-
-    Scene_.add(SpaceCraft_.threeGroup)
-    Loop_.updatables.push(SpaceCraft_)
-  }
-
   _initLights() {
   }
 
@@ -198,6 +176,28 @@ class WorldScene {
     // Register star system classes with animation Loop
     this._registerCandidatesWithLoop(StarGroupClass_.updatables)
     console.log(StarGroupClass_, Loop_)
+  }
+
+  initSpaceCraft() {
+    const _cam = createPerspectiveCamera();
+    const params = {
+      camera: _cam,
+      scene: Scene_,
+    }
+    const _controls = new BasicCharacterController(params);
+    const spaceCraftCamera_ = new ThirdPersonCamera({
+      camera: _cam,
+      target: _controls,
+    });
+    ActiveCamera_ = SceneCameras_[1];
+
+    SceneCameras_.push(spaceCraftCamera_._camera);
+    SpaceCraft_ = new SpaceCraftClass(spaceCraftCamera_._camera);
+    SpaceCraft_.threeGroup.position.set(0, 5, -5);
+    SpaceCraft_.threeGroup.scale.set(0.125, 0.125, 0.125);
+
+    Scene_.add(SpaceCraft_.threeGroup)
+    Loop_.updatables.push(SpaceCraft_)
   }
 
   initializeCharacterGroup() {

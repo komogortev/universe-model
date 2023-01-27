@@ -13,6 +13,7 @@ import {
 import { calcPosFromLatLngRad, convertRotationPerDayToRadians } from '../utils/helpers';
 
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
+import { WarpGateClass } from './Models/Structures/WarpGateClasss';
 const { worldSettings } = useWorldSettingsStore();
 
 const loader = new TextureLoader();
@@ -73,14 +74,14 @@ class PlanetoidClass {
     }
 
     // offset parent and child radius from distance value
-    const planetDistanceOffset = this._gravParentThreeGroup != null
+    const parentStarDistanceOffset = this._gravParentThreeGroup != null
       // if parent is not three group but a mesh we can calculate parent mesh offset
       && this._gravParentThreeGroup.children != null && this._gravParentThreeGroup.children[0] != null
       && this._gravParentThreeGroup.children[0].scale.x > 0
      ? (this._gravParentThreeGroup.children[0].scale.x + this._mesh.scale.x)
       : 0
 
-    this._mesh.position.x = planetDistanceInSceneUnits + planetDistanceOffset
+    this._mesh.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
 
     //Generate athmosphere
     if (this._localConfig.athmosphereMap != null) {
@@ -120,8 +121,25 @@ class PlanetoidClass {
       this._mesh.add(new GridHelper(6, 6, "#666666", "#222222"));
     }
 
+
+    // initiate and collect warpGates
+    {
+      const warpGates = new WarpGateClass(`${this.nameId} WarpGateGroup`);
+      console.log(warpGates._nameId, warpGates);
+      // attach warp gate to planetoid mesh
+      this._mesh.add(warpGates.threeGroup)
+      // position warp gate against planetoid and scaledown
+      // offset parent and child radius from distance value
+      const parentPlanetoidDistanceOffset = this.mesh.scale.x + 1
+      warpGates.threeGroup.children[0].position.set(parentPlanetoidDistanceOffset + warpGates.threeGroup.children[0].scale.x, 0, 0);
+      warpGates.threeGroup.children[0].scale.multiplyScalar(this.mesh.scale.x / 4);
+      // subscribe to animation loop
+      // console.log(newPlanetoidClass.nameId, newPlanetoidClass.mesh);
+      this._updatables.push(warpGates)
+    }
+
     this._threeGroup.add(this._mesh)
-    //console.log(this._mesh.name, `scale ${this._mesh.scale.x}`, `distance ${this._mesh.position.x}`, 'DistanceInSceneUnits',planetDistanceInSceneUnits, 'offset', planetDistanceOffset)
+    //console.log(this._mesh.name, `scale ${this._mesh.scale.x}`, `distance ${this._mesh.position.x}`, 'DistanceInSceneUnits',planetDistanceInSceneUnits, 'offset', parentStarDistanceOffset)
   }
 
   // 1. Create material according to planetoid config

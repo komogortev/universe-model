@@ -87,6 +87,10 @@ class WorldScene {
       this._initLights();
     }
 
+
+        // const light2 = new THREE.DirectionalLight(0xffffff, 1.0);
+        // light2.position.set(0, 1, 0);
+        // Scene_.add(light2);
     // initialize *WorldScene systems (2)
     Resizer_ = new Resizer(this.container, ActiveCamera_, Renderer_);
     Loop_ = new Loop(ActiveCamera_, Scene_, Renderer_);
@@ -95,7 +99,7 @@ class WorldScene {
     // initialize *WorldScene decorations
     {
       this._initGymTools();
-      //this.initializeStarGroup();
+      this.initializeStarGroup();
       //this.initSpaceCraft();
       //this.initializeCharacterGroup();
       //this._LoadPlayer();
@@ -258,7 +262,7 @@ class WorldScene {
   }
 
   _LoadFoliage() {
-    const name = 'CommonTree';
+    const name = 'RocketShip';
     const pos = new THREE.Vector3(
         (Math.random() * 2.0 - 1.0) * 500,
         0,
@@ -269,13 +273,14 @@ class WorldScene {
     // gltf_c is responsive for intantiation of the model on the Scene_
     const c = new gltf_component.StaticModelComponent({
       scene: Scene_,
-      resourcePath: './resources/nature/FBX/',
-      resourceName: name + '_1.fbx',
+      resourcePath: './models/aircrafts/',
+      resourceName: name + '.glb',
+      //resourceTexture: './models/aircrafts/wing/textures/Scifi_Panel4_1K_ao.jpg',
       scale: 0.25,
-      // emissive: new THREE.Color(0x000000),
-      // specular: new THREE.Color(0x000000),
-      // receiveShadow: true,
-      // castShadow: true,
+      //emissive: new THREE.Color(0xff0000),
+      //specular: new THREE.Color(0xFFFFFF),
+      receiveShadow: true,
+      castShadow: true,
     });
 
     e.AddComponent(c);

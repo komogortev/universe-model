@@ -16,6 +16,8 @@ export const gltf_component = (() => {
       castShadow?: any;
       visible?: boolean;
       resourceName: string;
+      resourcePath: string;
+      resourceTexture: any;
     };
     _target: any;
 
@@ -58,42 +60,42 @@ export const gltf_component = (() => {
       this._target.position.copy(this._parent._position);
 
       let texture: any = null;
-      // if (this._params.resourceTexture) {
-      //   const texLoader = new TextureLoader();
-      //   texture = texLoader.load(this._params.resourceTexture);
-      //   texture.encoding = sRGBEncoding;
-      // }
+      if (this._params.resourceTexture) {
+        const texLoader = new TextureLoader();
+        texture = texLoader.load(this._params.resourceTexture);
+        texture.encoding = sRGBEncoding;
+      }
 
-      // this._target.traverse((c: any) => {
-      //   let materials = c.material;
-      //   if (!(c.material instanceof Array)) {
-      //     materials = [c.material];
-      //   }
+      this._target.traverse((c: any) => {
+        let materials = c.material;
+        if (!(c.material instanceof Array)) {
+          materials = [c.material];
+        }
 
-      //   for (let m of materials) {
-      //     if (m) {
-      //       if (texture) {
-      //         m.map = texture;
-      //       }
-      //       if (this._params.specular) {
-      //         m.specular = this._params.specular;
-      //       }
-      //       if (this._params.emissive) {
-      //         m.emissive = this._params.emissive;
-      //       }
-      //     }
-      //   }
+        for (let m of materials) {
+          if (m) {
+            if (texture) {
+              m.map = texture;
+            }
+            if (this._params.specular) {
+              m.specular = this._params.specular;
+            }
+            if (this._params.emissive) {
+              m.emissive = this._params.emissive;
+            }
+          }
+        }
 
-      //   if (this._params.receiveShadow != null) {
-      //     c.receiveShadow = this._params.receiveShadow;
-      //   }
-      //   if (this._params.castShadow != null) {
-      //     c.castShadow = this._params.castShadow;
-      //   }
-      //   if (this._params.visible != null) {
-      //     c.visible = this._params.visible;
-      //   }
-      // });
+        if (this._params.receiveShadow != null) {
+          c.receiveShadow = this._params.receiveShadow;
+        }
+        if (this._params.castShadow != null) {
+          c.castShadow = this._params.castShadow;
+        }
+        if (this._params.visible != null) {
+          c.visible = this._params.visible;
+        }
+      });
     }
 
     _LoadGLB() {

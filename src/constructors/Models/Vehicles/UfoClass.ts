@@ -5,28 +5,33 @@ import {
   DoubleSide,
   Mesh,
   Color,
-  CylinderGeometry
+  CylinderGeometry,
+  Sphere
 } from 'three'
 
 class UfoClass {
   _nameId: string;
   _threeGroup: Group;
   _updatables: Array<any>;
+  _boundingSphere: any | null;
 
   constructor(name: string = 'Bob Lazar Ufo') {
     this._nameId = name;
     this._threeGroup = new Group();
     this._updatables = [];
     this._updatables.push(this)
+    this._boundingSphere = null;
     this.initialize()
   }
 
   initialize() {
-    const bodyModel = this.createBodyModel();
+    const bodyModel = this._createBodyModel();
     this._threeGroup.add(bodyModel)
   }
 
-  createBodyModel() {
+
+
+  _createBodyModel() {
     const body_: Group = new Group();
     const silver_ = new Color(0xE0DFDC);
     const silver2_ = new Color(0xCFCFCE);
@@ -35,14 +40,12 @@ class UfoClass {
       const radius = 8;  // ui: radius
       const height = 2;  // ui: height
       const radialSegments = 16;  // ui: radialSegments
-      this._addSolidGeometry(body_, 0, 1, new ConeGeometry(radius, height, radialSegments), silver_);
-    }
-    // ConeGeometry 'Bottom'
-    {
-      const radius = 8;  // ui: radius
-      const height = -2;  // ui: height
-      const radialSegments = 16;  // ui: radialSegments
-      this._addSolidGeometry(body_, 0, -1, new ConeGeometry(radius, height, radialSegments), silver2_);
+      const ConeGeometryMesh = this._createSolidGeometry(new ConeGeometry(radius, height, radialSegments), silver_);
+      this._addObject(body_, 0, 1, 0, ConeGeometryMesh);
+
+      // ConeGeometry 'Bottom'
+      const ConeGeometryMesh2 = this._createSolidGeometry(new ConeGeometry(radius, -height, radialSegments), silver2_);
+      this._addObject(body_, 0, -1, 0, ConeGeometryMesh2);
     }
     // CylinderGeometry 'Cabin'
     {
@@ -50,7 +53,8 @@ class UfoClass {
       const radiusBottom = 4;  // ui: radiusBottom
       const height = 2;  // ui: height
       const radialSegments = 12;  // ui: radialSegments
-      this._addSolidGeometry(body_, 0, 1.5, new CylinderGeometry(radiusTop, radiusBottom, height, radialSegments), silver2_);
+      const CylinderGeometryMesh = this._createSolidGeometry(new CylinderGeometry(radiusTop, radiusBottom, height, radialSegments), silver2_);
+      this._addObject(body_, 0, 1.5, 0, CylinderGeometryMesh);
     }
 
     return body_;
@@ -73,19 +77,25 @@ class UfoClass {
     return material;
   }
 
-  _addSolidGeometry(parent: Group, x: number, y: number, geometry: any, color?: any) {
-    const mesh = new Mesh(geometry, this._createMaterial(color));
-    this._addObject(parent, x, y, mesh);
+  _createSolidGeometry(geometry: any, color?: any) {
+    geometry.name = this._nameId;
+    return new Mesh(geometry, this._createMaterial(color));
+
   }
 
-  _addObject(parent: Group, x: number, y: number, obj: any) {
+  _addObject(parent: Group, x: number, y: number, z: number, obj: any) {
     obj.position.x = x;
     obj.position.y = y;
+    obj.position.z = z;
     parent.add(obj);
   }
 
   get threeGroup() {
     return this._threeGroup;
+  }
+
+  get mesh() {
+    return this._threeGroup.children[0];
   }
 
   get updatables() {

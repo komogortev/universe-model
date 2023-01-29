@@ -25,6 +25,7 @@ class PlanetoidClass {
   _localConfig: IPlanetoid;
   _threeGroup: any;
   _updatables: Array<any>;
+  _intersectables: Array<any>;
   _mesh: any;
   _sharedSphereGeometry: any;
   _gravParentThreeGroup: any;
@@ -38,6 +39,7 @@ class PlanetoidClass {
     this._threeGroup = new Group(); // A group holds other objects but cannot be seen itself
     this._threeGroup.name = `${this._localConfig.nameId}Group`
     this._updatables = [];
+    this._intersectables = [];
     this._gravParentThreeGroup = parentClass;
     this.geometry = options != null && options.geometry != null ? options.geometry : new SphereGeometry(1, 32, 32);
     // /!\ radiants = degrees * (2 * Math.PI)
@@ -135,8 +137,12 @@ class PlanetoidClass {
       warpGates.threeGroup.children[0].scale.multiplyScalar(this.mesh.scale.x / 4);
       // subscribe to animation loop
       // console.log(newPlanetoidClass.nameId, newPlanetoidClass.mesh);
-      this._updatables.push(warpGates)
+      this._updatables.push(warpGates);
+      this._intersectables.push(warpGates);
+
+
     }
+
 
     this._threeGroup.add(this._mesh)
     //console.log(this._mesh.name, `scale ${this._mesh.scale.x}`, `distance ${this._mesh.position.x}`, 'DistanceInSceneUnits',planetDistanceInSceneUnits, 'offset', parentStarDistanceOffset)
@@ -239,6 +245,10 @@ class PlanetoidClass {
 
   get updatables() {
     return this._updatables;
+  }
+
+  get intersectables() {
+    return this._intersectables;
   }
 
   tick(delta: number) {

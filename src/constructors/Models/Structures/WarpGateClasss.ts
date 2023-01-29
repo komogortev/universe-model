@@ -1,3 +1,4 @@
+import { Vector3 } from 'three';
 import {
   Group,
   MeshPhongMaterial,
@@ -8,7 +9,10 @@ import {
   LatheGeometry,
   Vector2,
   AxesHelper,
-  GridHelper
+  GridHelper,
+  Sphere,
+  Ray,
+  Raycaster
 } from 'three'
 
 class WarpGateClass {
@@ -16,25 +20,27 @@ class WarpGateClass {
   _threeGroup: Group;
   _updatables: Array<any>;
   _mesh: any;
+  _boundingSphere: any|null;
 
   constructor(name: string = 'Warp Gate') {
     this._nameId = name;
     this._threeGroup = new Group();
     this._threeGroup.name = 'Warp Gate Root Group';
     this._updatables = [];
-
+    this._boundingSphere = null;
     this.initialize()
 
     //this._threeGroup.position.set(parentScale.x * 1.1, 0, 0);
   }
 
   initialize() {
-    this._mesh = this.createBodyModel();
+    this._mesh = this._createBodyModel();
     this._mesh.name = 'Body Model Mesh Group';
     this._threeGroup.add(this._mesh)
   }
 
-  createBodyModel() {
+
+  _createBodyModel() {
     const body_: Group = new Group();
 
     {
@@ -52,8 +58,32 @@ class WarpGateClass {
     {
       const radius = 2;  // ui: radius
       const segments = 12;  // ui: segments
-      const mesh = this._createSolidGeometry(new CircleGeometry(radius, segments));
-      this._addObject(body_, 0, 0, 0, mesh);
+      const CircleGeometryMesh = this._createSolidGeometry(new CircleGeometry(radius, segments));
+      this._addObject(body_, 0, 0, 0, CircleGeometryMesh);
+
+      // {
+      //   const raycaster_ = new Raycaster();
+      //   const search: Array<Vector3> = []; // directions of all raycaster rays
+      //   const lag = 0.02; // warpGate speed lag
+
+      //   for (let i = 0; i < 360; i+=3) { // raycaster is every 3 degrees
+      //     search[i] = new Vector3(Math.cos(i), 0, Math.sin(i));
+      //   }
+
+      //   function checkForTarget() {
+      //     search.forEach((direction: Vector3) => {
+      //       // ray starts here, direction, near, far
+      //       raycaster_.set(CircleGeometryMesh.position, direction, 0, 5);
+      //       // WARPGATES ONLY DETECTS FIRST OBJECT HIT BY RAYCASTER - PLAYER CAN HIDE BEHIND OBJECT
+      //         // check if ray intersects any object in scene
+      //         const intersects = raycaster_.intersectObject(scene.children, false);
+      //         if (intersects[0].object.name) {
+      //           console.log(intersects[0]);
+      //         }
+      //     })
+      //   }
+
+      // }
     }
     // LatheGeometry 'Frame'
     {
@@ -61,9 +91,9 @@ class WarpGateClass {
       for (let i = 0; i < 8; ++i) {
         points.push(new Vector2(Math.sin(i * 0.2) * 2 + 1, (i - 3) * .4));
       }
-      const mesh = this._createSolidGeometry(new LatheGeometry(points), silver_);
-      mesh.rotation.x = Math.PI / 2;
-      this._addObject(body_, 0,0, -1, mesh);
+      const LatheGeometryMesh = this._createSolidGeometry(new LatheGeometry(points), silver_);
+      LatheGeometryMesh.rotation.x = Math.PI / 2;
+      this._addObject(body_, 0,0, -1, LatheGeometryMesh);
     }
 
     return body_;
@@ -98,6 +128,8 @@ class WarpGateClass {
     parent.add(obj);
   }
 
+
+
   get threeGroup() {
     return this._threeGroup;
   }
@@ -112,6 +144,7 @@ class WarpGateClass {
 
   tick(delta: number) {
     this._mesh.rotation.z += 0.0001
+
   }
 }
 export { WarpGateClass }

@@ -5,7 +5,8 @@ class PlanetoidGroupClass {
   nameId: string;
   _localConfig: any;
   _threeGroup: any;
-  _updatables: Array<any>
+  _updatables: Array<any>;
+  _intersectables: Array<any>;
   _sharedSphereGeometry: any;
 
   constructor(planetoidConfig: any) {
@@ -14,6 +15,7 @@ class PlanetoidGroupClass {
     this._threeGroup = new Group();
     this._threeGroup.name = `Three${planetoidConfig.nameId}SceneRootGroup`; // A group holds other objects but cannot be seen itself
     this._updatables = [];
+    this._intersectables = [];
     this._sharedSphereGeometry = new SphereGeometry(1, 132, 132);
     this._intialize();
   }
@@ -26,6 +28,7 @@ class PlanetoidGroupClass {
     // attempt generating current config planetoid class
     const newPlanetoidClass = new PlanetoidClass(config, parentThreeGroup, { geometry: this._sharedSphereGeometry })
     this._updatables.push(newPlanetoidClass);
+    this._intersectables.push([...newPlanetoidClass.intersectables]);
 
     // group assigned to group sets child position to root position
     // to calculate child position relative to actual parent we need to assign it to mesh
@@ -54,6 +57,10 @@ class PlanetoidGroupClass {
 
   get updatables() {
     return this._updatables;
+  }
+
+   get intersectables() {
+    return this._intersectables;
   }
 }
 

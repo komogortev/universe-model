@@ -58,6 +58,7 @@ class WorldScene {
     this.stats = new Stats();
     this.container.appendChild(this.stats.dom);
 
+
     // initialize *WorldScene systems (1)
     Renderer_ = createRenderer();
     Scene_ = createScene(Renderer_, this.textureLoader);
@@ -86,9 +87,9 @@ class WorldScene {
 
     // initialize *WorldScene decorations
     {
-      this._initGymTools()
+      this._initGymTools();
+      this.initializeStarGroup();
       this.initSpaceCraft();
-      this.initializeStarGroup()
       //this.initializeCharacterGroup();
     }
 
@@ -195,9 +196,16 @@ class WorldScene {
     SpaceCraft_ = new SpaceCraftClass(spaceCraftCamera_._camera);
     SpaceCraft_.threeGroup.position.set(0, 5, -5);
     SpaceCraft_.threeGroup.scale.set(0.125, 0.125, 0.125);
+    Scene_.layers.enable( 1 );
+    SpaceCraft_.intersectables = Scene_.children;
 
-    Scene_.add(SpaceCraft_.threeGroup)
-    Loop_.updatables.push(SpaceCraft_)
+    Scene_.add(SpaceCraft_.threeGroup);
+    Loop_.updatables.push(SpaceCraft_);
+
+
+
+
+
   }
 
   initializeCharacterGroup() {
@@ -253,6 +261,7 @@ class WorldScene {
 
   stop() { Loop_.stop(); }
 }
+
 
 
 function onKeyDown( event: KeyboardEvent ) {

@@ -1,6 +1,6 @@
 import { Group, ArrowHelper, AxesHelper, Quaternion, PerspectiveCamera,
   SphereGeometry,  MeshNormalMaterial,  MeshBasicMaterial,  Mesh,  Raycaster,
-  Vector3,  TextureLoader, GridHelper, MathUtils, LineBasicMaterial, BufferGeometry, Line, CameraHelper
+  Vector3,  TextureLoader, GridHelper, MathUtils, LineBasicMaterial, BufferGeometry, Line, CameraHelper, Object3D, Ray, Box3
 } from 'three'
 import { UfoClass } from '../constructors/Models/Vehicles/UfoClass';
 import { BasicCharacterControllerInput } from '../systems/BasicCharacterController';
@@ -14,6 +14,7 @@ class SpaceCraftClass {
   nameId: string;
   _threeGroup: Group;
   _updatables: Array<any>;
+  raycaster_: any;
 
   _Camera: PerspectiveCamera;
   _CameraHelper: any;
@@ -30,12 +31,14 @@ class SpaceCraftClass {
   _velocity: any;
   _position: any;
 
+
   constructor(camera: PerspectiveCamera, gravitationalParent?: any|null) {
     // class infrastructure
     this.nameId = 'SpaceCraftClass'
     this._threeGroup = new Group();
     this._threeGroup.name = 'CharacterGroup';
     this._updatables = [];
+
 
     // class tools
     this._Camera = camera;
@@ -56,7 +59,16 @@ class SpaceCraftClass {
 
     this._initCharacterBody()
     this._initCharacterCamera()
+
+    const search: Array<Vector3> = []; // directions of all raycaster rays
+    const lag = 0.02; // warpGate speed lag
+
+            this.raycaster_ = new Raycaster();
+
+
   }
+
+
 
   _initCharacterBody(){
     this._CharacterBody = new UfoClass('Free float vehicle');
@@ -151,6 +163,44 @@ class SpaceCraftClass {
       velocity.y += acc.y * delta;
     }
 
+
+    if (this._Controls.current_.leftButton) {
+
+      const rect = document.getElementById('scene-container').getBoundingClientRect();
+      const pos = {
+        x: ((this.mesh.position.x - rect.left) / rect.width) * 2  - 1,
+        y: ((this.mesh.position.y - rect.top ) / rect.height) * -2 + 1,
+      };
+
+      this.raycaster_.setFromCamera(pos, this._Camera);
+
+      const pickables = this.threeGroup.parent.children[2].children[0].children[0].children.filter((e) => {
+        const p = e.getObjectByName('Warp Gate Root Group');
+        if (!p) {
+          return false;
+        }
+        return true;
+      });
+
+      const ray = new Ray();
+      ray.origin.setFromMatrixPosition(this._Camera.matrixWorld);
+      ray.direction.set(pos.x, pos.y, 0.5).unproject(
+          this._Camera).sub(ray.origin).normalize();
+
+        for (let p of pickables) {
+        // GOOD ENOUGH
+        const box = new Box3().setFromObject(p.children[0].children[2]);
+
+        if (ray.intersectsBox(box)) {
+          p.Broadcast({
+              topic: 'input.picked'
+          });
+          break;
+        }
+      }
+    }
+
+
     controlObject.quaternion.copy(_R);
 
     const oldPosition = new Vector3();
@@ -183,6 +233,10 @@ class SpaceCraftClass {
     return this._threeGroup;
   }
 
+  get mesh() {
+    return this._CharacterBody.mesh;
+  }
+
   get updatables() {
     return this._updatables;
   }
@@ -199,11 +253,21 @@ class SpaceCraftClass {
     this._Controls.enabled = enabled
   }
 
+  get intersectables() {
+    return this._interceptables;
+  }
+
+  set intersectables(payload: Array<any>) {
+    this._interceptables = payload
+  }
+
+
   tick(delta: number) {
     if (this._Controls.enabled) {
       this._reactToRecordedTickInputs(delta)
       this._updateCameraRotation()
       this._Controls.tick(delta)
+      //this.checkForTarget()
     }
   }
 }

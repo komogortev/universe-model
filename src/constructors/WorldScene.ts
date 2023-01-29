@@ -25,6 +25,11 @@ import useStarSystemsStore from "../stores/StarsSystemsStore";
 const { getStarSystemConfigByName } = useStarSystemsStore();
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
 import { BasicCharacterController } from '../systems/BasicCharacterController';
+import { entity_manager } from '../systems/EntityManager';
+import { entity } from './Entity';
+import { level_up_component } from './Models/Objects/level-up-component';
+import { gltf_component } from './gltf-component';
+import { math } from '../utils/math';
 const { getWorldSettings, getWorldConstants, setTimeSpeed, setSizeScaleMultiplier, setDistanceScaleMultiplier } = useWorldSettingsStore();
 
 // *WorldScene systems
@@ -46,18 +51,20 @@ let StarGroupClass_: any;
 let SpaceCraft_: any;
 let CharacterGroupClass_: any;
 
+
 class WorldScene {
   container: HTMLElement;
   textureLoader: any;
-  stats: any;
+  //stats: Stats;
+  _entityManager: any;
 
   constructor(container: HTMLElement) {
+    this._entityManager = new entity_manager.EntityManager();
     this.container = container;
     this.textureLoader = new THREE.TextureLoader();
     this._initLilGUI()
-    this.stats = new Stats();
-    this.container.appendChild(this.stats.dom);
-
+    //this.stats = new Stats();
+    //this.container.appendChild(this.stats.dom);
 
     // initialize *WorldScene systems (1)
     Renderer_ = createRenderer();
@@ -83,14 +90,16 @@ class WorldScene {
     // initialize *WorldScene systems (2)
     Resizer_ = new Resizer(this.container, ActiveCamera_, Renderer_);
     Loop_ = new Loop(ActiveCamera_, Scene_, Renderer_);
-    Loop_.updatables.push(this)
+    Loop_.updatables.push(this, this._entityManager)
 
     // initialize *WorldScene decorations
     {
       this._initGymTools();
-      this.initializeStarGroup();
-      this.initSpaceCraft();
+      //this.initializeStarGroup();
+      //this.initSpaceCraft();
       //this.initializeCharacterGroup();
+      //this._LoadPlayer();
+      this._LoadFoliage();
     }
 
     // attach constructed scene to the WorldTheater view
@@ -201,12 +210,8 @@ class WorldScene {
 
     Scene_.add(SpaceCraft_.threeGroup);
     Loop_.updatables.push(SpaceCraft_);
-
-
-
-
-
   }
+
 
   initializeCharacterGroup() {
     const characterCamera = createPerspectiveCamera();
@@ -252,9 +257,204 @@ class WorldScene {
     // console.log(Loop_)
   }
 
+  _LoadFoliage() {
+    const name = 'CommonTree';
+    const pos = new THREE.Vector3(
+        (Math.random() * 2.0 - 1.0) * 500,
+        0,
+        (Math.random() * 2.0 - 1.0) * 500);
+
+    // Initialize entity class
+    const e = new entity.Entity();
+    // gltf_c is responsive for intantiation of the model on the Scene_
+    const c = new gltf_component.StaticModelComponent({
+      scene: Scene_,
+      resourcePath: './resources/nature/FBX/',
+      resourceName: name + '_1.fbx',
+      scale: 0.25,
+      // emissive: new THREE.Color(0x000000),
+      // specular: new THREE.Color(0x000000),
+      // receiveShadow: true,
+      // castShadow: true,
+    });
+
+    e.AddComponent(c);
+    // e.AddComponent(
+    //     new spatial_grid_controller.SpatialGridController({grid: this._grid}));
+    //e.SetPosition(pos);
+    this._entityManager.Add(e);
+    e.SetActive(false);
+  }
+
+  _LoadPlayer() {
+    const params = {
+      camera: SceneCameras_[1],
+      scene: Scene_,
+    };
+
+    const levelUpSpawner = new entity.Entity();
+    levelUpSpawner.AddComponent(new level_up_component.LevelUpComponentSpawner({
+        camera: SceneCameras_[1],
+        scene: Scene_,
+    }));
+    this._entityManager.Add(levelUpSpawner, 'level-up-spawner');
+
+    // const axe = new entity.Entity();
+    // axe.AddComponent(new inventory_controller.InventoryItem({
+    //     type: 'weapon',
+    //     damage: 3,
+    //     renderParams: {
+    //       name: 'Axe',
+    //       scale: 0.25,
+    //       icon: 'war-axe-64.png',
+    //     },
+    // }));
+    // this._entityManager.Add(axe);
+
+    // const sword = new entity.Entity();
+    // sword.AddComponent(new inventory_controller.InventoryItem({
+    //     type: 'weapon',
+    //     damage: 3,
+    //     renderParams: {
+    //       name: 'Sword',
+    //       scale: 0.25,
+    //       icon: 'pointy-sword-64.png',
+    //     },
+    // }));
+    // this._entityManager.Add(sword);
+
+    // const girl = new entity.Entity();
+    // girl.AddComponent(new gltf_component.AnimatedModelComponent({
+    //     scene: this._scene,
+    //     resourcePath: './resources/girl/',
+    //     resourceName: 'peasant_girl.fbx',
+    //     resourceAnimation: 'Standing Idle.fbx',
+    //     scale: 0.035,
+    //     receiveShadow: true,
+    //     castShadow: true,
+    // }));
+    // girl.AddComponent(new spatial_grid_controller.SpatialGridController({
+    //     grid: this._grid,
+    // }));
+    // girl.AddComponent(new player_input.PickableComponent());
+    // girl.AddComponent(new quest_component.QuestComponent());
+    // girl.SetPosition(new THREE.Vector3(30, 0, 0));
+    // this._entityManager.Add(girl);
+
+    const player = new entity.Entity();
+    // player.AddComponent(new player_input.BasicCharacterControllerInput(params));
+    // player.AddComponent(new player_entity.BasicCharacterController(params));
+    // player.AddComponent(
+    //   new equip_weapon_component.EquipWeapon({anchor: 'RightHandIndex1'}));
+    // player.AddComponent(new inventory_controller.InventoryController(params));
+    // player.AddComponent(new health_component.HealthComponent({
+    //     updateUI: true,
+    //     health: 100,
+    //     maxHealth: 100,
+    //     strength: 50,
+    //     wisdomness: 5,
+    //     benchpress: 20,
+    //     curl: 100,
+    //     experience: 0,
+    //     level: 1,
+    // }));
+    // player.AddComponent(
+    //     new spatial_grid_controller.SpatialGridController({grid: this._grid}));
+    // player.AddComponent(new attack_controller.AttackController({timing: 0.7}));
+    this._entityManager.Add(player, 'player');
+
+    // player.Broadcast({
+    //     topic: 'inventory.add',
+    //     value: axe.Name,
+    //     added: false,
+    // });
+
+    // player.Broadcast({
+    //     topic: 'inventory.add',
+    //     value: sword.Name,
+    //     added: false,
+    // });
+
+    // player.Broadcast({
+    //     topic: 'inventory.equip',
+    //     value: sword.Name,
+    //     added: false,
+    // });
+
+    // const camera = new entity.Entity();
+    // camera.AddComponent(
+    //     new third_person_camera.ThirdPersonCamera({
+    //         camera: this._camera,
+    //         target: this._entityManager.Get('player')}));
+    // this._entityManager.Add(camera, 'player-camera');
+
+    // for (let i = 0; i < 50; ++i) {
+    //   const monsters = [
+    //     {
+    //       resourceName: 'Ghost.fbx',
+    //       resourceTexture: 'Ghost_Texture.png',
+    //     },
+    //     {
+    //       resourceName: 'Alien.fbx',
+    //       resourceTexture: 'Alien_Texture.png',
+    //     },
+    //     {
+    //       resourceName: 'Skull.fbx',
+    //       resourceTexture: 'Skull_Texture.png',
+    //     },
+    //     {
+    //       resourceName: 'GreenDemon.fbx',
+    //       resourceTexture: 'GreenDemon_Texture.png',
+    //     },
+    //     {
+    //       resourceName: 'Cyclops.fbx',
+    //       resourceTexture: 'Cyclops_Texture.png',
+    //     },
+    //     {
+    //       resourceName: 'Cactus.fbx',
+    //       resourceTexture: 'Cactus_Texture.png',
+    //     },
+    //   ];
+    //   const m = monsters[math.rand_int(0, monsters.length - 1)];
+
+    //   const npc = new entity.Entity();
+    //   npc.AddComponent(new npc_entity.NPCController({
+    //       camera: this._camera,
+    //       scene: this._scene,
+    //       resourceName: m.resourceName,
+    //       resourceTexture: m.resourceTexture,
+    //   }));
+    //   npc.AddComponent(
+    //       new health_component.HealthComponent({
+    //           health: 50,
+    //           maxHealth: 50,
+    //           strength: 2,
+    //           wisdomness: 2,
+    //           benchpress: 3,
+    //           curl: 1,
+    //           experience: 0,
+    //           level: 1,
+    //           camera: this._camera,
+    //           scene: this._scene,
+    //       }));
+    //   npc.AddComponent(
+    //       new spatial_grid_controller.SpatialGridController({grid: this._grid}));
+    //   npc.AddComponent(new health_bar.HealthBar({
+    //       parent: this._scene,
+    //       camera: this._camera,
+    //   }));
+    //   npc.AddComponent(new attack_controller.AttackController({timing: 0.35}));
+    //   npc.SetPosition(new THREE.Vector3(
+    //       (Math.random() * 2 - 1) * 500,
+    //       0,
+    //       (Math.random() * 2 - 1) * 500));
+    //   this._entityManager.Add(npc);
+    //}
+  }
+
   tick(delta: number) {
-    this.stats.update(delta);
-    DefaultCameraHelper_.update();
+    //this.stats.update();
+    //DefaultCameraHelper_.update();
   }
 
   start() { Loop_.start(); }

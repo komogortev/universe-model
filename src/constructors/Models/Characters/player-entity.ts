@@ -1,11 +1,9 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118.1/build/three.module.js';
-
-import {FBXLoader} from 'https://cdn.jsdelivr.net/npm/three@0.118.1/examples/jsm/loaders/FBXLoader.js';
-import { Vector3 } from 'three';
-
-import { entity } from '../../Entity';
+import { AnimationMixer, LoadingManager, Quaternion, sRGBEncoding, Vector3 } from 'three';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
+import { entity, IEntity } from '../../Entity';
 import { finite_state_machine } from '../../../systems/finite-state-machine';
-import { player_state } from './player-state.js';
+import { player_state } from './player-state';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
 
 
 export const player_entity = (() => {
@@ -21,15 +19,17 @@ export const player_entity = (() => {
 
     _Init() {
       this._AddState('idle', player_state.IdleState);
-      this._AddState('walk', player_state.WalkState);
-      this._AddState('run', player_state.RunState);
-      this._AddState('attack', player_state.AttackState);
-      this._AddState('death', player_state.DeathState);
+      // this._AddState('walk', player_state.WalkState);
+      // this._AddState('run', player_state.RunState);
+      // this._AddState('attack', player_state.AttackState);
+      // this._AddState('death', player_state.DeathState);
     }
   };
 
   class BasicCharacterControllerProxy {
-    constructor(animations) {
+    _animations: any;
+
+    constructor(animations: any) {
       this._animations = animations;
     }
 
@@ -45,68 +45,69 @@ export const player_entity = (() => {
     _acceleration: Vector3;
     _velocity: Vector3;
     _position: Vector3;
+    _target: any;
+    _bones: any;
+    _mixer: any;
+    _manager: any;
 
-    _animations: any;
-    _stateMachine: any;
+    _animations: {[key: string]: any};
+    _stateMachine: CharacterFSM;
 
     constructor(params: any) {
       super();
       this._params = params;
-      this._decceleration = new THREE.Vector3(-0.0005, -0.0001, -5.0);
-      this._acceleration = new THREE.Vector3(1, 0.125, 50.0);
-      this._velocity = new THREE.Vector3(0, 0, 0);
-      this._position = new THREE.Vector3();
+      this._decceleration = new Vector3(-0.0005, -0.0001, -5.0);
+      this._acceleration = new Vector3(1, 0.125, 50.0);
+      this._velocity = new Vector3(0, 0, 0);
+      this._position = new Vector3();
 
       this._animations = {};
       this._stateMachine = new CharacterFSM(
           new BasicCharacterControllerProxy(this._animations));
 
-      this._Init(params);
+      this._Init();
     }
 
-    _Init(params: any) {
+    _Init() {
       this._LoadModels();
     }
 
     InitComponent() {
-      this._RegisterHandler('health.death', (m) => { this._OnDeath(m); });
+      //this._RegisterHandler('health.death', (m) => { this._OnDeath(m); });
     }
 
-    _OnDeath(msg) {
-      this._stateMachine.SetState('death');
+    _OnDeath(msg: string) {
+      //this._stateMachine.SetState('death');
     }
 
     _LoadModels() {
       const loader = new FBXLoader();
-      loader.setPath('./resources/guard/');
-      loader.load('castle_guard_01.fbx', (fbx) => {
+
+      loader.setPath('./models/aircrafts/');
+      loader.load('Luminaris Animated FBX.FBX', (fbx) => {
         this._target = fbx;
-        this._target.scale.setScalar(0.035);
+        this._target.scale.setScalar(0.5);
+        this._target.position.set(6,1,1);
         this._params.scene.add(this._target);
 
-        this._bones = {};
-
-        for (let b of this._target.children[1].skeleton.bones) {
-          this._bones[b.name] = b;
-        }
-
-        this._target.traverse(c => {
-          c.castShadow = true;
-          c.receiveShadow = true;
-          if (c.material && c.material.map) {
-            c.material.map.encoding = THREE.sRGBEncoding;
+        // parse and apply textures to fbx model
+        this._target.traverse((child: any) => {
+          child.castShadow = true;
+          child.receiveShadow = true;
+          if (child.material && child.material.map) {
+            //child.material.map.encoding = sRGBEncoding;
           }
+          console.log(child)
         });
 
         this.Broadcast({
-            topic: 'load.character',
-            model: this._target,
-            bones: this._bones,
+          topic: 'load.character',
+          model: this._target,
         });
 
-        this._mixer = new THREE.AnimationMixer(this._target);
+        this._mixer = new AnimationMixer(this._target);
 
-        const _OnLoad = (animName, anim) => {
+        const _OnLoad = (animName: any, anim: any) => {
           const clip = anim.animations[0];
           const action = this._mixer.clipAction(clip);
 
@@ -116,7 +117,7 @@ export const player_entity = (() => {
           };
         };
 
-        this._manager = new THREE.LoadingManager();
+        this._manager = new LoadingManager();
         this._manager.onLoad = () => {
           this._stateMachine.SetState('idle');
         };
@@ -132,7 +133,7 @@ export const player_entity = (() => {
     }
 
     _FindIntersections(pos: Vector3) {
-      const _IsAlive = (c) => {
+      const _IsAlive = (c: any) => {
         const h = c.entity.GetComponent('HealthComponent');
         if (!h) {
           return true;
@@ -141,7 +142,7 @@ export const player_entity = (() => {
       };
 
       const grid = this.GetComponent('SpatialGridController');
-      const nearby = grid.FindNearbyEntities(5).filter(e => _IsAlive(e));
+      const nearby = grid.FindNearbyEntities(5).filter((e: IEntity) => _IsAlive(e));
       const collisions = [];
 
       for (let i = 0; i < nearby.length; ++i) {
@@ -162,30 +163,31 @@ export const player_entity = (() => {
       }
 
       const input = this.GetComponent('BasicCharacterControllerInput');
-      this._stateMachine.Update(delta, input);
+      //this._stateMachine.tick(delta, input);
 
-      if (this._mixer) {
-        this._mixer.update(delta);
-      }
+      // if (this._mixer) {
+      //   this._mixer.update(delta);
+      // }
 
-      // HARDCODED
-      if (this._stateMachine._currentState._action) {
-        this.Broadcast({
-          topic: 'player.action',
-          action: this._stateMachine._currentState.Name,
-          time: this._stateMachine._currentState._action.time,
-        });
-      }
+      // // HARDCODED
+      // if (this._stateMachine._currentState._action) {
+      //   this.Broadcast({
+      //     topic: 'player.action',
+      //     action: this._stateMachine._currentState.Name,
+      //     time: this._stateMachine._currentState._action.time,
+      //   });
+      // }
 
-      const currentState = this._stateMachine._currentState;
-      if (currentState.Name != 'walk' &&
-          currentState.Name != 'run' &&
-          currentState.Name != 'idle') {
-        return;
-      }
+      // const currentState = this._stateMachine._currentState;
+      // if (currentState.Name != 'walk' &&
+      //     currentState.Name != 'run' &&
+      //     currentState.Name != 'idle') {
+      //   return;
+      // }
 
       const velocity = this._velocity;
-      const frameDecceleration = new THREE.Vector3(
+      // attempt to bring player to idle
+      const frameDecceleration = new Vector3(
           velocity.x * this._decceleration.x,
           velocity.y * this._decceleration.y,
           velocity.z * this._decceleration.z
@@ -196,43 +198,53 @@ export const player_entity = (() => {
 
       velocity.add(frameDecceleration);
 
+      // store original rotation position
       const controlObject = this._target;
-      const _Q = new THREE.Quaternion();
-      const _A = new THREE.Vector3();
+      const _Q = new Quaternion();
+      const _A = new Vector3();
       const _R = controlObject.quaternion.clone();
 
+      // independent value of accelleration
       const acc = this._acceleration.clone();
+
+      // react to shift key
       if (input._keys.shift) {
         acc.multiplyScalar(2.0);
       }
 
+      // accelerate player velocity forward
       if (input._keys.forward) {
         velocity.z += acc.z * delta;
       }
+      // accelerate player velosity backwards
       if (input._keys.backward) {
         velocity.z -= acc.z * delta;
       }
+      // set values to rotate player model left
       if (input._keys.left) {
         _A.set(0, 1, 0);
         _Q.setFromAxisAngle(_A, 4.0 * Math.PI * delta * this._acceleration.y);
         _R.multiply(_Q);
       }
+      // set values to rotate player model right
       if (input._keys.right) {
         _A.set(0, 1, 0);
         _Q.setFromAxisAngle(_A, 4.0 * -Math.PI * delta * this._acceleration.y);
         _R.multiply(_Q);
       }
 
+      // rotate target to a calculated position
       controlObject.quaternion.copy(_R);
 
-      const oldPosition = new THREE.Vector3();
+      // move player to new position calculated based on velosity
+      const oldPosition = new Vector3();
       oldPosition.copy(controlObject.position);
 
-      const forward = new THREE.Vector3(0, 0, 1);
+      const forward = new Vector3(0, 0, 1);
       forward.applyQuaternion(controlObject.quaternion);
       forward.normalize();
 
-      const sideways = new THREE.Vector3(1, 0, 0);
+      const sideways = new Vector3(1, 0, 0);
       sideways.applyQuaternion(controlObject.quaternion);
       sideways.normalize();
 
@@ -243,14 +255,16 @@ export const player_entity = (() => {
       pos.add(forward);
       pos.add(sideways);
 
-      const collisions = this._FindIntersections(pos);
-      if (collisions.length > 0) {
-        return;
-      }
+      // stop player from getting into objects
+      // const collisions = this._FindIntersections(pos);
+      // if (collisions.length > 0) {
+      //   return;
+      // }
 
       controlObject.position.copy(pos);
       this._position.copy(pos);
 
+      // parent is player root entity
       this._parent.SetPosition(this._position);
       this._parent.SetQuaternion(this._target.quaternion);
     }

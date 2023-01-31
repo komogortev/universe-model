@@ -29,7 +29,7 @@ export const entity_manager = (() => {
     }
 
     // register entity with _entitiesMap storage and set as default in (active) entities collection
-    Add(e: any, n: any) {
+    Add(e: any, n: string) {
       if (!n) {
         n = this._GenerateName();
       }

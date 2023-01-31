@@ -30,6 +30,8 @@ import { entity } from './Entity';
 import { level_up_component } from './Models/Objects/level-up-component';
 import { gltf_component } from './gltf-component';
 import { math } from '../utils/math';
+import { player_input } from '../systems/player-input';
+import { player_entity } from './Models/Characters/player-entity';
 const { getWorldSettings, getWorldConstants, setTimeSpeed, setSizeScaleMultiplier, setDistanceScaleMultiplier } = useWorldSettingsStore();
 
 // *WorldScene systems
@@ -103,7 +105,7 @@ class WorldScene {
       //this.initSpaceCraft();
       //this.initializeCharacterGroup();
       //this._LoadPlayer();
-      this._LoadFoliage();
+      this._LoadRocket();
     }
 
     // attach constructed scene to the WorldTheater view
@@ -261,48 +263,84 @@ class WorldScene {
     // console.log(Loop_)
   }
 
-  _LoadFoliage() {
+  _LoadRocket() {
     const name = 'RocketShip';
     const pos = new THREE.Vector3(
-        (Math.random() * 2.0 - 1.0) * 500,
+        (Math.random() * 2.0 - 1.0) * 10,
         0,
-        (Math.random() * 2.0 - 1.0) * 500);
+        (Math.random() * 2.0 - 1.0) * 10);
 
     // Initialize entity class
     const e = new entity.Entity();
+
     // gltf_c is responsive for intantiation of the model on the Scene_
     const c = new gltf_component.StaticModelComponent({
       scene: Scene_,
       resourcePath: './models/aircrafts/',
       resourceName: name + '.glb',
       //resourceTexture: './models/aircrafts/wing/textures/Scifi_Panel4_1K_ao.jpg',
-      scale: 0.25,
+      scale: 0.05125,
       //emissive: new THREE.Color(0xff0000),
       //specular: new THREE.Color(0xFFFFFF),
       receiveShadow: true,
       castShadow: true,
     });
-
     e.AddComponent(c);
     // e.AddComponent(
     //     new spatial_grid_controller.SpatialGridController({grid: this._grid}));
-    //e.SetPosition(pos);
+    e.SetPosition(pos);
     this._entityManager.Add(e);
     e.SetActive(false);
-  }
 
-  _LoadPlayer() {
+    const _cam = createPerspectiveCamera();
+    SceneCameras_.push(_cam);
+
     const params = {
       camera: SceneCameras_[1],
       scene: Scene_,
+      enabled: false
     };
+    const player = new entity.Entity();
+    player.AddComponent(new player_input.BasicCharacterControllerInput(params));
+    player.AddComponent(new player_entity.BasicCharacterController(params));
+    // player.AddComponent(
+    //   new equip_weapon_component.EquipWeapon({anchor: 'RightHandIndex1'}));
+    // player.AddComponent(new inventory_controller.InventoryController(params));
 
-    const levelUpSpawner = new entity.Entity();
-    levelUpSpawner.AddComponent(new level_up_component.LevelUpComponentSpawner({
-        camera: SceneCameras_[1],
-        scene: Scene_,
-    }));
-    this._entityManager.Add(levelUpSpawner, 'level-up-spawner');
+    // player.AddComponent(new attack_controller.AttackController({timing: 0.7}));
+    this._entityManager.Add(player, 'player');
+
+    // player.Broadcast({
+    //     topic: 'inventory.add',
+    //     value: axe.Name,
+    //     added: false,
+    // });
+
+    // player.Broadcast({
+    //     topic: 'inventory.add',
+    //     value: sword.Name,
+    //     added: false,
+    // });
+
+    // player.Broadcast({
+    //     topic: 'inventory.equip',
+    //     value: sword.Name,
+    //     added: false,
+    // });
+  }
+
+  _LoadPlayer() {
+    // const params = {
+    //   camera: SceneCameras_[1],
+    //   scene: Scene_,
+    // };
+
+    // const levelUpSpawner = new entity.Entity();
+    // levelUpSpawner.AddComponent(new level_up_component.LevelUpComponentSpawner({
+    //     camera: SceneCameras_[1],
+    //     scene: Scene_,
+    // }));
+    // this._entityManager.Add(levelUpSpawner, 'level-up-spawner');
 
     // const axe = new entity.Entity();
     // axe.AddComponent(new inventory_controller.InventoryItem({
@@ -346,7 +384,7 @@ class WorldScene {
     // girl.SetPosition(new THREE.Vector3(30, 0, 0));
     // this._entityManager.Add(girl);
 
-    const player = new entity.Entity();
+    //const player = new entity.Entity();
     // player.AddComponent(new player_input.BasicCharacterControllerInput(params));
     // player.AddComponent(new player_entity.BasicCharacterController(params));
     // player.AddComponent(
@@ -366,7 +404,7 @@ class WorldScene {
     // player.AddComponent(
     //     new spatial_grid_controller.SpatialGridController({grid: this._grid}));
     // player.AddComponent(new attack_controller.AttackController({timing: 0.7}));
-    this._entityManager.Add(player, 'player');
+    //this._entityManager.Add(player, 'player');
 
     // player.Broadcast({
     //     topic: 'inventory.add',
@@ -475,7 +513,7 @@ function onKeyDown( event: KeyboardEvent ) {
       ActiveCamera_ = SceneCameras_[0];
       ActiveCamera_.updateProjectionMatrix();
       DefaultControls_.enabled = true;
-      SpaceCraft_.enabled = false
+      //SpaceCraft_.enabled = false
 
       Loop_.camera = ActiveCamera_;
       Resizer_.camera = ActiveCamera_;
@@ -484,7 +522,7 @@ function onKeyDown( event: KeyboardEvent ) {
       ActiveCamera_ = SceneCameras_[1];
       ActiveCamera_.updateProjectionMatrix();
       DefaultControls_.enabled = false;
-      SpaceCraft_.enabled = true
+      //SpaceCraft_.enabled = true
 
       Loop_.camera = ActiveCamera_
       Resizer_.camera = ActiveCamera_

@@ -22,7 +22,11 @@ export interface IComponent {
 
 export interface IBroadcastMsg {
   topic: string;
-  value: any;
+  value?: any;
+  model?: any;
+  bones?: any;
+  action?: any,
+  time?: any,
 }
 
 export const entity = (() => {

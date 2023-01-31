@@ -9,11 +9,11 @@ export const finite_state_machine = (() => {
       this._currentState = null;
     }
 
-    _AddState(name, type) {
+    _AddState(name: string, type: any) {
       this._states[name] = type;
     }
 
-    SetState(name) {
+    SetState(name: string) {
       const prevState = this._currentState;
 
       if (prevState) {
@@ -29,7 +29,7 @@ export const finite_state_machine = (() => {
       state.Enter(prevState);
     }
 
-    tick(delta: number, input) {
+    tick(delta: number, input: any) {
       if (this._currentState) {
         this._currentState.Update(delta, input);
       }

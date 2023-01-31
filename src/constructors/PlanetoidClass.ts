@@ -139,8 +139,6 @@ class PlanetoidClass {
       // console.log(newPlanetoidClass.nameId, newPlanetoidClass.mesh);
       this._updatables.push(warpGates);
       this._intersectables.push(warpGates);
-
-
     }
 
 

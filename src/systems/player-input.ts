@@ -12,7 +12,7 @@ export const player_input = (() => {
   };
 
   class BasicCharacterControllerInput extends entity.Component {
-    _parent: any;
+    //_parent: any;
     _keys: {
       forward: boolean;
       backward: boolean;

@@ -31,7 +31,7 @@ export const finite_state_machine = (() => {
 
     tick(delta: number, input: any) {
       if (this._currentState) {
-        this._currentState.Update(delta, input);
+        this._currentState.tick(delta, input);
       }
     }
   };

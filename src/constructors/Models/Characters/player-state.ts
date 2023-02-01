@@ -1,7 +1,4 @@
 
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.118/build/three.module.js';
-
-
 export const player_state = (() => {
 
   class State {
@@ -11,101 +8,101 @@ export const player_state = (() => {
       this._parent = parent;
     }
 
-    Enter() {}
+    Enter(prevState: any) {}
     Exit() {}
-    Update() {}
+    tick(delta: number, input?: any) {}
   };
 
-  class DeathState extends State {
-    constructor(parent) {
-      super(parent);
+  // class DeathState extends State {
+  //   constructor(parent) {
+  //     super(parent);
 
-      this._action = null;
-    }
+  //     this._action = null;
+  //   }
 
-    get Name() {
-      return 'death';
-    }
+  //   get Name() {
+  //     return 'death';
+  //   }
 
-    Enter(prevState) {
-      this._action = this._parent._proxy._animations['death'].action;
+  //   Enter(prevState) {
+  //     this._action = this._parent._proxy._animations['death'].action;
 
-      if (prevState) {
-        const prevAction = this._parent._proxy._animations[prevState.Name].action;
+  //     if (prevState) {
+  //       const prevAction = this._parent._proxy._animations[prevState.Name].action;
 
-        this._action.reset();
-        this._action.setLoop(THREE.LoopOnce, 1);
-        this._action.clampWhenFinished = true;
-        this._action.crossFadeFrom(prevAction, 0.2, true);
-        this._action.play();
-      } else {
-        this._action.play();
-      }
-    }
+  //       this._action.reset();
+  //       this._action.setLoop(THREE.LoopOnce, 1);
+  //       this._action.clampWhenFinished = true;
+  //       this._action.crossFadeFrom(prevAction, 0.2, true);
+  //       this._action.play();
+  //     } else {
+  //       this._action.play();
+  //     }
+  //   }
 
-    Exit() {
-    }
+  //   Exit() {
+  //   }
 
-    tick(_: number) {
-    }
-  };
+  //   tick(_: number) {
+  //   }
+  // };
 
-  class AttackState extends State {
-    _action: any;
+  // class AttackState extends State {
+  //   _action: any;
 
-    constructor(parent: any) {
-      super(parent);
+  //   constructor(parent: any) {
+  //     super(parent);
 
-      this._action = null;
+  //     this._action = null;
 
-      this._FinishedCallback = () => {
-        this._Finished();
-      }
-    }
+  //     this._FinishedCallback = () => {
+  //       this._Finished();
+  //     }
+  //   }
 
-    get Name() {
-      return 'attack';
-    }
+  //   get Name() {
+  //     return 'attack';
+  //   }
 
-    Enter(prevState) {
-      this._action = this._parent._proxy._animations['attack'].action;
-      const mixer = this._action.getMixer();
-      mixer.addEventListener('finished', this._FinishedCallback);
+  //   Enter(prevState) {
+  //     this._action = this._parent._proxy._animations['attack'].action;
+  //     const mixer = this._action.getMixer();
+  //     mixer.addEventListener('finished', this._FinishedCallback);
 
-      if (prevState) {
-        const prevAction = this._parent._proxy._animations[prevState.Name].action;
+  //     if (prevState) {
+  //       const prevAction = this._parent._proxy._animations[prevState.Name].action;
 
-        this._action.reset();
-        this._action.setLoop(THREE.LoopOnce, 1);
-        this._action.clampWhenFinished = true;
-        this._action.crossFadeFrom(prevAction, 0.2, true);
-        this._action.play();
-      } else {
-        this._action.play();
-      }
-    }
+  //       this._action.reset();
+  //       this._action.setLoop(THREE.LoopOnce, 1);
+  //       this._action.clampWhenFinished = true;
+  //       this._action.crossFadeFrom(prevAction, 0.2, true);
+  //       this._action.play();
+  //     } else {
+  //       this._action.play();
+  //     }
+  //   }
 
-    _Finished() {
-      this._Cleanup();
-      this._parent.SetState('idle');
-    }
+  //   _Finished() {
+  //     this._Cleanup();
+  //     this._parent.SetState('idle');
+  //   }
 
-    _Cleanup() {
-      if (this._action) {
-        this._action.getMixer().removeEventListener('finished', this._FinishedCallback);
-      }
-    }
+  //   _Cleanup() {
+  //     if (this._action) {
+  //       this._action.getMixer().removeEventListener('finished', this._FinishedCallback);
+  //     }
+  //   }
 
-    Exit() {
-      this._Cleanup();
-    }
+  //   Exit() {
+  //     this._Cleanup();
+  //   }
 
-    tick(_: number) {
-    }
-  };
+  //   tick(_: number) {
+  //   }
+  // };
 
   class WalkState extends State {
-    constructor(parent) {
+    constructor(parent: any) {
       super(parent);
     }
 
@@ -113,33 +110,40 @@ export const player_state = (() => {
       return 'walk';
     }
 
-    Enter(prevState) {
-      const curAction = this._parent._proxy._animations['walk'].action;
-      if (prevState) {
-        const prevAction = this._parent._proxy._animations[prevState.Name].action;
+    Enter(prevState: any) {
+      const curAnimation = this._parent._proxy._animations['walk'];
+      if (curAnimation != null) {
+        const curAction = curAnimation.action;
 
-        curAction.enabled = true;
+        if (prevState) {
+          const prevAnimation = this._parent._proxy._animations[prevState.Name];
+          curAction.enabled = true;
 
-        if (prevState.Name == 'run') {
-          const ratio = curAction.getClip().duration / prevAction.getClip().duration;
-          curAction.time = prevAction.time * ratio;
+          if (prevAnimation != null) {
+            const prevAction = prevAnimation.action;
+
+            if (prevState.Name == 'run') {
+              const ratio = curAction.getClip().duration / prevAction.getClip().duration;
+              curAction.time = prevAction.time * ratio;
+            } else {
+              curAction.time = 0.0;
+              curAction.setEffectiveTimeScale(1.0);
+              curAction.setEffectiveWeight(1.0);
+            }
+            curAction.crossFadeFrom(prevAction, 0.1, true);
+          }
+
+          curAction.play();
         } else {
-          curAction.time = 0.0;
-          curAction.setEffectiveTimeScale(1.0);
-          curAction.setEffectiveWeight(1.0);
+          curAction.play();
         }
-
-        curAction.crossFadeFrom(prevAction, 0.1, true);
-        curAction.play();
-      } else {
-        curAction.play();
       }
     }
 
     Exit() {
     }
 
-    Update(delta, input) {
+    tick(delta: number, input: any) {
       if (input._keys.forward || input._keys.backward) {
         if (input._keys.shift) {
           this._parent.SetState('run');
@@ -201,7 +205,7 @@ export const player_state = (() => {
 
 
   class IdleState extends State {
-    constructor(parent) {
+    constructor(parent: any) {
       super(parent);
     }
 
@@ -209,25 +213,34 @@ export const player_state = (() => {
       return 'idle';
     }
 
-    Enter(prevState) {
-      const idleAction = this._parent._proxy._animations['idle'].action;
-      if (prevState) {
-        const prevAction = this._parent._proxy._animations[prevState.Name].action;
+    Enter(prevState: any) {
+      const idleAnimation = this._parent._proxy._animations['idle'];
+      const prevAnimation = prevState != null ? this._parent._proxy._animations[prevState.Name] : null
+      const idleAction = idleAnimation != null ? idleAnimation.action : null;
+      const prevAction = prevAnimation != null ? prevAnimation.action : null;
+
+      if (idleAction != null) {
         idleAction.time = 0.0;
         idleAction.enabled = true;
         idleAction.setEffectiveTimeScale(1.0);
         idleAction.setEffectiveWeight(1.0);
-        idleAction.crossFadeFrom(prevAction, 0.25, true);
+
+        if (prevAction != null) {
+          idleAction.crossFadeFrom(prevAction, 0.25, true);
+        }
+
         idleAction.play();
       } else {
-        idleAction.play();
+        if (prevAction != null) {
+          prevAction.stop();
+        }
       }
     }
 
     Exit() {
     }
 
-    tick(_, input) {
+    tick(_: number, input: any) {
       if (input._keys.forward || input._keys.backward) {
         this._parent.SetState('walk');
       } else if (input._keys.space) {
@@ -238,11 +251,9 @@ export const player_state = (() => {
 
   return {
     State: State,
-    AttackState: AttackState,
     IdleState: IdleState,
     WalkState: WalkState,
     RunState: RunState,
-    DeathState: DeathState,
   };
 
 })();

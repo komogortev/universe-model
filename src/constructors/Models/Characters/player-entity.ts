@@ -1,4 +1,4 @@
-import { AnimationMixer, LoadingManager, Quaternion, sRGBEncoding, Vector3 } from 'three';
+import { AnimationMixer, LoadingManager, Object3D, Quaternion, sRGBEncoding, Vector3 } from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader';
 import { entity, IEntity } from '../../Entity';
 import { finite_state_machine } from '../../../systems/finite-state-machine';
@@ -19,10 +19,8 @@ export const player_entity = (() => {
 
     _Init() {
       this._AddState('idle', player_state.IdleState);
-      // this._AddState('walk', player_state.WalkState);
-      // this._AddState('run', player_state.RunState);
-      // this._AddState('attack', player_state.AttackState);
-      // this._AddState('death', player_state.DeathState);
+      this._AddState('walk', player_state.WalkState);
+      this._AddState('run', player_state.RunState);
     }
   };
 
@@ -85,19 +83,19 @@ export const player_entity = (() => {
 
       loader.setPath('./models/aircrafts/Luminaris/');
       loader.load('Luminaris Animated FBX.FBX', (fbx) => {
+        // MODEL
         this._target = fbx;
         this._target.scale.setScalar(0.015);
-        this._target.position.set(7,2,1);
+        this._target.position.set(-7,2,-7);
         this._params.scene.add(this._target);
 
-        // parse and apply textures to fbx model
+        // TEXTURES
         this._target.traverse((child: any) => {
           child.castShadow = true;
           child.receiveShadow = true;
           if (child.material && child.material.map) {
-            //child.material.map.encoding = sRGBEncoding;
+            child.material.map.encoding = sRGBEncoding;
           }
-          console.log(child)
         });
 
         this.Broadcast({
@@ -105,30 +103,31 @@ export const player_entity = (() => {
           model: this._target,
         });
 
+        // ANIMATIONS
         this._mixer = new AnimationMixer(this._target);
-
-        const _OnLoad = (animName: any, anim: any) => {
-          const clip = anim.animations[0];
-          const action = this._mixer.clipAction(clip);
+        // local 'animation load' tool
+        const _OnLoad = (animName: string, animationsList: any) => {
+          const clip = animationsList.animations[0];
+          const clipAction = this._mixer.clipAction(clip);
 
           this._animations[animName] = {
             clip: clip,
-            action: action,
+            action: clipAction,
           };
         };
 
         this._manager = new LoadingManager();
         this._manager.onLoad = () => {
+          // set default state
           this._stateMachine.SetState('idle');
         };
 
         const loader = new FBXLoader(this._manager);
-        loader.setPath('./resources/guard/');
-        loader.load('Sword And Shield Idle.fbx', (a) => { _OnLoad('idle', a); });
-        loader.load('Sword And Shield Run.fbx', (a) => { _OnLoad('run', a); });
-        loader.load('Sword And Shield Walk.fbx', (a) => { _OnLoad('walk', a); });
-        loader.load('Sword And Shield Slash.fbx', (a) => { _OnLoad('attack', a); });
-        loader.load('Sword And Shield Death.fbx', (a) => { _OnLoad('death', a); });
+        // set path to animated fbx model
+        loader.setPath('./models/aircrafts/Luminaris/');
+        // Register first (and current model's only) animation for run and walk states
+        loader.load('Luminaris Animated FBX.FBX', (a) => { _OnLoad('run', a); });
+        loader.load('Luminaris Animated FBX.FBX', (a) => { _OnLoad('walk', a); });
       });
     }
 
@@ -163,11 +162,11 @@ export const player_entity = (() => {
       }
 
       const input = this.GetComponent('BasicCharacterControllerInput');
-      //this._stateMachine.tick(delta, input);
+      this._stateMachine.tick(delta, input);
 
-      // if (this._mixer) {
-      //   this._mixer.update(delta);
-      // }
+      if (this._mixer) {
+        this._mixer.update(delta);
+      }
 
       // // HARDCODED
       // if (this._stateMachine._currentState._action) {

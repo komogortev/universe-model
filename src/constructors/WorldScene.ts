@@ -9,7 +9,7 @@ import { Resizer } from '../systems/Resizer';
 import { Loop } from '../systems/Loop';
 
 // WorldScene instruments
-import { createPerspectiveCamera, ThirdPersonCamera } from "../utils/cameras"
+import { createPerspectiveCamera } from "../utils/cameras"
 import { createOrbitControls } from "../utils/controls"
 import { createAmbientLight, createPointLight } from '../utils/lights';
 import { helperAddToLoopRecursevly, findClassByNameIdRecursevly } from '../utils/helpers';
@@ -32,6 +32,7 @@ import { gltf_component } from './gltf-component';
 import { math } from '../utils/math';
 import { player_input } from '../systems/player-input';
 import { player_entity } from './Models/Characters/player-entity';
+import { third_person_camera } from '../utils/third-person-camera'
 const { getWorldSettings, getWorldConstants, setTimeSpeed, setSizeScaleMultiplier, setDistanceScaleMultiplier } = useWorldSettingsStore();
 
 // *WorldScene systems
@@ -105,7 +106,8 @@ class WorldScene {
       //this.initSpaceCraft();
       //this.initializeCharacterGroup();
       //this._LoadPlayer();
-      this._LoadRocket();
+      //this._LoadRocket();
+      this._LoadSpaceShip();
     }
 
     // attach constructed scene to the WorldTheater view
@@ -201,7 +203,7 @@ class WorldScene {
       scene: Scene_,
     }
     const _controls = new BasicCharacterController(params);
-    const spaceCraftCamera_ = new ThirdPersonCamera({
+    const spaceCraftCamera_ = new third_person_camera.ThirdPersonCamera({
       camera: _cam,
       target: _controls,
     });
@@ -291,7 +293,9 @@ class WorldScene {
     e.SetPosition(pos);
     this._entityManager.Add(e);
     e.SetActive(false);
+  }
 
+  _LoadSpaceShip() {
     const _cam = createPerspectiveCamera();
     SceneCameras_.push(_cam);
 
@@ -300,35 +304,20 @@ class WorldScene {
       scene: Scene_,
       enabled: false
     };
+
     const player = new entity.Entity();
     player.AddComponent(new player_input.BasicCharacterControllerInput(params));
     player.AddComponent(new player_entity.BasicCharacterController(params));
-    // player.AddComponent(
-    //   new equip_weapon_component.EquipWeapon({anchor: 'RightHandIndex1'}));
-    // player.AddComponent(new inventory_controller.InventoryController(params));
 
-    // player.AddComponent(new attack_controller.AttackController({timing: 0.7}));
     this._entityManager.Add(player, 'player');
 
-    // player.Broadcast({
-    //     topic: 'inventory.add',
-    //     value: axe.Name,
-    //     added: false,
-    // });
-
-    // player.Broadcast({
-    //     topic: 'inventory.add',
-    //     value: sword.Name,
-    //     added: false,
-    // });
-
-    // player.Broadcast({
-    //     topic: 'inventory.equip',
-    //     value: sword.Name,
-    //     added: false,
-    // });
+    const camera = new entity.Entity();
+    camera.AddComponent(
+        new third_person_camera.ThirdPersonCamera({
+            camera: _cam,
+            target: this._entityManager.Get('player')}));
+    this._entityManager.Add(camera, 'player-camera');
   }
-
   _LoadPlayer() {
     // const params = {
     //   camera: SceneCameras_[1],

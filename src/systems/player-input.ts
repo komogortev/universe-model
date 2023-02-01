@@ -20,6 +20,7 @@ export const player_input = (() => {
       right: boolean;
       space: boolean;
       shift: boolean;
+      ctrl: boolean;
     }
     _params: {
       camera: PerspectiveCamera,
@@ -37,6 +38,7 @@ export const player_input = (() => {
         right: false,
         space: false,
         shift: false,
+        ctrl: false
       };
       this._raycaster = new Raycaster();
       this._Init();
@@ -112,6 +114,9 @@ export const player_input = (() => {
         case 16: // SHIFT
           this._keys.shift = true;
           break;
+        case 17: // CTRL
+          this._keys.ctrl = true;
+          break;
       }
     }
 
@@ -134,6 +139,9 @@ export const player_input = (() => {
           break;
         case 16: // SHIFT
           this._keys.shift = false;
+          break;
+        case 17: // CTRL
+          this._keys.ctrl = false;
           break;
       }
     }

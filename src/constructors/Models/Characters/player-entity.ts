@@ -132,6 +132,7 @@ export const player_entity = (() => {
     }
 
     _FindIntersections(pos: Vector3) {
+      console.log('_FindIntersections', null)
       const _IsAlive = (c: any) => {
         const h = c.entity.GetComponent('HealthComponent');
         if (!h) {
@@ -177,15 +178,17 @@ export const player_entity = (() => {
       //   });
       // }
 
-      // const currentState = this._stateMachine._currentState;
-      // if (currentState.Name != 'walk' &&
-      //     currentState.Name != 'run' &&
-      //     currentState.Name != 'idle') {
-      //   return;
-      // }
+      // no input updates for undefined states
+      const currentState = this._stateMachine._currentState;
+      if (currentState.Name != 'walk' &&
+          currentState.Name != 'run' &&
+          currentState.Name != 'idle') {
+        return;
+      }
 
+      // Input applied to player entity
       const velocity = this._velocity;
-      // attempt to bring player to idle
+      // attempt to bring player to stasis
       const frameDecceleration = new Vector3(
           velocity.x * this._decceleration.x,
           velocity.y * this._decceleration.y,
@@ -209,6 +212,12 @@ export const player_entity = (() => {
       // react to shift key
       if (input._keys.shift) {
         acc.multiplyScalar(2.0);
+      }
+
+      // react to ctrl key
+      if (input._keys.ctrl) {
+        //attempt to move downward
+        //acc.multiplyScalar(2.0);
       }
 
       // accelerate player velocity forward

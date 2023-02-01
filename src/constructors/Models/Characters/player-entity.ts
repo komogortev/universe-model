@@ -83,11 +83,11 @@ export const player_entity = (() => {
     _LoadModels() {
       const loader = new FBXLoader();
 
-      loader.setPath('./models/aircrafts/');
+      loader.setPath('./models/aircrafts/Luminaris/');
       loader.load('Luminaris Animated FBX.FBX', (fbx) => {
         this._target = fbx;
-        this._target.scale.setScalar(0.5);
-        this._target.position.set(6,1,1);
+        this._target.scale.setScalar(0.015);
+        this._target.position.set(7,2,1);
         this._params.scene.add(this._target);
 
         // parse and apply textures to fbx model

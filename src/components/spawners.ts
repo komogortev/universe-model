@@ -42,7 +42,8 @@ export const spawners = (() => {
       };
 
       const spaceship = new entity.Entity();
-      spaceship.SetPosition(new THREE.Vector3(0, 600, -300));
+      spaceship.SetPosition(new THREE.Vector3(0, 6, 0));
+
       // initialize component on the scene
       spaceship.AddComponent(new render_component.RenderComponent({
         scene: params.scene,

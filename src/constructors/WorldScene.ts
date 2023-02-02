@@ -1,3 +1,4 @@
+import { Vector3 } from 'three';
 // import GUI from 'lil-gui';
 // import Stats from 'three/examples/jsm/libs/stats.module.js';
 
@@ -116,7 +117,8 @@ class WorldScene {
 
     this.entityManager_.Add(spawner, 'spawners');
 
-    spawner.GetComponent('SpaceShipSpawner').Spawn();
+    const spaceShip = spawner.GetComponent('SpaceShipSpawner').Spawn()
+    spaceShip.SetPosition(new Vector3(0,2,0));
 
     this._initGymTools();
     //this._LoadSpaceShip();

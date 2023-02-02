@@ -1,5 +1,6 @@
 import { THREE } from './three-defs';
 import { entity } from '../constructors/Entity';
+import { AxesHelper, GridHelper } from 'three';
 
 export const render_component = (() => {
 
@@ -17,6 +18,14 @@ export const render_component = (() => {
       this.offset_ = null;
       this.params_ = params;
       this.params_.scene.add(this.group_);
+
+      {
+        // axes Helper
+        const axesHelper = new AxesHelper( 15 );
+        this.group_.add( axesHelper );
+        // Grid Helper
+        this.group_.add(new GridHelper(6, 6, "#F300D5", "#F30060"));
+      }
     }
 
     Destroy() {

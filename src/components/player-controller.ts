@@ -44,10 +44,7 @@ export const player_controller = (() => {
         return;
       }
 
-      const input = this.Parent.Attributes.InputCurrent;
-      if (!input) {
-        return;
-      }
+
 
       const velocity = this.velocity_;
       const frameDecceleration = new THREE.Vector3(
@@ -68,6 +65,13 @@ export const player_controller = (() => {
       const _R = _PARENT_Q.clone();
 
       const acc = this.acceleration_.clone();
+
+      const input = this.Parent.Attributes.InputCurrent;
+      if (!input) {
+        return;
+      }
+
+
       if (input.shift) {
         acc.multiplyScalar(2.0);
       }

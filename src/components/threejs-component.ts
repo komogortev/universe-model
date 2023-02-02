@@ -42,8 +42,6 @@ export const threejs_component = (() => {
 
     InitEntity() {
 
-
-
       //document.getElementById('scene-container').appendChild(this.threejsRenderer_.domElement);
 
       // // window.addEventListener('resize', () => {
@@ -83,9 +81,9 @@ export const threejs_component = (() => {
       // light = new THREE.AmbientLight(0xFFFFFF, 0.035);
       // this.scene_.add(light);
 
-      this.LoadBackground_();
+      //this.LoadBackground_();
       // this.LoadPlanet_();
-      this.OnResize_();
+      //this.OnResize_();
     }
 
     LoadBackground_() {

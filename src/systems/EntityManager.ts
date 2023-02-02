@@ -3,21 +3,20 @@ import { IEntity } from "../constructors/Entity";
 export const entity_manager = (() => {
 
   class EntityManager {
-    _ids: number;
+    ids_: number;
     // storage for all registered, incoming entities
     _entitiesMap: {[key: string]: IEntity};
     // list of active entities (_updatables)
     _updatables: Array<IEntity>;
 
     constructor() {
-      this._ids = 0;
+      this.ids_ = 0;
       this._entitiesMap = {};
       this._updatables = [];
     }
 
     _GenerateName() {
-      this._ids += 1;
-      return '__name__' + this._ids;
+      return '__name__' + this.ids_;
     }
 
     Get(n: any) {
@@ -31,6 +30,8 @@ export const entity_manager = (() => {
     // Register entity with _entitiesMap storage and
     // set as default in (active/updatables) entities collection
     Add(e: any, n: string) {
+      this.ids_ += 1;
+
       if (!n) {
         n = this._GenerateName();
       }
@@ -41,6 +42,9 @@ export const entity_manager = (() => {
       // acknowledge entity's add request
       e.SetParent(this);
       e.SetName(n);
+      e.SetId(this.ids_);
+      // initialize entity, for most spawner objects this will trigger model loader
+      e.InitEntity();
     }
 
     // Sets status of _entitiesMap element in (active) entities collection

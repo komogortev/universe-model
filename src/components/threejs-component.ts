@@ -1,23 +1,24 @@
-import { THREE, OrbitControls } from './three-defs.js';
+import { THREE, OrbitControls } from './three-defs';
 import { entity } from "../constructors/Entity";
 import type { IComponent } from '../constructors/Entity';
 
 import { createRenderer } from '../systems/Renderer';
 import { createScene } from '../systems/Scene';
-
-let Renderer_: any;
-let Scene_: any;
-let Resizer_: any;
-
 export interface IThreeComponent extends IComponent {
   scene_: any;
   camera_: any;
 }
 
-export const threejs_component = (() => {
+const CAM_PARAMS = {
+  fov: 75,
+  aspect: window.innerWidth / window.innerHeight,
+  near: 0.05,
+  far: 10000,
+}
 
+export const threejs_component = (() => {
   class ThreeJSController extends entity.Component implements IThreeComponent {
-    threejsRenderer_: THREE.WebGLRenderer;
+    threejsRenderer_: THREE.WebGLRenderer | null;
     scene_: any;
     camera_: any;
 
@@ -28,18 +29,22 @@ export const threejs_component = (() => {
       // this.threejsRenderer_ = new THREE.WebGLRenderer({
       //   antialias: true,
       // });
+      this.scene_ = null;
+      this.camera_ = new THREE.PerspectiveCamera(
+        CAM_PARAMS.fov,
+        CAM_PARAMS.aspect,
+        CAM_PARAMS.near,
+        CAM_PARAMS.far
+      );
       this.scene_ = new THREE.Scene();
-      const fov = 60;
-      const aspect = 1920 / 1080;
-      const near = 1.0;
-      const far = 10000.0;
-      this.camera_ = new THREE.PerspectiveCamera(fov, aspect, near, far);
       this.camera_.position.set(0, 15, -25);
-
     }
 
     InitEntity() {
-      document.getElementById('scene-container').appendChild(this.threejs_.domElement);
+
+
+
+      //document.getElementById('scene-container').appendChild(this.threejsRenderer_.domElement);
 
       // // window.addEventListener('resize', () => {
       // //   this.OnResize_();
@@ -74,10 +79,9 @@ export const threejs_component = (() => {
         // this.scene_.add(light);
       }
 
-      this.sun_ = light;
-
-      light = new THREE.AmbientLight(0xFFFFFF, 0.035);
-      this.scene_.add(light);
+      // this.sun_ = light;
+      // light = new THREE.AmbientLight(0xFFFFFF, 0.035);
+      // this.scene_.add(light);
 
       this.LoadBackground_();
       // this.LoadPlanet_();
@@ -143,32 +147,32 @@ export const threejs_component = (() => {
     }
 
     Render() {
-      this.threejs_.autoClearColor = true;
-      this.threejs_.render(this.scene_, this.camera_);
-      this.threejs_.autoClearColor = false;
-      this.threejs_.render(this.crawlScene_, this.crawlCamera_);
-      this.threejs_.autoClearColor = false;
-      this.threejs_.render(this.uiScene_, this.uiCamera_);
+      this.threejsRenderer_.autoClearColor = true;
+      this.threejsRenderer_.render(this.scene_, this.camera_);
+      this.threejsRenderer_.autoClearColor = false;
+      // this.threejsRenderer_.render(this.crawlScene_, this.crawlCamera_);
+      // this.threejsRenderer_.autoClearColor = false;
+      // this.threejsRenderer_.render(this.uiScene_, this.uiCamera_);
     }
 
     tick(deltaTime: number) {
-      const player = this.FindEntity('player');
-      if (!player) {
-        return;
-      }
-      const pos = player._position;
+      // const player = this.FindEntity('player');
+      // if (!player) {
+      //   return;
+      // }
+      // const pos = player._position;
 
-      this.sun_.position.copy(pos);
-      this.sun_.position.add(new THREE.Vector3(-10, 500, 10));
-      this.sun_.target.position.copy(pos);
-      this.sun_.updateMatrixWorld();
-      this.sun_.target.updateMatrixWorld();
+      // this.sun_.position.copy(pos);
+      // this.sun_.position.add(new THREE.Vector3(-10, 500, 10));
+      // this.sun_.target.position.copy(pos);
+      // this.sun_.updateMatrixWorld();
+      // this.sun_.target.updateMatrixWorld();
 
-      if (this.planet_) {
-        this.planet_.material.uniforms.time.value += timeElapsed;
-      }
+      // if (this.planet_) {
+      //   this.planet_.material.uniforms.time.value += timeElapsed;
+      // }
 
-      this.sky_.position.copy(pos);
+      // this.sky_.position.copy(pos);
     }
   }
 

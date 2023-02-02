@@ -1,9 +1,10 @@
-import { Quaternion, Vector3 } from "three";
+import { THREE } from '../components/three-defs';
+
 export interface IEntity {
   _name: string|null;
   _components: {[key: string]: IComponent};
-  _position: Vector3;
-  _rotation: Quaternion;
+  _position: THREE.Vector3;
+  _rotation: THREE.Quaternion;
   _handlers: {[key: string]: any};
   _parent: any|null;
   tick: (delta: number)=>void;
@@ -30,82 +31,139 @@ export interface IBroadcastMsg {
 }
 
 export const entity = (() => {
-  class Entity {
-    _name: string|null;
-    _components: {[key: string]: IComponent}; // threejs components
 
-    _position: Vector3;
-    _rotation: Quaternion;
-    _handlers: {[key: string]: any};
-    _parent: any|null;
+  class Entity {
+    name_: string|null;
+    id_: string|null;
+    components_: {[key: string]: any}|null;
+    attributes_: {[key: string]: any};
+
+    _position:  THREE.Vector3;
+    _rotation:  THREE.Quaternion;
+    handlers_: {[key: string]: any}|null;
+    parent_: any;
+    dead_: boolean;
 
     constructor() {
-      this._name = null;
-      this._components = {};
+      this.name_ = null;
+      this.id_ = null;
+      this.components_ = {};
+      this.attributes_ = {};
 
-      this._position = new Vector3();
-      this._rotation = new Quaternion();
-      this._handlers = {};
-      this._parent = null;
+      this._position = new THREE.Vector3();
+      this._rotation = new THREE.Quaternion();
+      this.handlers_ = {};
+      this.parent_ = null;
+      this.dead_ = false;
+    }
+
+    Destroy() {
+      for (let k in this.components_) {
+        this.components_[k].Destroy();
+      }
+      this.components_ = null;
+      this.parent_ = null;
+      this.handlers_ = null;
     }
 
     // store means to handle components (controls, cameras?)
-    _RegisterHandler(n: string, h: any) {
-      if (!(n in this._handlers)) {
-        this._handlers[n] = [];
+    RegisterHandler_(n: string, h: any) {
+      if (this.handlers_ == null) return
+
+      if (!(n in this.handlers_)) {
+        this.handlers_[n] = [];
       }
-      this._handlers[n].push(h);
+      this.handlers_[n].push(h);
     }
 
-    // Usually is EntityManager
+    // Usually is EntityManager or other Entity
     SetParent(p: any) {
-      this._parent = p;
+      this.parent_ = p;
     }
 
     SetName(n: string) {
-      this._name = n;
+      this.name_ = n;
+    }
+
+    SetId(id: string) {
+      this.id_ = id;
     }
 
     get Name() {
-      return this._name;
+      return this.name_;
     }
 
-    // subscribe to update (tick) wave
-    // add self to updatables list within EntityManager
+    get ID() {
+      return this.id_;
+    }
+
+    get Manager() {
+      return this.parent_;
+    }
+
+    get Attributes() {
+      return this.attributes_;
+    }
+
+    get IsDead() {
+      return this.dead_;
+    }
+
+    // Subscribe to update (tick) wave
+    // add self to "updatables" list within EntityManager
     SetActive(b: boolean) {
-      this._parent.SetActive(this, b);
+      this.parent_.SetActive(this, b);
+    }
+
+    SetDead() {
+      this.dead_ = true;
     }
 
     // attach components to the entity
     AddComponent(c: any) {
       c.SetParent(this);
-      this._components[c.constructor.name] = c;
+
+      if (this.components_ != null) {
+        this.components_[c.constructor.name] = c;
+      } else {
+        this.components_ = { [c.constructor.name]: c }
+      }
 
       c.InitComponent();
     }
 
+    InitEntity() {
+      for (let k in this.components_) {
+        this.components_[k].InitEntity();
+      }
+    }
+
     // provide reference to requested component
     GetComponent(n: string) {
-      return this._components[n];
+      return this.components_ != null ? this.components_[n] : null;
     }
 
     // provide reference to requested entity
     FindEntity(n: string) {
-      return this._parent.Get(n);
+      return this.parent_.Get(n);
     }
 
     // pass a message to the parent
     Broadcast(msg: IBroadcastMsg) {
-      if (!(msg.topic in this._handlers)) {
+      if (this.IsDead) {
         return;
       }
 
-      for (let curHandler of this._handlers[msg.topic]) {
+      if (this.handlers_ == null || !(msg.topic in this.handlers_)) {
+        return;
+      }
+
+      for (let curHandler of this.handlers_[msg.topic]) {
         curHandler(msg);
       }
     }
 
-    SetPosition(p: Vector3) {
+    SetPosition(p: THREE.Vector3) {
       this._position.copy(p);
       this.Broadcast({
           topic: 'update.position',
@@ -121,49 +179,94 @@ export const entity = (() => {
       });
     }
 
+    get Position() {
+      return this._position;
+    }
+
+    get Quaternion() {
+      return this._rotation;
+    }
+
+    get Forward() {
+      const forward = new THREE.Vector3(0, 0, -1);
+      forward.applyQuaternion(this._rotation);
+      return forward;
+    }
+
+    get Up() {
+      const forward = new THREE.Vector3(0, 1, 0);
+      forward.applyQuaternion(this._rotation);
+      return forward;
+    }
+
     // Entity passes tick to its components
     tick(delta: number) {
-      for (let k in this._components) {
-        this._components[k as string].tick(delta);
+      for (let k in this.components_) {
+        this.components_[k as string].tick(delta);
       }
     }
   };
 
   class Component {
-    _parent: any;
+    parent_: any;
+    pass_: number;
 
     constructor() {
-      this._parent = null;
+      this.parent_ = null;
+      this.pass_ = 0;
     }
 
-    // inform parent entity about ways to handle this component
-    _RegisterHandler(n: string, h: any) {
-      this._parent._RegisterHandler(n, h);
+    Destroy() {
     }
 
     // subscribe self to an entity
-    SetParent(p: any) {
-      this._parent = p;
+    SetParent(p) {
+      this.parent_ = p;
+    }
+
+    SetPass(p) {
+      this.pass_ = p;
+    }
+
+    get Pass() {
+      return this.pass_;
     }
 
     InitComponent() {}
 
+    InitEntity() {}
+
     // provide reference to itself via entity's eyes
     GetComponent(n: any) {
-      return this._parent.GetComponent(n);
+      return this.parent_.GetComponent(n);
     }
+
+    get Manager() {
+      return this.parent_.Manager;
+    }
+
+    get Parent() {
+      return this.parent_;
+    }
+
+
 
     // provide reference to parent entity
     FindEntity(n: any) {
-      return this._parent.FindEntity(n);
+      return this.parent_.FindEntity(n);
     }
 
-    // pass a message to the parent
-    Broadcast(m: IBroadcastMsg) {
-      this._parent.Broadcast(m);
+    Broadcast(m) {
+      this.parent_.Broadcast(m);
     }
 
     tick(_: number) {}
+
+    // inform parent entity about ways to handle this component
+    RegisterHandler_(n: string, h: any) {
+      this.parent_.RegisterHandler_(n, h);
+    }
+
   };
 
   return {

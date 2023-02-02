@@ -1,12 +1,19 @@
-import * as THREE from 'three'
-import GUI from 'lil-gui';
-import Stats from 'three/examples/jsm/libs/stats.module.js';
+// import GUI from 'lil-gui';
+// import Stats from 'three/examples/jsm/libs/stats.module.js';
 
-// WorldScene systems
-import { createRenderer } from '../systems/Renderer';
-import { createScene } from '../systems/Scene';
+// core engine
+import { entity_manager } from '../systems/EntityManager';
+import { entity } from './Entity';
+
+// threejs systems
+import { THREE } from '../components/three-defs';
 import { Resizer } from '../systems/Resizer';
 import { Loop } from '../systems/Loop';
+
+// entity components
+import { threejs_component } from '../components/threejs-component';
+import { three_load_controller } from '../components/three-load-controller';
+
 
 // WorldScene instruments
 import { createPerspectiveCamera } from "../utils/cameras"
@@ -25,99 +32,90 @@ import useStarSystemsStore from "../stores/StarsSystemsStore";
 const { getStarSystemConfigByName } = useStarSystemsStore();
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
 import { BasicCharacterController } from '../systems/BasicCharacterController';
-import { entity_manager } from '../systems/EntityManager';
-import { entity } from './Entity';
-import { level_up_component } from './Models/Objects/level-up-component';
 import { gltf_component } from './gltf-component';
-import { math } from '../utils/math';
 import { player_input } from '../systems/player-input';
 import { player_entity } from './Models/Characters/player-entity';
 import { third_person_camera } from '../utils/third-person-camera'
 const { getWorldSettings, getWorldConstants, setTimeSpeed, setSizeScaleMultiplier, setDistanceScaleMultiplier } = useWorldSettingsStore();
 
 // *WorldScene systems
-let Renderer_: THREE.WebGLRenderer;
-let Scene_: THREE.Scene;
-let GUI_: any;
-let Loop_: any;
-let Resizer_: any;
-
-// *WorldScene instruments
+let Renderer_: any;
+let Scene_: any;
 let SceneCameras_: Array<THREE.PerspectiveCamera>;
 let DefaultCamera_: THREE.PerspectiveCamera;
-let DefaultCameraHelper_: THREE.CameraHelper;
 let ActiveCamera_: THREE.PerspectiveCamera;
 let DefaultControls_: any;
+let Resizer_: any;
+let Loop_: any;
+
+let GUI_: any;
+// *WorldScene instruments
+
 
 // *WorldScene decorations
-let StarGroupClass_: any;
-let SpaceCraft_: any;
-let CharacterGroupClass_: any;
-
+// let StarGroupClass_: any;
+// let SpaceCraft_: any;
+// let CharacterGroupClass_: any;
 
 class WorldScene {
-  container: HTMLElement;
+  container_: HTMLElement;
+  entityManager_: any;
   textureLoader: any;
-  //stats: Stats;
-  _entityManager: any;
 
   constructor(container: HTMLElement) {
-    this._entityManager = new entity_manager.EntityManager();
-    this.container = container;
-    this.textureLoader = new THREE.TextureLoader();
-    this._initLilGUI()
-    //this.stats = new Stats();
-    //this.container.appendChild(this.stats.dom);
+    this.container_ = container;
+    SceneCameras_ = [];
 
-    // initialize *WorldScene systems (1)
-    Renderer_ = createRenderer();
-    Scene_ = createScene(Renderer_, this.textureLoader);
+    // core engine
+    this.entityManager_ = new entity_manager.EntityManager();
 
-    // initialize *WorldScene instruments (Cameras, Lights)
-    {
-      SceneCameras_ = [];
-      DefaultCamera_ = createPerspectiveCamera();
-      DefaultCamera_.position.set(0, 15, -25)
+    // threejs systems component
+    const threejs = new entity.Entity();
+    threejs.AddComponent(new threejs_component.ThreeJSController());
+    this.entityManager_.Add(threejs, 'threejs');
 
-      DefaultControls_ = createOrbitControls(DefaultCamera_, Renderer_.domElement);
+    const threeLoader = new entity.Entity();
+    threeLoader.AddComponent(new three_load_controller.LoadController());
+    this.entityManager_.Add(threeLoader, 'loader');
 
-      DefaultCameraHelper_ = new THREE.CameraHelper(DefaultCamera_);
-      DefaultCamera_.add(DefaultCameraHelper_);
+    Renderer_ = threejs.GetComponent('ThreeJSController').threejsRenderer_;
+    Scene_ = threejs.GetComponent('ThreeJSController').scene_; // createScene(Renderer_, this.textureLoader);
+    DefaultCamera_ = threejs.GetComponent('ThreeJSController').camera_;
+    SceneCameras_.push(DefaultCamera_);
 
-      SceneCameras_.push(DefaultCamera_);
-      ActiveCamera_ = SceneCameras_[0];
+    DefaultControls_ = createOrbitControls(DefaultCamera_, Renderer_.domElement);
+    ActiveCamera_ = SceneCameras_[0];
+    Resizer_ = new Resizer(this.container_, ActiveCamera_, Renderer_);
 
-      this._initLights();
-    }
-
-
-        // const light2 = new THREE.DirectionalLight(0xffffff, 1.0);
-        // light2.position.set(0, 1, 0);
-        // Scene_.add(light2);
-    // initialize *WorldScene systems (2)
-    Resizer_ = new Resizer(this.container, ActiveCamera_, Renderer_);
+    // initialize *WorldScene animation Loop
     Loop_ = new Loop(ActiveCamera_, Scene_, Renderer_);
-    Loop_.updatables.push(this, this._entityManager)
+    Loop_.updatables.push(this, this.entityManager_)
 
     // initialize *WorldScene decorations
     {
       this._initGymTools();
-      this.initializeStarGroup();
+      //this.initializeStarGroup();
       //this.initSpaceCraft();
       //this.initializeCharacterGroup();
       //this._LoadPlayer();
       //this._LoadRocket();
-      this._LoadSpaceShip();
+      //this._LoadSpaceShip();
     }
 
     // attach constructed scene to the WorldTheater view
-    this.container.appendChild(Renderer_.domElement);
+    this.container_.appendChild(Renderer_.domElement);
     // switch cameras on key press
     document.addEventListener('keydown', onKeyDown );
   }
 
-  _initLights() {
+  OnGameStarted_() {
+    const basicParams = {
+      grid: this.grid_,
+      scene: this.scene_,
+      camera: this.camera_,
+    };
   }
+
 
   _initLilGUI() {
     //Create gui instance
@@ -291,7 +289,7 @@ class WorldScene {
     // e.AddComponent(
     //     new spatial_grid_controller.SpatialGridController({grid: this._grid}));
     e.SetPosition(pos);
-    this._entityManager.Add(e);
+    this.entityManager_.Add(e);
     e.SetActive(false);
   }
 
@@ -309,14 +307,14 @@ class WorldScene {
     player.AddComponent(new player_input.BasicCharacterControllerInput(params));
     player.AddComponent(new player_entity.BasicCharacterController(params));
 
-    this._entityManager.Add(player, 'player');
+    this.entityManager_.Add(player, 'player');
 
     const camera = new entity.Entity();
     camera.AddComponent(
         new third_person_camera.ThirdPersonCamera({
             camera: _cam,
-            target: this._entityManager.Get('player')}));
-    this._entityManager.Add(camera, 'player-camera');
+            target: this.entityManager_.Get('player')}));
+    this.entityManager_.Add(camera, 'player-camera');
   }
   _LoadPlayer() {
     // const params = {
@@ -329,7 +327,7 @@ class WorldScene {
     //     camera: SceneCameras_[1],
     //     scene: Scene_,
     // }));
-    // this._entityManager.Add(levelUpSpawner, 'level-up-spawner');
+    // this.entityManager_.Add(levelUpSpawner, 'level-up-spawner');
 
     // const axe = new entity.Entity();
     // axe.AddComponent(new inventory_controller.InventoryItem({
@@ -341,7 +339,7 @@ class WorldScene {
     //       icon: 'war-axe-64.png',
     //     },
     // }));
-    // this._entityManager.Add(axe);
+    // this.entityManager_.Add(axe);
 
     // const sword = new entity.Entity();
     // sword.AddComponent(new inventory_controller.InventoryItem({
@@ -353,7 +351,7 @@ class WorldScene {
     //       icon: 'pointy-sword-64.png',
     //     },
     // }));
-    // this._entityManager.Add(sword);
+    // this.entityManager_.Add(sword);
 
     // const girl = new entity.Entity();
     // girl.AddComponent(new gltf_component.AnimatedModelComponent({
@@ -371,7 +369,7 @@ class WorldScene {
     // girl.AddComponent(new player_input.PickableComponent());
     // girl.AddComponent(new quest_component.QuestComponent());
     // girl.SetPosition(new THREE.Vector3(30, 0, 0));
-    // this._entityManager.Add(girl);
+    // this.entityManager_.Add(girl);
 
     //const player = new entity.Entity();
     // player.AddComponent(new player_input.BasicCharacterControllerInput(params));
@@ -393,7 +391,7 @@ class WorldScene {
     // player.AddComponent(
     //     new spatial_grid_controller.SpatialGridController({grid: this._grid}));
     // player.AddComponent(new attack_controller.AttackController({timing: 0.7}));
-    //this._entityManager.Add(player, 'player');
+    //this.entityManager_.Add(player, 'player');
 
     // player.Broadcast({
     //     topic: 'inventory.add',
@@ -417,8 +415,8 @@ class WorldScene {
     // camera.AddComponent(
     //     new third_person_camera.ThirdPersonCamera({
     //         camera: this._camera,
-    //         target: this._entityManager.Get('player')}));
-    // this._entityManager.Add(camera, 'player-camera');
+    //         target: this.entityManager_.Get('player')}));
+    // this.entityManager_.Add(camera, 'player-camera');
 
     // for (let i = 0; i < 50; ++i) {
     //   const monsters = [
@@ -480,7 +478,7 @@ class WorldScene {
     //       (Math.random() * 2 - 1) * 500,
     //       0,
     //       (Math.random() * 2 - 1) * 500));
-    //   this._entityManager.Add(npc);
+    //   this.entityManager_.Add(npc);
     //}
   }
 

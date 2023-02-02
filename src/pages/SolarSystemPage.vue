@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import WorldTheater from '../components/WorldTheater.vue'
+import WorldTheater from '../views/WorldTheaterView.vue'
 
 // import world constructor
 // initialize the world
 </script>
 
 <template>
-  <!-- Build the scene,
-    import the world,
-    initialize it -->
-    <WorldTheater msg="Vite + Vue" />
+    <WorldTheater msg="Solar Hitchhiker" />
 </template>

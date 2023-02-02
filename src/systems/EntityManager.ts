@@ -25,10 +25,11 @@ export const entity_manager = (() => {
     }
 
     Filter(cb: any) {
-      return this._entities.filter(cb);
+      return this._updatables.filter(cb);
     }
 
-    // register entity with _entitiesMap storage and set as default in (active) entities collection
+    // Register entity with _entitiesMap storage and
+    // set as default in (active/updatables) entities collection
     Add(e: any, n: string) {
       if (!n) {
         n = this._GenerateName();
@@ -37,6 +38,7 @@ export const entity_manager = (() => {
       this._entitiesMap[n] = e;
       this._updatables.push(e);
 
+      // acknowledge entity's add request
       e.SetParent(this);
       e.SetName(n);
     }

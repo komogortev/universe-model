@@ -220,11 +220,11 @@ export const entity = (() => {
     }
 
     // subscribe self to an entity
-    SetParent(p) {
+    SetParent(p: any) {
       this.parent_ = p;
     }
 
-    SetPass(p) {
+    SetPass(p: any) {
       this.pass_ = p;
     }
 
@@ -249,14 +249,12 @@ export const entity = (() => {
       return this.parent_;
     }
 
-
-
     // provide reference to parent entity
     FindEntity(n: any) {
       return this.parent_.FindEntity(n);
     }
 
-    Broadcast(m) {
+    Broadcast(m: any) {
       this.parent_.Broadcast(m);
     }
 

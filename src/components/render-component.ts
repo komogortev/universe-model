@@ -37,10 +37,11 @@ export const render_component = (() => {
     }
 
     InitComponent() {
-      this.RegisterHandler_('update.position', (m) => { this.OnPosition_(m); });
-      this.RegisterHandler_('update.rotation', (m) => { this.OnRotation_(m); });
-      this.RegisterHandler_('render.visible', (m) => { this.OnVisible_(m); });
-      this.RegisterHandler_('render.offset', (m) => { this.OnOffset_(m.offset); });
+      // attach callbacks as handlers of current renderer
+      this.RegisterHandler_('update.position', (m: any) => { this.OnPosition_(m); });
+      this.RegisterHandler_('update.rotation', (m: any) => { this.OnRotation_(m); });
+      this.RegisterHandler_('render.visible', (m: any) => { this.OnVisible_(m); });
+      this.RegisterHandler_('render.offset', (m: any) => { this.OnOffset_(m.offset); });
     }
 
     OnVisible_(m: any) {

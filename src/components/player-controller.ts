@@ -8,7 +8,7 @@ export const player_controller = (() => {
     dead_: boolean;
     decceleration_: THREE.Vector3;
     acceleration_: THREE.Vector3;
-    velocity_: number;
+    velocity_: THREE.Vector3;
 
     constructor() {
       super();
@@ -19,7 +19,7 @@ export const player_controller = (() => {
     }
 
     InitComponent() {
-      this.RegisterHandler_('physics.collision', (m) => { this.OnCollision_(m); });
+      this.RegisterHandler_('physics.collision', (m: any) => { this.OnCollision_(m); });
     }
 
     InitEntity() {

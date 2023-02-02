@@ -18,9 +18,9 @@ export const third_person_camera = (() => {
       this.SetPass(1);
     }
 
-    _CalculateIdealOffset() {
+    _CalculateIdealOffset(input: any) {
       const idealOffset = new THREE.Vector3(0, 10, 20);
-      const input = this.Parent.Attributes.InputCurrent;
+
 
       if (input.axis1Side) {
         idealOffset.lerp(
@@ -44,7 +44,13 @@ export const third_person_camera = (() => {
     }
 
     tick(delta: number) {
-      const idealOffset = this._CalculateIdealOffset();
+      const input = this.Parent.Attributes.InputCurrent;
+
+      if (!input) {
+        return
+      }
+
+      const idealOffset = this._CalculateIdealOffset(input);
 
       const t1 = 1.0 - Math.pow(0.05, delta);
       const t2 = 1.0 - Math.pow(0.01, delta);

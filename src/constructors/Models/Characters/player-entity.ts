@@ -85,7 +85,7 @@ export const player_entity = (() => {
       loader.load('Luminaris Animated FBX.FBX', (fbx) => {
         // MODEL
         this._target = fbx;
-        this._target.scale.setScalar(0.015);
+        this._target.scale.setScalar(0.05);
         this._target.position.set(-7,2,-7);
         this._params.scene.add(this._target);
 

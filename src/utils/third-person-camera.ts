@@ -1,57 +1,62 @@
 import { Vector3 } from 'three';
 import {entity} from '../constructors/Entity';
 
-
 export const third_person_camera = (() => {
 
   class ThirdPersonCamera extends entity.Component {
-    _params: any;
-    _camera: any;
-    _currentPosition: Vector3;
-    _currentLookat: Vector3;
+    params_: any;
+    camera_: any;
+    currentPosition_: any;
 
     constructor(params: any) {
       super();
 
-      this._params = params;
-      this._camera = params.camera;
+      this.params_ = params;
+      this.camera_ = params.camera;
 
-      this._currentPosition = new Vector3();
-      this._currentLookat = new Vector3();
+      this.currentPosition_ = new Vector3();
+      this.SetPass(1);
     }
 
     _CalculateIdealOffset() {
-      const idealOffset = new Vector3(-0, 10, -15);
-      idealOffset.applyQuaternion(this._params.target._rotation);
-      idealOffset.add(this._params.target._position);
-      return idealOffset;
-    }
+      const idealOffset = new Vector3(0, 10, 20);
+      const input = this.Parent.Attributes.InputCurrent;
 
-    _CalculateIdealLookat() {
-      const idealLookat = new Vector3(0, 5, 20);
-      idealLookat.applyQuaternion(this._params.target._rotation);
-      idealLookat.add(this._params.target._position);
-      return idealLookat;
+      if (input.axis1Side) {
+        idealOffset.lerp(
+            new Vector3(10 * input.axis1Side, 5, 20), Math.abs(input.axis1Side));
+      }
+
+      if (input.axis1Forward < 0) {
+        idealOffset.lerp(
+          new Vector3(0, 0, 18 * -input.axis1Forward), Math.abs(input.axis1Forward));
+      }
+
+      if (input.axis1Forward > 0) {
+        idealOffset.lerp(
+          new Vector3(0, 5, 15 * input.axis1Forward), Math.abs(input.axis1Forward));
+      }
+
+      idealOffset.applyQuaternion(this.params_.target.Quaternion);
+      idealOffset.add(this.params_.target.Position);
+
+      return idealOffset;
     }
 
     tick(delta: number) {
       const idealOffset = this._CalculateIdealOffset();
-      const idealLookat = this._CalculateIdealLookat();
 
-      // const t = 0.05;
-      // const t = 4.0 * timeElapsed;
-      const t = 1.0 - Math.pow(0.01, delta);
+      const t1 = 1.0 - Math.pow(0.05, delta);
+      const t2 = 1.0 - Math.pow(0.01, delta);
 
-      this._currentPosition.lerp(idealOffset, t);
-      this._currentLookat.lerp(idealLookat, t);
+      this.currentPosition_.lerp(idealOffset, t1);
 
-      this._camera.position.copy(this._currentPosition);
-      this._camera.lookAt(this._currentLookat);
+      this.camera_.position.copy(this.currentPosition_);
+      this.camera_.quaternion.slerp(this.params_.target.Quaternion, t2);
     }
   }
 
   return {
     ThirdPersonCamera: ThirdPersonCamera
   };
-
 })();

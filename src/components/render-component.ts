@@ -42,7 +42,9 @@ export const render_component = (() => {
     }
 
     InitEntity() {
-      this._LoadModels();
+      if (this.params_.resourcePath) {
+        this._LoadModels();
+      }
     }
 
     InitComponent() {

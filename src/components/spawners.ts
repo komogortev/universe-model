@@ -5,6 +5,10 @@ import { player_input } from './player-input';
 import { player_controller } from './player-controller';
 import { third_person_camera } from './third-person-camera';
 
+import useStarSystemsStore from "../stores/StarsSystemsStore";
+import { planetoid_controller } from './planetoid-controller';
+const { getStarSystemConfigByName } = useStarSystemsStore();
+
 // import {player_ps4_input} from './player-ps4-input.js';
 // import {xwing_controller} from './xwing-controller.js';
 // import {xwing_effect} from './xwing-effects.js';
@@ -65,6 +69,52 @@ export const spawners = (() => {
       super.Manager.Add(spaceship, 'spaceship');
 
       return spaceship;
+    }
+  };
+  class SolarSystemSpawner extends entity.Component {
+    group_: THREE.Group;
+    params_: any;
+
+    constructor(params: any) {
+      super();
+      this.group_ = new THREE.Group();
+      this.params_ = params;
+    }
+
+    Spawn() {
+      const solarSystemData = getStarSystemConfigByName('SolarSystem');
+      const params = {
+        scene: this.params_.scene,
+      };
+
+      const sunPlanetoidGroup = new entity.Entity();
+      sunPlanetoidGroup.SetName('SunGroup')
+      sunPlanetoidGroup.AddComponent(new planetoid_controller.PlanetoidController({
+        scene: params.scene,
+        data: solarSystemData,
+        resourcePath: './resources/models/star-destroyer/',
+        resourceName: 'scene-collision.glb',
+        scale: 50.0,
+      }));
+
+      solarSystemData.children?.forEach((c,i) => {
+        const tmpPlanetoid = new entity.Entity();
+        tmpPlanetoid.SetName('mercGroup')
+        tmpPlanetoid.AddComponent(new planetoid_controller.PlanetoidController({
+          scene: params.scene,
+          data: solarSystemData.children[i],
+        }));
+      })
+
+
+      // initialize component on the scene
+      sunPlanetoidGroup.AddComponent(new render_component.RenderComponent({
+        scene: params.scene,
+      }));
+      // register with EntityManager
+      super.Manager.Add(sunPlanetoidGroup, 'sunGroup');
+
+      return sunPlanetoidGroup;
     }
   };
 
@@ -311,6 +361,7 @@ export const spawners = (() => {
 
   return {
     SpaceShipSpawner: SpaceShipSpawner,
+    SolarSystemSpawner: SolarSystemSpawner,
     // TieFighterSpawner: TieFighterSpawner,
     // XWingSpawner: XWingSpawner,
     // StarDestroyerSpawner: StarDestroyerSpawner,

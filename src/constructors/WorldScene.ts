@@ -108,9 +108,7 @@ class WorldScene {
     {
       const spaceShipCamera = createPerspectiveCamera();
       SceneCameras_.push(spaceShipCamera);
-      const basicParams = {
 
-      }
       spawner.AddComponent(new spawners.SpaceShipSpawner({
         scene: Scene_,
         camera: spaceShipCamera
@@ -125,8 +123,8 @@ class WorldScene {
     const spaceShip = spawner.GetComponent('SpaceShipSpawner').Spawn()
     spaceShip.SetPosition(new Vector3(0,12,0));
 
-
-    spawner.GetComponent('SolarSystemSpawner').Spawn()
+    const solarSystem = spawner.GetComponent('SolarSystemSpawner').Spawn()
+    solarSystem.SetPosition(new Vector3(5,1,-10));
 
 
     this._initGymTools();

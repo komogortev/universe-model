@@ -69,10 +69,24 @@ export const player_controller = (() => {
 
       const input = this.Parent.Attributes.InputCurrent;
       if (input) {
-        if (input.shift) {
+        if (input.shift > 0) {
           // acc.multiplyScalar(2.0); // accelleration
           // start speed forward and few steps up
-          velocity.z = -math.clamp(Math.abs(velocity.z), 50, 125.0);
+          velocity.z = -math.clamp(
+            Math.abs(velocity.z),
+            input.shift * 50,
+            input.shift * 125.0
+          );
+          console.log('shift', input.shift, velocity)
+        }
+         if (input.ctrl) {
+          // slow speed down and bring to a halt
+          // velocity.z = -math.clamp(
+          //   Math.abs(velocity.z),
+          //   input.shift * 50,
+          //   input.shift * 125.0
+          // );
+          // console.log('shift', input.shift, velocity)
         }
 
         if (input.axisZLeft) {

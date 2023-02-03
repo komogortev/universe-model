@@ -18,7 +18,8 @@ export const player_input = (() => {
         pageUp: false,
         pageDown: false,
         space: false,
-        shift: false,
+        shift: 0.0,
+        ctrl: 0.0,
         backspace: false,
       };
       this.Parent.Attributes.InputPrevious = {
@@ -60,8 +61,12 @@ export const player_input = (() => {
         case 32: // SPACE
           this.Parent.Attributes.InputCurrent.space = true;
           break;
+        case 16: // SHIFT
+          this.Parent.Attributes.InputCurrent.shift = this.Parent.Attributes.InputCurrent.shift < 2 ? this.Parent.Attributes.InputCurrent.shift + 1 : this.Parent.Attributes.InputCurrent.shift;
+          break;
         case 17: // CTRL
-          this.Parent.Attributes.InputCurrent.ctrl = true;
+            this.Parent.Attributes.InputCurrent.shift = this.Parent.Attributes.InputCurrent.shift > 0 ? this.Parent.Attributes.InputCurrent.shift - 1 : this.Parent.Attributes.InputCurrent.shift;
+            this.Parent.Attributes.InputCurrent.ctrl = this.Parent.Attributes.InputCurrent.ctrl > 0 ? this.Parent.Attributes.InputCurrent.ctrl - 1 : this.Parent.Attributes.InputCurrent.ctrl;
           break;
         case 8: // BACKSPACE
           this.Parent.Attributes.InputCurrent.backspace = true;
@@ -102,10 +107,8 @@ export const player_input = (() => {
           this.Parent.Attributes.InputCurrent.space = false;
           break;
         case 16: // SHIFT
-          this.Parent.Attributes.InputCurrent.shift = false;
           break;
         case 17: // CTRL
-          this.Parent.Attributes.InputCurrent.ctrl = false;
           break;
         case 8: // BACKSPACE
           this.Parent.Attributes.InputCurrent.backspace = false;

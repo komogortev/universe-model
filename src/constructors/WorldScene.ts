@@ -118,7 +118,7 @@ class WorldScene {
     this.entityManager_.Add(spawner, 'spawners');
 
     const spaceShip = spawner.GetComponent('SpaceShipSpawner').Spawn()
-    spaceShip.SetPosition(new Vector3(0,2,0));
+    spaceShip.SetPosition(new Vector3(0,12,0));
 
     this._initGymTools();
     //this._LoadSpaceShip();
@@ -132,7 +132,7 @@ class WorldScene {
   _initGymTools() {
     // Checkers workdesk
     {
-      const planeSize = 200;
+      const planeSize = 1200;
 
       const loader = new THREE.TextureLoader();
       const texture = loader.load('https://threejs.org/manual/examples/resources/images/checker.png');

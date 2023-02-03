@@ -44,8 +44,6 @@ export const player_controller = (() => {
         return;
       }
 
-
-
       const velocity = this.velocity_;
       const frameDecceleration = new THREE.Vector3(
           velocity.x * this.decceleration_.x,
@@ -55,7 +53,10 @@ export const player_controller = (() => {
       frameDecceleration.multiplyScalar(delta);
 
       velocity.add(frameDecceleration);
-      velocity.z = -math.clamp(Math.abs(velocity.z), 50.0, 125.0);
+      // constant application of velocity to the player!
+      // *return max of the first pair and min of the second
+      // @Todo: add means to start and alter velocity (key controls)
+      velocity.z = -math.clamp(Math.abs(velocity.z), 0, 125.0);
 
       const _PARENT_Q = this.Parent.Quaternion.clone();
       const _PARENT_P = this.Parent.Position.clone();
@@ -67,29 +68,42 @@ export const player_controller = (() => {
       const acc = this.acceleration_.clone();
 
       const input = this.Parent.Attributes.InputCurrent;
-      if (!input) {
-        return;
-      }
+      if (input) {
+        if (input.shift) {
+          // acc.multiplyScalar(2.0); // accelleration
+          // start speed forward and few steps up
+          velocity.z = -math.clamp(Math.abs(velocity.z), 50, 125.0);
+        }
 
+        if (input.axisZLeft) {
+          _A.set(0, 0, input.axisZLeft);
+          _Q.setFromAxisAngle(_A, Math.PI * delta * acc.y * input.axisZLeft);
+          _R.multiply(_Q);
+        }
+         if (input.axisZRight) {
+          _A.set(0, 0, input.axisZRight);
+          _Q.setFromAxisAngle(_A, -Math.PI * delta * acc.y * input.axisZRight);
+          _R.multiply(_Q);
+        }
+        if (input.axis1Forward) {
+          _A.set(1, 0, 0);
+          _Q.setFromAxisAngle(_A, Math.PI * delta * acc.y * input.axis1Forward);
+          _R.multiply(_Q);
+        }
+        if (input.axis1Side) {
+          _A.set(0, 1, 0);
+          _Q.setFromAxisAngle(_A, -Math.PI * delta * acc.y * input.axis1Side);
+          _R.multiply(_Q);
+        }
+        if (input.axis2Side) {
+          _A.set(0, 0, -1);
+          _Q.setFromAxisAngle(_A, Math.PI * delta * acc.y * input.axis2Side);
+          _R.multiply(_Q);
+        }
 
-      if (input.shift) {
-        acc.multiplyScalar(2.0);
-      }
-
-      if (input.axis1Forward) {
-        _A.set(1, 0, 0);
-        _Q.setFromAxisAngle(_A, Math.PI * delta * acc.y * input.axis1Forward);
-        _R.multiply(_Q);
-      }
-      if (input.axis1Side) {
-        _A.set(0, 1, 0);
-        _Q.setFromAxisAngle(_A, -Math.PI * delta * acc.y * input.axis1Side);
-        _R.multiply(_Q);
-      }
-      if (input.axis2Side) {
-        _A.set(0, 0, -1);
-        _Q.setFromAxisAngle(_A, Math.PI * delta * acc.y * input.axis2Side);
-        _R.multiply(_Q);
+        if (input.space) {
+          this.Fire_();
+        }
       }
 
       const forward = new THREE.Vector3(0, 0, 1);
@@ -115,10 +129,6 @@ export const player_controller = (() => {
 
       this.Parent.SetPosition(pos);
       this.Parent.SetQuaternion(_R);
-
-      if (input.space) {
-        this.Fire_();
-      }
     }
   };
 

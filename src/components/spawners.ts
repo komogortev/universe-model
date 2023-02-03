@@ -38,18 +38,18 @@ export const spawners = (() => {
       const params = {
         scene: this.params_.scene,
         camera: this.params_.camera,
-        offset: new THREE.Vector3(0, -5, -4),
+        offset: new THREE.Vector3(0, -5, 4),
       };
 
       const spaceship = new entity.Entity();
-      spaceship.SetPosition(new THREE.Vector3(0, 6, 0));
+      spaceship.SetPosition(new THREE.Vector3(0, 0, 0));
 
       // initialize component on the scene
       spaceship.AddComponent(new render_component.RenderComponent({
         scene: params.scene,
         resourcePath: './models/aircrafts/Luminaris/',
-        resourceName: 'Luminaris Animated FBX.FBX',
-        scale: 2,
+        resourceName: 'Luminaris Animated FBX.fbx',
+        scale: 0.25,
         offset: {
           position: new THREE.Vector3(0, -5, -4),
           quaternion: new THREE.Quaternion(),

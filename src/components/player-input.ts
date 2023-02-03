@@ -14,6 +14,7 @@ export const player_input = (() => {
         axis1Side: 0.0,
         axis2Forward: 0.0,
         axis2Side: 0.0,
+        axisYRotation: 0.0,
         pageUp: false,
         pageDown: false,
         space: false,
@@ -32,8 +33,14 @@ export const player_input = (() => {
         return;
       }
       switch (event.keyCode) {
+        case 81: // Q
+          this.Parent.Attributes.InputCurrent.axisZLeft = -1.0;
+          break;
         case 87: // w
           this.Parent.Attributes.InputCurrent.axis1Forward = -1.0;
+          break;
+        case 69: // E
+          this.Parent.Attributes.InputCurrent.axisZRight = 1.0;
           break;
         case 65: // a
           this.Parent.Attributes.InputCurrent.axis1Side = -1.0;
@@ -53,8 +60,8 @@ export const player_input = (() => {
         case 32: // SPACE
           this.Parent.Attributes.InputCurrent.space = true;
           break;
-        case 16: // SHIFT
-          this.Parent.Attributes.InputCurrent.shift = true;
+        case 17: // CTRL
+          this.Parent.Attributes.InputCurrent.ctrl = true;
           break;
         case 8: // BACKSPACE
           this.Parent.Attributes.InputCurrent.backspace = true;
@@ -67,8 +74,14 @@ export const player_input = (() => {
         return;
       }
       switch(event.keyCode) {
+        case 81: // Q
+          this.Parent.Attributes.InputCurrent.axisZLeft = 0.0;
+          break;
         case 87: // w
           this.Parent.Attributes.InputCurrent.axis1Forward = 0.0;
+          break;
+        case 69: // E
+          this.Parent.Attributes.InputCurrent.axisZRight = 0.0;
           break;
         case 65: // a
           this.Parent.Attributes.InputCurrent.axis1Side = 0.0;
@@ -90,6 +103,9 @@ export const player_input = (() => {
           break;
         case 16: // SHIFT
           this.Parent.Attributes.InputCurrent.shift = false;
+          break;
+        case 17: // CTRL
+          this.Parent.Attributes.InputCurrent.ctrl = false;
           break;
         case 8: // BACKSPACE
           this.Parent.Attributes.InputCurrent.backspace = false;

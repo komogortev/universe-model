@@ -118,13 +118,17 @@ export const planetoid_ui_controller = (() => {
     timeElapsed_: number;
     sprite_: any;
     boxPosition_: Vector3;
+    boxPositionOffset_: Vector3;
     followText_: any;
+    Y_AXIS: Vector3;
 
     constructor(params: any) {
       super();
       this.params_ = params;
       this.timeElapsed_ = 0.0;
-      this.boxPosition_ = new Vector3(0, 10, 0);
+      this.boxPosition_ = new Vector3();
+      this.boxPositionOffset_ = new Vector3();
+      this.Y_AXIS = new Vector3(0, 1, 0);
     }
 
     Destroy() {
@@ -174,26 +178,8 @@ export const planetoid_ui_controller = (() => {
       this.followText_.style.position = 'absolute';
       this.followText_.style.border = '1px solid pink';
 
-      const node = document.createTextNode("This is new.");
+      const node = document.createTextNode(data.nameId);
       this.followText_.appendChild(node)
-      // const mat = new THREE.ShaderMaterial({
-      //   uniforms: {
-      //     time: {value: 0.0},
-      //     shields: {value: 0.0},
-      //     colour: {value: _C2.clone()}
-      //   },
-      //   vertexShader: _VS,
-      //   fragmentShader: _FS,
-      //   side: THREE.FrontSide,
-      //   transparent: true,
-      // });
-
-      // this.sprite_ = new THREE.Sprite(mat);
-      // this.sprite_.scale.set(32, 4, 1)
-      // this.sprite_.position.set(0, 5, 0);
-
-      // const threejs = this.FindEntity('threejs').GetComponent('ThreeJSController');
-      // threejs.uiScene_.add(this.sprite_);
     }
 
     tick(delta: number) {
@@ -214,9 +200,19 @@ export const planetoid_ui_controller = (() => {
       // this.sprite_.scale.set(0.8, 0.1 * this.params_.camera.aspect, 1);
       // this.sprite_.position.copy(this.boxPosition_);
       const canvas = document.getElementById('scene-container')
+      this.boxPositionOffset_.copy(this.Parent.components_.PlanetController.planetoid_.position);
+      this.boxPositionOffset_.sub(this.params_.camera.position)
+      // make offset vector length = 1
+      this.boxPositionOffset_.normalize();
+      // rotate vector counterclockwise around Y
+      this.boxPositionOffset_.applyAxisAngle(this.Y_AXIS, -Math.PI / 2);
+      this.boxPositionOffset_.multiplyScalar(0.5);
+      this.boxPositionOffset_.y = this.Parent.components_.PlanetController.planetoid_.scale.y + 25
 
       // create normalized box postion
       this.boxPosition_.setFromMatrixPosition(this.Parent.components_.PlanetController.planetoid_.matrixWorld);
+      this.boxPosition_.add(this.boxPositionOffset_)
+
       this.boxPosition_.project(this.params_.camera);
       //translate from normalized position to browser absolute position
       const widthHalf = canvas.clientWidth / 2

@@ -1,7 +1,7 @@
 import { THREE } from './three-defs';
 import { entity } from '../constructors/Entity';
 import { math } from './math';
-import { MeshPhongMaterial, PointLight, PointLightHelper, SphereGeometry, TextureLoader } from 'three';
+import { AxesHelper, GridHelper, MeshPhongMaterial, PointLight, PointLightHelper, SphereGeometry, TextureLoader } from 'three';
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
 const { worldSettings } = useWorldSettingsStore();
 
@@ -181,13 +181,44 @@ export const planetoid_controller = (() => {
       this.planetoid_ = new THREE.Mesh(sphereGeo, sphereMat);
       this.planetoid_.name = `${data.nameId} MeshGroup`
 
+      // Inject Light for stars
       if (data.emissive != null) {
         this.planetoid_.add(this._createLight());
       }
+
       this.planetoid_.rotation.y = data.tilt
       this.planetoid_.scale.multiplyScalar(
         (parseFloat(data.radius.AU as string)) * (worldSettings.value.planetoidScale as number)
       )
+
+      // Set planetoid distance from group center
+      const planetDistanceInAU = (parseFloat(data.distance.AU as string)) * worldSettings.value.distanceScale
+      let planetDistanceInSceneUnits: number;
+
+      if (data.type !== 'moon') {
+        planetDistanceInSceneUnits = planetDistanceInAU  * worldSettings.value.distanceScale
+      } else {
+        planetDistanceInSceneUnits = planetDistanceInAU * (worldSettings.value.distanceScale * 10)
+      }
+
+      // offset parent and child radius from distance value
+      const parentStarDistanceOffset = this._gravParentThreeGroup != null
+        // if parent is not three group but a mesh we can calculate parent mesh offset
+        && this._gravParentThreeGroup.children != null && this._gravParentThreeGroup.children[0] != null
+        && this._gravParentThreeGroup.children[0].scale.x > 0
+      ? (this._gravParentThreeGroup.children[0].scale.x + this._mesh.scale.x)
+        : 0
+
+      this.planetoid_.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
+
+      {
+        // axes Helper
+        const axesHelper = new AxesHelper( 15 );
+        this.planetoid_.add( axesHelper );
+        // Grid Helper
+        this.planetoid_.add(new GridHelper(6, 6, "#666666", "#222222"));
+      }
+
 
       const group = this.GetComponent('RenderComponent').group_;
       group.add(this.planetoid_);
@@ -200,12 +231,6 @@ export const planetoid_controller = (() => {
     // 1. Create material according to planetoid config
     _generateMaterial(cfg: any) {
       const loader = new TextureLoader();
-
-      // loader.Load(
-      //     this.params_.resourcePath, this.params_.resourceName, (mdl: any) => {
-      //   this._OnLoaded(mdl);
-      // });
-
       let sphereMaterial = cfg.emissive != null
         ? new MeshPhongMaterial({
           emissive: cfg.emissive,

@@ -101,6 +101,22 @@ export const spawners = (() => {
       //   }));
       const geometry_ = new SphereGeometry(1, 32, 32);
 
+      {
+        const starPlanetoid = new entity.Entity();
+        starPlanetoid.SetName(solarSystemData.nameId);
+        starPlanetoid.AddComponent(new render_component.RenderComponent({
+          scene: params.scene,
+        }));
+        starPlanetoid.AddComponent(
+          new planetoid_controller.PlanetController({
+            data: solarSystemData,
+            geometry: geometry_
+          }));
+        starPlanetoid.SetPosition(new Vector3(0, 0, 0))
+        super.Manager.Add(starPlanetoid, solarSystemData.nameId);
+      }
+
+
       solarSystemData.children?.forEach((c,i) => {
         const newPlanetoid = new entity.Entity();
         newPlanetoid.SetName(c.nameId);

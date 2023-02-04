@@ -183,22 +183,9 @@ export const planetoid_ui_controller = (() => {
     }
 
     tick(delta: number) {
-      // const threejs = this.FindEntity('threejs').GetComponent('ThreeJSController');
-      // const camera = threejs.camera_;
-      // this.timeElapsed_ += delta;
+      // every time the camera or objects change position (or every frame)
 
-      // const ndc = new THREE.Vector3(0, 1.5, -10);
 
-      // this.UpdateShieldColour_();
-
-      // const t = 1.0 - Math.pow(0.05, delta);
-
-      // this.sprite_.material.uniforms.colour.value.lerpHSL(this.colourTarget_, t);
-      // this.sprite_.material.uniforms.time.value = this.timeElapsed_;
-      // this.sprite_.material.uniforms.shields.value = this.Parent.Attributes.shields / this.Parent.Attributes.maxShields;
-
-      // this.sprite_.scale.set(0.8, 0.1 * this.params_.camera.aspect, 1);
-      // this.sprite_.position.copy(this.boxPosition_);
       const canvas = document.getElementById('scene-container')
       this.boxPositionOffset_.copy(this.Parent.components_.PlanetController.planetoid_.position);
       this.boxPositionOffset_.sub(this.params_.camera.position)

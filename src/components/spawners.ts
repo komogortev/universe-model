@@ -96,16 +96,17 @@ export const spawners = (() => {
       newPlanetoid.AddComponent(new planetoid_controller.PlanetController({
           data: cfg,
           geometry: this.geometry_,
-          parent: parentPlanetoid
+          parent: parentPlanetoid,
+          camera: this.params_.camera,
         }));
       newPlanetoid.SetPosition(new Vector3(0, 0, 0))
 
-      newPlanetoid.AddComponent(new planetoid_ui_controller.PlanetoidUIController({
-            scene: this.params_.scene,
-            camera: this.params_.camera,
-            data: cfg,
-            parent: newPlanetoid,
-          }));
+      // newPlanetoid.AddComponent(new planetoid_ui_controller.PlanetoidUIController({
+      //       scene: this.params_.scene,
+      //       camera: this.params_.camera,
+      //       data: cfg,
+      //       parent: newPlanetoid,
+      //     }));
 
       super.Manager.Add(newPlanetoid, cfg.nameId);
       console.log(cfg.nameId, cfg, newPlanetoid, super.Manager)

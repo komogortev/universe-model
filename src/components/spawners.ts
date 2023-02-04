@@ -1,4 +1,5 @@
 import { THREE } from './three-defs';
+import { SphereGeometry, Vector3 } from 'three';
 import { entity } from '../constructors/Entity';
 import { render_component } from './render-component';
 import { player_input } from './player-input';
@@ -7,8 +8,6 @@ import { third_person_camera } from './third-person-camera';
 import { planetoid_controller } from './planetoid-controller';
 
 import useStarSystemsStore from "../stores/StarsSystemsStore";
-import { SphereGeometry, Vector3 } from 'three';
-import { planetoid_ui_controller } from './planetoid-ui-controller';
 const { getStarSystemConfigByName } = useStarSystemsStore();
 
 // import {player_ps4_input} from './player-ps4-input.js';
@@ -87,44 +86,83 @@ export const spawners = (() => {
       this.geometry_ = new SphereGeometry(1, 32, 32);
     }
 
-    initPlanetoidsRecursevly (cfg: any, parentPlanetoid?: any | null): void {
-      const newPlanetoid = new entity.Entity();
-      newPlanetoid.SetName(cfg.nameId);
-      newPlanetoid.AddComponent(new render_component.RenderComponent({
+    Spawn() {
+      const solarSystemData = getStarSystemConfigByName('SolarSystem');
+      this._initPlanetoidsRecursevly(solarSystemData)
+    }
+
+    _initPlanetoidsRecursevly (cfg: any, parentPlanetoid?: any | null): void {
+      const e = new entity.Entity();
+      e.SetName(cfg.nameId);
+      e.SetPosition(new Vector3(0, 0, 0));
+
+      e.AddComponent(new render_component.RenderComponent({
         scene: this.params_.scene,
       }));
-      newPlanetoid.AddComponent(new planetoid_controller.PlanetController({
-          data: cfg,
-          geometry: this.geometry_,
-          parent: parentPlanetoid,
-          camera: this.params_.camera,
-        }));
-      newPlanetoid.SetPosition(new Vector3(0, 0, 0))
 
-      // newPlanetoid.AddComponent(new planetoid_ui_controller.PlanetoidUIController({
-      //       scene: this.params_.scene,
-      //       camera: this.params_.camera,
-      //       data: cfg,
-      //       parent: newPlanetoid,
-      //     }));
+      e.AddComponent(new planetoid_controller.PlanetoidController({
+        data: cfg,
+        geometry: this.geometry_,
+        parent: parentPlanetoid,
+        camera: this.params_.camera,
+      }));
 
-      super.Manager.Add(newPlanetoid, cfg.nameId);
-      console.log(cfg.nameId, cfg, newPlanetoid, super.Manager)
+      // spawn star instance
+      e.GetComponent('PlanetoidController').Spawn()
+
+      this.Manager.Add(e, cfg.nameId);
+      console.log(cfg.nameId, e)
 
       // repeat for config.children
       if (cfg.children != null) {
         cfg.children.forEach((childConfig: any) => {
-          this.initPlanetoidsRecursevly(childConfig, newPlanetoid)
+          if (['star','planet'].includes(childConfig.type))
+          this._initPlanetoidsRecursevly(childConfig, e)
         })
       }
     }
 
-    Spawn() {
-      const solarSystemData = getStarSystemConfigByName('SolarSystem');
-      this.initPlanetoidsRecursevly(solarSystemData)
+  };
+  class PlanetoidSpawner extends entity.Component {
+    group_: THREE.Group;
+    params_: any;
+    geometry_: SphereGeometry;
+
+    constructor(params: any) {
+      super();
+      this.params_ = params;
+      this.group_ = new THREE.Group();
+      this.geometry_ = new SphereGeometry(1, 32, 32);
+    }
+
+    Spawn(position, quaternion, correction) {
+      const params = {
+        camera: this.params_.camera,
+        scene: this.params_.scene,
+        grid: this.params_.grid,
+      };
+
+      position.add(new THREE.Vector3(0, 0, -1000));
+
+      const e = new entity.Entity();
+      e.SetPosition(position);
+      e.SetQuaternion(quaternion);
+      // attach entity group to the scene
+      e.AddComponent(new render_component.RenderComponent({
+        scene: params.scene,
+        offset: {
+          position: new THREE.Vector3(),
+          quaternion: correction,
+        },
+      }));
+      // create mesh
+      e.AddComponent(new planetoid_controller.PlanetoidController(params));
+
+      this.Manager.Add(e);
+
+      return e;
     }
   };
-
   // class TieFighterSpawner extends entity.Component {
   //   constructor(params) {
   //     super();
@@ -369,6 +407,7 @@ export const spawners = (() => {
   return {
     SpaceShipSpawner: SpaceShipSpawner,
     SolarSystemSpawner: SolarSystemSpawner,
+    PlanetoidSpawner: PlanetoidSpawner,
     // TieFighterSpawner: TieFighterSpawner,
     // XWingSpawner: XWingSpawner,
     // StarDestroyerSpawner: StarDestroyerSpawner,

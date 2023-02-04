@@ -118,6 +118,12 @@ class WorldScene {
         scene: Scene_,
         camera: DefaultCamera_
       }));
+
+      // register spawner to be accessible from within other spawners
+      spawner.AddComponent(new spawners.PlanetoidSpawner({
+        scene: Scene_,
+        camera: DefaultCamera_
+      }));
     }
 
     this.entityManager_.Add(spawner, 'spawners');

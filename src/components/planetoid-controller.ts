@@ -1,8 +1,9 @@
 import { THREE } from './three-defs';
 import { entity } from '../constructors/Entity';
 import { math } from './math';
-import { AxesHelper, GridHelper, MeshPhongMaterial, PointLight, PointLightHelper, SphereGeometry, TextureLoader } from 'three';
+import { AxesHelper, Color, GridHelper, MeshPhongMaterial, PointLight, PointLightHelper, SphereGeometry, TextureLoader } from 'three';
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
+import { convertRotationPerDayToRadians } from '../utils/helpers';
 const { worldSettings } = useWorldSettingsStore();
 
 export const planetoid_controller = (() => {
@@ -163,12 +164,19 @@ export const planetoid_controller = (() => {
   }
 
   class PlanetController extends entity.Component {
+    group_: any;
     planetoid_: any;
     params_: any;
+    _OrbitalRadiansPerSecond: number;
+    _RotationRadiansPerSecond: number;
 
     constructor(params: any) {
       super();
       this.params_ = params;
+      this._OrbitalRadiansPerSecond = this.params_.data.orbital_period != null
+        ? convertRotationPerDayToRadians(this.params_.data.orbital_period.days as number)
+        : 0
+      this._RotationRadiansPerSecond = convertRotationPerDayToRadians(this.params_.data.rotation_period.days as number)
 
     }
 
@@ -190,7 +198,6 @@ export const planetoid_controller = (() => {
       this.planetoid_.scale.multiplyScalar(
         (parseFloat(data.radius.AU as string)) * (worldSettings.value.planetoidScale as number)
       )
-
       // Set planetoid distance from group center
       const planetDistanceInAU = (parseFloat(data.distance.AU as string)) * worldSettings.value.distanceScale
       let planetDistanceInSceneUnits: number;
@@ -202,26 +209,27 @@ export const planetoid_controller = (() => {
       }
 
       // offset parent and child radius from distance value
-      const parentStarDistanceOffset = this._gravParentThreeGroup != null
-        // if parent is not three group but a mesh we can calculate parent mesh offset
-        && this._gravParentThreeGroup.children != null && this._gravParentThreeGroup.children[0] != null
-        && this._gravParentThreeGroup.children[0].scale.x > 0
-      ? (this._gravParentThreeGroup.children[0].scale.x + this._mesh.scale.x)
+      const parentStarDistanceOffset = this.params_.parent != null
+        && this.params_.parent.components_!= null && this.params_.parent.components_.PlanetController
+        && this.params_.parent.components_.PlanetController.planetoid_.scale
+      ? (this.params_.parent.components_.PlanetController.planetoid_.scale.x + this.planetoid_.scale.x)
         : 0
 
       this.planetoid_.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
 
       {
         // axes Helper
-        const axesHelper = new AxesHelper( 15 );
+        const axesHelper = new AxesHelper( this.planetoid_.scale.x * 2 );
         this.planetoid_.add( axesHelper );
         // Grid Helper
         this.planetoid_.add(new GridHelper(6, 6, "#666666", "#222222"));
+
+
       }
 
 
-      const group = this.GetComponent('RenderComponent').group_;
-      group.add(this.planetoid_);
+      this.group_ = this.GetComponent('RenderComponent').group_;
+      this.group_.add(this.planetoid_);
     }
 
     InitComponent() {
@@ -233,6 +241,7 @@ export const planetoid_controller = (() => {
       const loader = new TextureLoader();
       let sphereMaterial = cfg.emissive != null
         ? new MeshPhongMaterial({
+          wireframe: true,
           emissive: cfg.emissive,
           emissiveIntensity: 1,
         })
@@ -313,6 +322,10 @@ export const planetoid_controller = (() => {
     }
 
     tick(delta: number) {
+      // spin planetoid group according to its configured orbital speed
+      this.planetoid_.rotation.y += delta * this._OrbitalRadiansPerSecond *  worldSettings.value.timeSpeed;
+      // spin planetoid according to its configured rotation cycle
+      //this.group_.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
     }
   };
 

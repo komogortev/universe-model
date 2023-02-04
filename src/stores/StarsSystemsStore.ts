@@ -19,7 +19,7 @@ const state = reactive<IStarSystemsConfig>({
     SolarSystem: <IPlanetoid>{
       nameId: 'Sun',
       type: 'star',
-      radius:   { AU: 0.0046 * 0.1, km: 700000 }, // additionally scale down Sun against other planets
+      radius:   { AU: 0.0046 * 0.01, km: 700000 }, // additionally scale down Sun against other planets
       distance: { AU: 0 },
       rotation_period: { days: 27 },
       tilt: 0,
@@ -73,7 +73,7 @@ const state = reactive<IStarSystemsConfig>({
           displacementScale: 0.15,
           bumpMap: 'models/solar-system/textures/earth/EarthNormal.png',
           bumpScale: 0.125,
-          specularMap: 'models/solar-system/textures/earth/EarthSpec.png',
+          //specularMap: 'models/solar-system/textures/earth/EarthSpec.png',
           shininess: 0.5,
           athmosphereMap: 'models/solar-system/textures/earth/8k_earth_clouds.jpg',
           athmosphereOpacity: 0.5,

@@ -8,6 +8,7 @@ import { planetoid_controller } from './planetoid-controller';
 
 import useStarSystemsStore from "../stores/StarsSystemsStore";
 import { SphereGeometry, Vector3 } from 'three';
+import { planetoid_ui_controller } from './planetoid-ui-controller';
 const { getStarSystemConfigByName } = useStarSystemsStore();
 
 // import {player_ps4_input} from './player-ps4-input.js';
@@ -43,11 +44,11 @@ export const spawners = (() => {
       const params = {
         scene: this.params_.scene,
         camera: this.params_.camera,
-        offset: new THREE.Vector3(0, -5, 4),
+        offset: new THREE.Vector3(0, 0, 0),
       };
 
       const spaceship = new entity.Entity();
-      spaceship.SetPosition(new THREE.Vector3(0, 5, -9));
+      spaceship.SetPosition(new THREE.Vector3(0, 0, 0));
 
       spaceship.AddComponent(new player_input.PlayerInput());
       spaceship.AddComponent(new player_controller.PlayerController());
@@ -63,7 +64,7 @@ export const spawners = (() => {
         resourceName: 'Luminaris Animated FBX.fbx',
         scale: 0.25,
         offset: {
-          position: new THREE.Vector3(0, 5, -9),
+          position: new THREE.Vector3(0, 0, 0),
           quaternion: new THREE.Quaternion(),
         },
       }));
@@ -77,70 +78,49 @@ export const spawners = (() => {
   class SolarSystemSpawner extends entity.Component {
     group_: THREE.Group;
     params_: any;
+    geometry_: SphereGeometry;
 
     constructor(params: any) {
       super();
       this.group_ = new THREE.Group();
       this.params_ = params;
+      this.geometry_ = new SphereGeometry(1, 32, 32);
+    }
+
+    initPlanetoidsRecursevly (cfg: any, parentPlanetoid?: any | null): void {
+      const newPlanetoid = new entity.Entity();
+      newPlanetoid.SetName(cfg.nameId);
+      newPlanetoid.AddComponent(new render_component.RenderComponent({
+        scene: this.params_.scene,
+      }));
+      newPlanetoid.AddComponent(new planetoid_controller.PlanetController({
+          data: cfg,
+          geometry: this.geometry_,
+          parent: parentPlanetoid
+        }));
+      newPlanetoid.SetPosition(new Vector3(0, 0, 0))
+
+      newPlanetoid.AddComponent(new planetoid_ui_controller.PlanetoidUIController({
+            scene: this.params_.scene,
+            camera: this.params_.camera,
+            data: cfg,
+            parent: newPlanetoid,
+          }));
+
+      super.Manager.Add(newPlanetoid, cfg.nameId);
+      console.log(cfg.nameId, cfg, newPlanetoid, super.Manager)
+
+      // repeat for config.children
+      if (cfg.children != null) {
+        cfg.children.forEach((childConfig: any) => {
+          this.initPlanetoidsRecursevly(childConfig, newPlanetoid)
+        })
+      }
     }
 
     Spawn() {
       const solarSystemData = getStarSystemConfigByName('SolarSystem');
-      const params = {
-        scene: this.params_.scene,
-      };
-
-      // const sunPlanetoidGroup = new entity.Entity();
-      // sunPlanetoidGroup.SetName('SunGroup')
-      // sunPlanetoidGroup.AddComponent(new render_component.RenderComponent({
-      //   scene: params.scene,
-      // }));
-      // sunPlanetoidGroup.AddComponent(
-      //   new planetoid_controller.PlanetController({
-      //     data: solarSystemData
-      //   }));
-      const geometry_ = new SphereGeometry(1, 32, 32);
-
-      {
-        const starPlanetoid = new entity.Entity();
-        starPlanetoid.SetName(solarSystemData.nameId);
-        starPlanetoid.AddComponent(new render_component.RenderComponent({
-          scene: params.scene,
-        }));
-        starPlanetoid.AddComponent(
-          new planetoid_controller.PlanetController({
-            data: solarSystemData,
-            geometry: geometry_
-          }));
-        starPlanetoid.SetPosition(new Vector3(0, 0, 0))
-        super.Manager.Add(starPlanetoid, solarSystemData.nameId);
-      }
-
-
-      solarSystemData.children?.forEach((c,i) => {
-        const newPlanetoid = new entity.Entity();
-        newPlanetoid.SetName(c.nameId);
-
-        newPlanetoid.AddComponent(new render_component.RenderComponent({
-          scene: params.scene,
-        }));
-
-        newPlanetoid.AddComponent(
-          new planetoid_controller.PlanetController({
-            data: c,
-            geometry: geometry_
-          }));
-
-        newPlanetoid.SetPosition(new Vector3(0, 0, 0))
-
-        super.Manager.Add(newPlanetoid, c.nameId);
-        console.log(c.nameId, c, newPlanetoid, super.Manager)
-      })
-
-      // register with EntityManager
-      //super.Manager.Add(sunPlanetoidGroup, 'sunGroup');
-
-      //return sunPlanetoidGroup;
+      this.initPlanetoidsRecursevly(solarSystemData)
     }
   };
 

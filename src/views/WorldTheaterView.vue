@@ -17,6 +17,7 @@ onMounted(() => {
 </script>
 
 <template>
+
   <section id="scene-container"></section>
 </template>
 

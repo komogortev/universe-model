@@ -21,6 +21,8 @@ export const threejs_component = (() => {
     threejsRenderer_: THREE.WebGLRenderer | null;
     scene_: any;
     camera_: any;
+    uiCamera_: any;
+    uiScene_: any;
 
     constructor() {
       super();
@@ -37,7 +39,7 @@ export const threejs_component = (() => {
         CAM_PARAMS.far
       );
       this.scene_ = new THREE.Scene();
-      this.camera_.position.set(0, 15, -25);
+      this.camera_.position.set(0, 155, -155);
     }
 
     InitEntity() {
@@ -53,12 +55,10 @@ export const threejs_component = (() => {
       // this.listener_ = new THREE.AudioListener();
       // this.camera_.add(this.listener_);
 
-      // this.crawlCamera_ = new THREE.PerspectiveCamera(fov, aspect, near, far);
-      // this.crawlScene_ = new THREE.Scene();
 
-      // this.uiCamera_ = new THREE.OrthographicCamera(
-      //     -1, 1, 1 * aspect, -1 * aspect, 1, 1000);
-      // this.uiScene_ = new THREE.Scene();
+      this.uiCamera_ = new THREE.OrthographicCamera(
+          -1, 1, 1 * CAM_PARAMS.aspect, -1 * CAM_PARAMS.aspect, 1, 1000);
+      this.uiScene_ = new THREE.Scene();
 
       {
         // let light = new THREE.DirectionalLight(0x8088b3, 1.0);
@@ -77,30 +77,24 @@ export const threejs_component = (() => {
         // this.scene_.add(light);
       }
 
-      // this.sun_ = light;
-      // light = new THREE.AmbientLight(0xFFFFFF, 0.035);
-      // this.scene_.add(light);
-
-      //this.LoadBackground_();
-      // this.LoadPlanet_();
       //this.OnResize_();
     }
 
     LoadBackground_() {
-      const loader = new THREE.CubeTextureLoader();
-      const texture = loader.load([
-          './resources/terrain/space-posx.jpg',
-          './resources/terrain/space-negx.jpg',
-          './resources/terrain/space-posy.jpg',
-          './resources/terrain/space-negy.jpg',
-          './resources/terrain/space-posz.jpg',
-          './resources/terrain/space-negz.jpg',
-      ]);
-      texture.encoding = THREE.sRGBEncoding;
+      // const loader = new THREE.CubeTextureLoader();
+      // const texture = loader.load([
+      //     './resources/terrain/space-posx.jpg',
+      //     './resources/terrain/space-negx.jpg',
+      //     './resources/terrain/space-posy.jpg',
+      //     './resources/terrain/space-negy.jpg',
+      //     './resources/terrain/space-posz.jpg',
+      //     './resources/terrain/space-negz.jpg',
+      // ]);
+      // texture.encoding = THREE.sRGBEncoding;
 
-      const uniforms = {
-        "background": { value: texture },
-      };
+      // const uniforms = {
+      //   "background": { value: texture },
+      // };
 
       // const skyGeo = new THREE.SphereBufferGeometry(5000, 32, 15);
       // const skyMat = new THREE.ShaderMaterial({
@@ -115,20 +109,20 @@ export const threejs_component = (() => {
     }
 
     LoadPlanet_() {
-      const planetGeo = new THREE.SphereBufferGeometry(5000, 48, 48);
-      const planetMat = new THREE.ShaderMaterial({
-          uniforms: {
-            'time': { value: 0.0 },
-          },
-          vertexShader: _PLANET_VS,
-          fragmentShader: _PLANET_FS,
-          side: THREE.FrontSide
-      });
+      // const planetGeo = new THREE.SphereBufferGeometry(5000, 48, 48);
+      // const planetMat = new THREE.ShaderMaterial({
+      //     uniforms: {
+      //       'time': { value: 0.0 },
+      //     },
+      //     vertexShader: _PLANET_VS,
+      //     fragmentShader: _PLANET_FS,
+      //     side: THREE.FrontSide
+      // });
 
-      const planet = new THREE.Mesh(planetGeo, planetMat);
-      planet.position.set(6000, -1000, 0);
-      this.planet_ = planet;
-      this.sky_.add(planet);
+      // const planet = new THREE.Mesh(planetGeo, planetMat);
+      // planet.position.set(6000, -1000, 0);
+      // this.planet_ = planet;
+      // this.sky_.add(planet);
     }
 
     OnResize_() {
@@ -149,8 +143,8 @@ export const threejs_component = (() => {
       this.threejsRenderer_.render(this.scene_, this.camera_);
       this.threejsRenderer_.autoClearColor = false;
       // this.threejsRenderer_.render(this.crawlScene_, this.crawlCamera_);
-      // this.threejsRenderer_.autoClearColor = false;
-      // this.threejsRenderer_.render(this.uiScene_, this.uiCamera_);
+      this.threejsRenderer_.autoClearColor = false;
+      this.threejsRenderer_.render(this.uiScene_, this.uiCamera_);
     }
 
     tick(deltaTime: number) {

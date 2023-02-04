@@ -4,10 +4,10 @@ import { render_component } from './render-component';
 import { player_input } from './player-input';
 import { player_controller } from './player-controller';
 import { third_person_camera } from './third-person-camera';
-import { planetoids_controller } from './planet-controller';
+import { planetoids_controller } from './planetoid-controller';
 
 import useStarSystemsStore from "../stores/StarsSystemsStore";
-import { planetoid_controller } from './planetoid-controller';
+import { SphereGeometry, Vector3 } from 'three';
 const { getStarSystemConfigByName } = useStarSystemsStore();
 
 // import {player_ps4_input} from './player-ps4-input.js';
@@ -47,7 +47,7 @@ export const spawners = (() => {
       };
 
       const spaceship = new entity.Entity();
-      spaceship.SetPosition(new THREE.Vector3(0, 0, 0));
+      spaceship.SetPosition(new THREE.Vector3(0, 5, -9));
 
       spaceship.AddComponent(new player_input.PlayerInput());
       spaceship.AddComponent(new player_controller.PlayerController());
@@ -63,7 +63,7 @@ export const spawners = (() => {
         resourceName: 'Luminaris Animated FBX.fbx',
         scale: 0.25,
         offset: {
-          position: new THREE.Vector3(0, -5, -4),
+          position: new THREE.Vector3(0, 5, -9),
           quaternion: new THREE.Quaternion(),
         },
       }));
@@ -90,46 +90,41 @@ export const spawners = (() => {
         scene: this.params_.scene,
       };
 
-      const sunPlanetoidGroup = new entity.Entity();
-      sunPlanetoidGroup.SetName('SunGroup')
-
-      sunPlanetoidGroup.AddComponent(new render_component.RenderComponent({
-        scene: params.scene,
-      }));
-
-      sunPlanetoidGroup.AddComponent(
-        new planetoids_controller.PlanetController({
-          data: solarSystemData
-        }));
-
-
-      // sunPlanetoidGroup.AddComponent(new planetoid_controller.PlanetoidController({
-      //   scene: params.scene,
-      //   data: solarSystemData,
-      // }));
-
-      // solarSystemData.children?.forEach((c,i) => {
-      //   const tmpPlanetoid = new entity.Entity();
-      //   tmpPlanetoid.SetName(c.nameId)
-      //   tmpPlanetoid.AddComponent(new planetoid_controller.PlanetoidController({
-      //     scene: params.scene,
-      //     data: c,
-      //   }));
-      //   sunPlanetoidGroup
-      // })
-
-
-      // initialize component on the scene
+      // const sunPlanetoidGroup = new entity.Entity();
+      // sunPlanetoidGroup.SetName('SunGroup')
       // sunPlanetoidGroup.AddComponent(new render_component.RenderComponent({
       //   scene: params.scene,
-      //   threeGroup: sunPlanetoidGroup,
       // }));
+      // sunPlanetoidGroup.AddComponent(
+      //   new planetoids_controller.PlanetController({
+      //     data: solarSystemData
+      //   }));
+      const geometry_ = new SphereGeometry(1, 32, 32);
 
-      console.log(sunPlanetoidGroup)
+      solarSystemData.children?.forEach((c,i) => {
+        const newPlanetoid = new entity.Entity();
+        newPlanetoid.SetName(c.nameId);
+
+        newPlanetoid.AddComponent(new render_component.RenderComponent({
+          scene: params.scene,
+        }));
+
+        newPlanetoid.AddComponent(
+          new planetoids_controller.PlanetController({
+            data: c,
+            geometry: geometry_
+          }));
+
+        newPlanetoid.SetPosition(new Vector3(0, 0, 0))
+
+        super.Manager.Add(newPlanetoid, c.nameId);
+        console.log(c.nameId, c, newPlanetoid, super.Manager)
+      })
+
       // register with EntityManager
-      super.Manager.Add(sunPlanetoidGroup, 'sunGroup');
+      //super.Manager.Add(sunPlanetoidGroup, 'sunGroup');
 
-      return sunPlanetoidGroup;
+      //return sunPlanetoidGroup;
     }
   };
 

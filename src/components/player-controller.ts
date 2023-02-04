@@ -77,7 +77,6 @@ export const player_controller = (() => {
             input.shift * 50,
             input.shift * 125.0
           );
-          console.log('shift', input.shift, velocity)
         }
          if (input.ctrl) {
           // slow speed down and bring to a halt
@@ -86,7 +85,6 @@ export const player_controller = (() => {
           //   input.shift * 50,
           //   input.shift * 125.0
           // );
-          // console.log('shift', input.shift, velocity)
         }
 
         if (input.axisZLeft) {

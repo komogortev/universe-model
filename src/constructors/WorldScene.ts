@@ -123,8 +123,8 @@ class WorldScene {
     const spaceShip = spawner.GetComponent('SpaceShipSpawner').Spawn()
     spaceShip.SetPosition(new Vector3(0,12,0));
 
-    const solarSystem = spawner.GetComponent('SolarSystemSpawner').Spawn()
-    solarSystem.SetPosition(new Vector3(5,1,-10));
+    spawner.GetComponent('SolarSystemSpawner').Spawn()
+    //solarSystem.SetPosition(new Vector3(5,1,-10));
 
 
     this._initGymTools();

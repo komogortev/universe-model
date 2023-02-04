@@ -75,49 +75,45 @@ export const spawners = (() => {
     }
   };
   class SolarSystemSpawner extends entity.Component {
-    group_: THREE.Group;
     params_: any;
+    group_: THREE.Group;
     geometry_: SphereGeometry;
 
     constructor(params: any) {
       super();
-      this.group_ = new THREE.Group();
       this.params_ = params;
+      this.group_ = new THREE.Group();
       this.geometry_ = new SphereGeometry(1, 32, 32);
     }
 
     Spawn() {
-      const solarSystemData = getStarSystemConfigByName('SolarSystem');
-      this._initPlanetoidsRecursevly(solarSystemData)
+      const cfg = getStarSystemConfigByName('SolarSystem');
+      const planetoidsSpawner = this.FindEntity('spawners').GetComponent('PlanetoidSpawner');
+
+      // create and spawn Sun at the center of the Scene_
+
+      // create and spawn planets at the center of the Scene_
+      this._initPlanetoidsRecursevly(cfg, null, planetoidsSpawner)
+
+
+
     }
 
-    _initPlanetoidsRecursevly (cfg: any, parentPlanetoid?: any | null): void {
-      const e = new entity.Entity();
-      e.SetName(cfg.nameId);
-      e.SetPosition(new Vector3(0, 0, 0));
+    _initPlanetoidsRecursevly(cfg: any, parentPlanetoid?: any | null, spawner: any): void {
+      const e0 = spawner.Spawn(cfg);
 
-      e.AddComponent(new render_component.RenderComponent({
-        scene: this.params_.scene,
-      }));
+      if (parentPlanetoid) {
+        e0.SetParent(parentPlanetoid)
+        console.log('parented', e0)
+      } else {
+        this.Manager.Add(e0, cfg.nameId);
+        console.log('managed', e0)
+      }
 
-      e.AddComponent(new planetoid_controller.PlanetoidController({
-        data: cfg,
-        geometry: this.geometry_,
-        parent: parentPlanetoid,
-        camera: this.params_.camera,
-      }));
-
-      // spawn star instance
-      e.GetComponent('PlanetoidController').Spawn()
-
-      this.Manager.Add(e, cfg.nameId);
-      console.log(cfg.nameId, e)
-
-      // repeat for config.children
       if (cfg.children != null) {
+        // create and spawn moons at the center of the planetoid mesh position
         cfg.children.forEach((childConfig: any) => {
-          if (['star','planet'].includes(childConfig.type))
-          this._initPlanetoidsRecursevly(childConfig, e)
+          this._initPlanetoidsRecursevly(childConfig, e0, spawner)
         })
       }
     }
@@ -135,28 +131,41 @@ export const spawners = (() => {
       this.geometry_ = new SphereGeometry(1, 32, 32);
     }
 
-    Spawn(position, quaternion, correction) {
+    Spawn(cfg, position, quaternion, correction) {
       const params = {
         camera: this.params_.camera,
         scene: this.params_.scene,
         grid: this.params_.grid,
       };
 
-      position.add(new THREE.Vector3(0, 0, -1000));
+      //position.add(new THREE.Vector3(0, 0, -1000));
+      //e.SetPosition(position);
+      //e.SetQuaternion(quaternion);
 
       const e = new entity.Entity();
-      e.SetPosition(position);
-      e.SetQuaternion(quaternion);
-      // attach entity group to the scene
+      e.SetName(cfg.nameId);
+      e.SetPosition(new Vector3(0, 0, 0));
+
       e.AddComponent(new render_component.RenderComponent({
-        scene: params.scene,
-        offset: {
-          position: new THREE.Vector3(),
-          quaternion: correction,
-        },
+        scene: this.params_.scene,
       }));
-      // create mesh
-      e.AddComponent(new planetoid_controller.PlanetoidController(params));
+
+      e.AddComponent(new planetoid_controller.PlanetoidController({
+        data: cfg,
+        geometry: this.geometry_,
+        camera: this.params_.camera,
+      }));
+
+      // attach entity group to the scene
+      // e.AddComponent(new render_component.RenderComponent({
+      //   scene: params.scene,
+      //   offset: {
+      //     position: new THREE.Vector3(),
+      //     quaternion: correction,
+      //   },
+      // }));
+      // // create mesh
+      // e.AddComponent(new planetoid_controller.PlanetoidController(params));
 
       this.Manager.Add(e);
 

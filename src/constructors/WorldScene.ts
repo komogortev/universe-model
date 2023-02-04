@@ -105,6 +105,7 @@ class WorldScene {
   OnGameStarted_() {
     const spawner = new entity.Entity();
 
+    // Initialize and Register spawners
     {
       const spaceShipCamera = createPerspectiveCamera();
       SceneCameras_.push(spaceShipCamera);
@@ -124,9 +125,9 @@ class WorldScene {
         scene: Scene_,
         camera: DefaultCamera_
       }));
-    }
 
-    this.entityManager_.Add(spawner, 'spawners');
+      this.entityManager_.Add(spawner, 'spawners');
+    }
 
     const spaceShip = spawner.GetComponent('SpaceShipSpawner').Spawn()
     spaceShip.SetPosition(new Vector3(50,50,-20));

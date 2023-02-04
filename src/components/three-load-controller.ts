@@ -122,6 +122,10 @@ export const three_load_controller = (() => {
       }
     }
 
+    _LoadMesh() {
+
+    }
+
     tick(delta: number) {
       for (let i = 0; i < this.playing_.length; ++i) {
         if (!this.playing_[i].isPlaying) {

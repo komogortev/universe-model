@@ -42,13 +42,15 @@ export const render_component = (() => {
     }
 
     InitEntity() {
-      if (this.params_.resourcePath) {
+      if (this.params_.resourcePath != null) {
         this._LoadModels();
+      } else if (this.params_.threeGroup != null) {
+        this._LoadMesh();
       }
     }
 
+    // attach callbacks as handlers of current renderer
     InitComponent() {
-      // attach callbacks as handlers of current renderer
       this.RegisterHandler_('update.position', (m: any) => { this.OnPosition_(m); });
       this.RegisterHandler_('update.rotation', (m: any) => { this.OnRotation_(m); });
       this.RegisterHandler_('render.visible', (m: any) => { this.OnVisible_(m); });
@@ -88,6 +90,15 @@ export const render_component = (() => {
       );
     }
 
+    _LoadMesh() {
+      const loader = this.FindEntity('loader').GetComponent('LoadController');
+      loader.Load(
+        this.params_.resourcePath,
+        this.params_.resourceName,
+        (mdl: any) => { this._OnLoaded(mdl) }
+      );
+    }
+
     _OnLoaded(obj: any) {
       this.target_ = obj;
       this.group_.add(this.target_);
@@ -118,7 +129,7 @@ export const render_component = (() => {
         }
       }
 
-      this.target_.traverse(c => {
+      this.target_.traverse((c: any) => {
         let materials = c.material;
         if (!(c.material instanceof Array)) {
           materials = [c.material];

@@ -4,6 +4,7 @@ import { render_component } from './render-component';
 import { player_input } from './player-input';
 import { player_controller } from './player-controller';
 import { third_person_camera } from './third-person-camera';
+import { planetoids_controller } from './planet-controller';
 
 import useStarSystemsStore from "../stores/StarsSystemsStore";
 import { planetoid_controller } from './planetoid-controller';
@@ -48,6 +49,13 @@ export const spawners = (() => {
       const spaceship = new entity.Entity();
       spaceship.SetPosition(new THREE.Vector3(0, 0, 0));
 
+      spaceship.AddComponent(new player_input.PlayerInput());
+      spaceship.AddComponent(new player_controller.PlayerController());
+      spaceship.AddComponent(
+        new third_person_camera.ThirdPersonCamera({
+            camera: this.params_.camera,
+            target: spaceship}));
+
       // initialize component on the scene
       spaceship.AddComponent(new render_component.RenderComponent({
         scene: params.scene,
@@ -59,12 +67,7 @@ export const spawners = (() => {
           quaternion: new THREE.Quaternion(),
         },
       }));
-      spaceship.AddComponent(new player_input.PlayerInput());
-      spaceship.AddComponent(new player_controller.PlayerController());
-      spaceship.AddComponent(
-        new third_person_camera.ThirdPersonCamera({
-            camera: this.params_.camera,
-            target: spaceship}));
+
       // entity's parent (entityManager, sometimes another entity)
       super.Manager.Add(spaceship, 'spaceship');
 
@@ -89,28 +92,40 @@ export const spawners = (() => {
 
       const sunPlanetoidGroup = new entity.Entity();
       sunPlanetoidGroup.SetName('SunGroup')
-      sunPlanetoidGroup.AddComponent(new planetoid_controller.PlanetoidController({
-        scene: params.scene,
-        data: solarSystemData,
-        resourcePath: './resources/models/star-destroyer/',
-        resourceName: 'scene-collision.glb',
-        scale: 50.0,
-      }));
 
-      solarSystemData.children?.forEach((c,i) => {
-        const tmpPlanetoid = new entity.Entity();
-        tmpPlanetoid.SetName('mercGroup')
-        tmpPlanetoid.AddComponent(new planetoid_controller.PlanetoidController({
-          scene: params.scene,
-          data: solarSystemData.children[i],
-        }));
-      })
-
-
-      // initialize component on the scene
       sunPlanetoidGroup.AddComponent(new render_component.RenderComponent({
         scene: params.scene,
       }));
+
+      sunPlanetoidGroup.AddComponent(
+        new planetoids_controller.PlanetController({
+          data: solarSystemData
+        }));
+
+
+      // sunPlanetoidGroup.AddComponent(new planetoid_controller.PlanetoidController({
+      //   scene: params.scene,
+      //   data: solarSystemData,
+      // }));
+
+      // solarSystemData.children?.forEach((c,i) => {
+      //   const tmpPlanetoid = new entity.Entity();
+      //   tmpPlanetoid.SetName(c.nameId)
+      //   tmpPlanetoid.AddComponent(new planetoid_controller.PlanetoidController({
+      //     scene: params.scene,
+      //     data: c,
+      //   }));
+      //   sunPlanetoidGroup
+      // })
+
+
+      // initialize component on the scene
+      // sunPlanetoidGroup.AddComponent(new render_component.RenderComponent({
+      //   scene: params.scene,
+      //   threeGroup: sunPlanetoidGroup,
+      // }));
+
+      console.log(sunPlanetoidGroup)
       // register with EntityManager
       super.Manager.Add(sunPlanetoidGroup, 'sunGroup');
 

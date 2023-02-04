@@ -5,7 +5,7 @@ import { MeshPhongMaterial, PointLight, PointLightHelper, SphereGeometry, Textur
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
 const { worldSettings } = useWorldSettingsStore();
 
-export const planetoids_controller = (() => {
+export const planetoid_controller = (() => {
 
   const _SHIELD_VS = `
   varying vec3 vNormal;
@@ -163,7 +163,7 @@ export const planetoids_controller = (() => {
   }
 
   class PlanetController extends entity.Component {
-    planetoids_: any;
+    planetoid_: any;
     params_: any;
 
     constructor(params: any) {
@@ -178,20 +178,19 @@ export const planetoids_controller = (() => {
       const sphereGeo =  this.params_.geometry;
       const sphereMat = this._generateMaterial(data);
 
-      this.planetoids_ = new THREE.Mesh(sphereGeo, sphereMat);
-      this.planetoids_.name = `${data.nameId} MeshGroup`
-      this.planetoids_.scale.set(20, 10, 10);
+      this.planetoid_ = new THREE.Mesh(sphereGeo, sphereMat);
+      this.planetoid_.name = `${data.nameId} MeshGroup`
 
       if (data.emissive != null) {
-        this.planetoids_.add(this._createLight());
+        this.planetoid_.add(this._createLight());
       }
-      this.planetoids_.rotation.y = data.tilt
-      this.planetoids_.scale.multiplyScalar(
-        (parseFloat(data.radius.AU as string))  * (worldSettings.value.planetoidScale as number)
+      this.planetoid_.rotation.y = data.tilt
+      this.planetoid_.scale.multiplyScalar(
+        (parseFloat(data.radius.AU as string)) * (worldSettings.value.planetoidScale as number)
       )
 
       const group = this.GetComponent('RenderComponent').group_;
-      group.add(this.planetoids_);
+      group.add(this.planetoid_);
     }
 
     InitComponent() {

@@ -4,7 +4,7 @@ import { render_component } from './render-component';
 import { player_input } from './player-input';
 import { player_controller } from './player-controller';
 import { third_person_camera } from './third-person-camera';
-import { planetoids_controller } from './planetoid-controller';
+import { planetoid_controller } from './planetoid-controller';
 
 import useStarSystemsStore from "../stores/StarsSystemsStore";
 import { SphereGeometry, Vector3 } from 'three';
@@ -96,7 +96,7 @@ export const spawners = (() => {
       //   scene: params.scene,
       // }));
       // sunPlanetoidGroup.AddComponent(
-      //   new planetoids_controller.PlanetController({
+      //   new planetoid_controller.PlanetController({
       //     data: solarSystemData
       //   }));
       const geometry_ = new SphereGeometry(1, 32, 32);
@@ -110,7 +110,7 @@ export const spawners = (() => {
         }));
 
         newPlanetoid.AddComponent(
-          new planetoids_controller.PlanetController({
+          new planetoid_controller.PlanetController({
             data: c,
             geometry: geometry_
           }));

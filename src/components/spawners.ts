@@ -113,7 +113,11 @@ export const spawners = (() => {
       if (cfg.children != null) {
         // create and spawn moons at the center of the planetoid mesh position
         cfg.children.forEach((childConfig: any) => {
-          this._initPlanetoidsRecursevly(childConfig, e0, spawner)
+          // limit generation to planets
+          if (['star','planet'].includes(childConfig.type)) {
+            this._initPlanetoidsRecursevly(childConfig, e0, spawner)
+            console.log(cfg.type)
+          }
         })
       }
     }

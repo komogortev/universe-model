@@ -179,26 +179,67 @@ function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); 
         ? convertRotationPerDayToRadians(this.params_.data.orbital_period.days as number)
         : 0
       this._RotationRadiansPerSecond = convertRotationPerDayToRadians(this.params_.data.rotation_period.days as number)
-
     }
 
     InitEntity() {
-      //const group = this.GetComponent('RenderComponent').group_;
+      // get access to renderer three group to attach Meshes directly
+      this.group_ = this.GetComponent('RenderComponent').group_;
       const cfg = this.params_.data;
+      this.group_.name = cfg.nameId + 'Group';
 
+      // attempts of optimization, borrow geometry, share with all children moons
       const sphereGeo =  this.params_.geometry;
       const sphereMat = this._generateMaterial(cfg);
 
-      this.planetoid_ = new THREE.Mesh(sphereGeo, sphereMat);
-      this.planetoid_.name = `${cfg.nameId} MeshGroup`
+      const originalPlanetoidMesh = this.InitPlanetoidMesh(cfg, sphereGeo, sphereMat);
+      // Attach to root controller three group (which is always SunGroup)
+      //this.group_.add(entityPlanetoid);
+
+      // Check for moons to genereate
+      if (cfg.children != null) {
+        // Woohoo! Got moons to generate
+        cfg.children.forEach((childConfig: any) => {
+          // limit search to moon typed children in case we got full planetoid n stars
+          // (sun & planet are parent Entity attached to the scene)
+          if (!['star','planet'].includes(childConfig.type)) {
+            const moonMesh = this.InitPlanetoidMesh(
+              childConfig,
+              sphereGeo,
+              this._generateMaterial(childConfig)
+            );
+
+            console.log("What to do with Moon planetoid, boss?", moonMesh);
+            {
+              // axes Helper
+              // const axesHelper = new AxesHelper( 15 );
+              // originalPlanetoidMesh.add( axesHelper );
+              // // Grid Helper
+              // originalPlanetoidMesh.add(new GridHelper(6, 6, "#F300D5", "#F30060"));
+            }
+            // find parent Mesh as anchor
+            originalPlanetoidMesh.add(moonMesh)
+            // did we succesfully attach moon?
+            console.log(originalPlanetoidMesh);
+          }
+        })
+      }
+
+      // attach resulting planetoid with moons
+      this.group_.add(originalPlanetoidMesh);
+      console.log('_attach Mesh to three Group', this.group_)
+    }
+
+    InitPlanetoidMesh(cfg: any, sphereGeo: any, sphereMat: any) {
+      const planetoid_ = new THREE.Mesh(sphereGeo, sphereMat);
+      planetoid_.name = `${cfg.nameId} MeshGroup`
 
       // Inject Light for stars
       if (cfg.emissive != null) {
-        this.planetoid_.add(this._createLight());
+        planetoid_.add(this._createLight());
       }
 
-      this.planetoid_.rotation.y = cfg.tilt
-      this.planetoid_.scale.multiplyScalar(
+      planetoid_.rotation.y = cfg.tilt
+      planetoid_.scale.multiplyScalar(
         (parseFloat(cfg.radius.AU as string)) * (worldSettings.value.planetoidScale as number)
       )
       // Set planetoid distance from group center
@@ -215,154 +256,135 @@ function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); 
       const parentStarDistanceOffset = this.params_.parent != null
         && this.params_.parent.components_!= null && this.params_.parent.components_.PlanetController
         && this.params_.parent.components_.PlanetController.planetoid_.scale
-      ? (this.params_.parent.components_.PlanetController.planetoid_.scale.x + this.planetoid_.scale.x)
+      ? (this.params_.parent.components_.PlanetController.planetoid_.scale.x + planetoid_.scale.x)
         : 0
 
-      this.planetoid_.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
+      planetoid_.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
 
-      {
+      if (cfg.nameId.includes('Moon') || ['planet'].includes(cfg.type)) {
         // axes Helper
-        const axesHelper = new AxesHelper( this.planetoid_.scale.x * 2 );
-        this.planetoid_.add( axesHelper );
+        const axesHelper = new AxesHelper( planetoid_.scale.x * 2 );
+        planetoid_.add( axesHelper );
         // Grid Helper
-        this.planetoid_.add(new GridHelper(6, 6, "#666666", "#222222"));
-
-        var spritey = this.makeTextSprite( cfg.nameId, { alignment: 1, fontsize: 32, backgroundColor: {r:255, g:100, b:100, a:1} } );
-        spritey.position.set(this.planetoid_.position.x, this.planetoid_.position.y + this.planetoid_.scale.y + 2, this.planetoid_.position.z)
+        planetoid_.add(new GridHelper(6, 6, "#666666", "#222222"));
+        this.SetLabel(cfg.nameId, planetoid_);
 
       }
 
-
-      this.group_ = this.GetComponent('RenderComponent').group_;
-      this.group_.add(this.planetoid_);
-      this.group_.add(spritey);
-
-      // if (cfg.children != null) {
-      //   cfg.children.forEach((childConfig: any) => {
-      //     if (!['star','planet'].includes(childConfig.type)) {
-
-      //       const newPlanetoid = new entity.Entity();
-      //       newPlanetoid.SetName(childConfig.nameId);
-
-      //       // newPlanetoid.AddComponent(new render_component.RenderComponent({
-      //       //   scene: this.params_.scene,
-      //       // }));
-
-      //       newPlanetoid.AddComponent(new planetoid_controller.PlanetController({
-      //         data: cfg,
-      //         geometry: this.params_.geometry,
-      //         parent: this.group_,
-      //         camera: this.params_.camera,
-      //       }));
-
-      //       newPlanetoid.SetPosition(new Vector3(0, 0, 0))
-      //       this.group_.add(newPlanetoid);
-      //     }
-      //   })
-      // }
+      return planetoid_;
     }
 
-    Spawn(params: any) {
-      const cfg = this.params_.data;
-
-      const sphereGeo =  this.params_.geometry;
-      const sphereMat = this._generateMaterial(cfg);
-
-      this.planetoid_ = new THREE.Mesh(sphereGeo, sphereMat);
-      this.planetoid_.name = `${cfg.nameId} MeshGroup`
-
-      // Inject Light for stars
-      if (cfg.emissive != null) {
-        this.planetoid_.add(this._createLight());
-      }
-
-      this.planetoid_.rotation.y = cfg.tilt
-      this.planetoid_.scale.multiplyScalar(
-        (parseFloat(cfg.radius.AU as string)) * (worldSettings.value.planetoidScale as number)
+    SetLabel(nameId: string, parent: any) {
+      const spritey = this.makeTextSprite(
+        nameId,
+        { alignment: 1, fontsize: 32, backgroundColor: {r:255, g:100, b:100, a:1} }
+      );
+      spritey.position.set(
+        parent.position.x,
+        parent.position.y + parent.scale.y + 2,
+        parent.position.z
       )
-      // Set planetoid distance from group center
-      const planetDistanceInAU = (parseFloat(cfg.distance.AU as string)) * worldSettings.value.distanceScale
-      let planetDistanceInSceneUnits: number;
-
-      if (cfg.type !== 'moon') {
-        planetDistanceInSceneUnits = planetDistanceInAU  * worldSettings.value.distanceScale
-      } else {
-        planetDistanceInSceneUnits = planetDistanceInAU * (worldSettings.value.distanceScale * 10)
-      }
-
-      // offset parent and child radius from distance value
-      const parentStarDistanceOffset = this.params_.parent != null
-        && this.params_.parent.components_!= null && this.params_.parent.components_.PlanetController
-        && this.params_.parent.components_.PlanetController.planetoid_.scale
-      ? (this.params_.parent.components_.PlanetController.planetoid_.scale.x + this.planetoid_.scale.x)
-        : 0
-
-      this.planetoid_.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
-
-      {
-        // axes Helper
-        const axesHelper = new AxesHelper( this.planetoid_.scale.x * 2 );
-        this.planetoid_.add( axesHelper );
-        // Grid Helper
-        this.planetoid_.add(new GridHelper(6, 6, "#666666", "#222222"));
-
-        var spritey = this.makeTextSprite( cfg.nameId, { alignment: 1, fontsize: 32, backgroundColor: {r:255, g:100, b:100, a:1} } );
-        spritey.position.set(this.planetoid_.position.x, this.planetoid_.position.y + this.planetoid_.scale.y + 2, this.planetoid_.position.z)
-
-      }
-
-
-      this.group_ = this.GetComponent('RenderComponent').group_;
-      this.group_.add(this.planetoid_);
-      this.group_.add(spritey);
-
-console.log('Spawned', this.group_)
-      //this.SpawnChildrenPlanetoids_()
+      parent.add(spritey);
     }
 
-    SpawnChildrenPlanetoids_() {
-      //const group = this.GetComponent('RenderComponent').group_;
-      const planetoidsSpawner = this.FindEntity('spawners').GetComponent(
-          'PlanetoidSpawner');
-      // Loop through planetoid config children
-      for (let i = 0; i < this.params_.data.children.length; ++i) {
-        const e = planetoidsSpawner.Spawn(this.params_.data);
-        this.group_.add(e);
-      }
-    }
+    // Spawn(params: any) {
+    //   const cfg = this.params_.data;
 
-    makeTextSprite( message, parameters )
-    {
-        if ( parameters === undefined ) parameters = {};
-        var fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "Arial";
-        var fontsize = parameters.hasOwnProperty("fontsize") ? parameters["fontsize"] : 18;
-        var borderThickness = parameters.hasOwnProperty("borderThickness") ? parameters["borderThickness"] : 4;
-        var borderColor = parameters.hasOwnProperty("borderColor") ?parameters["borderColor"] : { r:0, g:0, b:0, a:1.0 };
-        var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?parameters["backgroundColor"] : { r:255, g:255, b:255, a:1.0 };
-        var textColor = parameters.hasOwnProperty("textColor") ?parameters["textColor"] : { r:0, g:0, b:0, a:1.0 };
+    //   const sphereGeo =  this.params_.geometry;
+    //   const sphereMat = this._generateMaterial(cfg);
 
-        var canvas = document.createElement('canvas');
-        var context = canvas.getContext('2d');
-        context.font = "Bold " + fontsize + "px " + fontface;
-        var metrics = context.measureText( message );
-        var textWidth = metrics.width;
+    //   this.planetoid_ = new THREE.Mesh(sphereGeo, sphereMat);
+    //   this.planetoid_.name = `${cfg.nameId} MeshGroup`
 
-        context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
-        context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
+    //   // Inject Light for stars
+    //   if (cfg.emissive != null) {
+    //     this.planetoid_.add(this._createLight());
+    //   }
 
-        context.lineWidth = borderThickness;
-        roundRect(context, borderThickness/2, borderThickness/2, (textWidth + borderThickness) * 1.1, fontsize * 1.4 + borderThickness, 8);
+    //   this.planetoid_.rotation.y = cfg.tilt
+    //   this.planetoid_.scale.multiplyScalar(
+    //     (parseFloat(cfg.radius.AU as string)) * (worldSettings.value.planetoidScale as number)
+    //   )
+    //   // Set planetoid distance from group center
+    //   const planetDistanceInAU = (parseFloat(cfg.distance.AU as string)) * worldSettings.value.distanceScale
+    //   let planetDistanceInSceneUnits: number;
 
-        context.fillStyle = "rgba("+textColor.r+", "+textColor.g+", "+textColor.b+", 1.0)";
-        context.fillText( message, borderThickness, fontsize + borderThickness);
+    //   if (cfg.type !== 'moon') {
+    //     planetDistanceInSceneUnits = planetDistanceInAU  * worldSettings.value.distanceScale
+    //   } else {
+    //     planetDistanceInSceneUnits = planetDistanceInAU * (worldSettings.value.distanceScale * 10)
+    //   }
 
-        var texture = new THREE.Texture(canvas)
-        texture.needsUpdate = true;
+    //   // offset parent and child radius from distance value
+    //   const parentStarDistanceOffset = this.params_.parent != null
+    //     && this.params_.parent.components_!= null && this.params_.parent.components_.PlanetController
+    //     && this.params_.parent.components_.PlanetController.planetoid_.scale
+    //   ? (this.params_.parent.components_.PlanetController.planetoid_.scale.x + this.planetoid_.scale.x)
+    //     : 0
 
-        var spriteMaterial = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: false } );
-        var sprite = new THREE.Sprite( spriteMaterial );
-        sprite.scale.set(0.5 * fontsize, 0.25 * fontsize, 0.75 * fontsize);
-        return sprite;
+    //   this.planetoid_.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
+
+    //   {
+    //     // axes Helper
+    //     const axesHelper = new AxesHelper( this.planetoid_.scale.x * 2 );
+    //     this.planetoid_.add( axesHelper );
+    //     // Grid Helper
+    //     this.planetoid_.add(new GridHelper(6, 6, "#666666", "#222222"));
+
+    //     this.SetLabel(cfg.nameId, this.planetoid_);
+    //   }
+
+
+    //   this.group_ = this.GetComponent('RenderComponent').group_;
+    //   this.group_.add(this.planetoid_);
+
+    //   console.log('SPAWN', this.group_)
+    //   //this.SpawnChildrenPlanetoids_()
+    // }
+
+    // SpawnChildrenPlanetoids_() {
+    //   //const group = this.GetComponent('RenderComponent').group_;
+    //   const planetoidsSpawner = this.FindEntity('spawners').GetComponent(
+    //       'PlanetoidSpawner');
+    //   // Loop through planetoid config children
+    //   for (let i = 0; i < this.params_.data.children.length; ++i) {
+    //     const e = planetoidsSpawner.Spawn(this.params_.data);
+    //     this.group_.add(e);
+    //   }
+    // }
+
+    makeTextSprite( message: string, parameters: any ) {
+      if ( parameters === undefined ) parameters = {};
+      var fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "Arial";
+      var fontsize = parameters.hasOwnProperty("fontsize") ? parameters["fontsize"] : 18;
+      var borderThickness = parameters.hasOwnProperty("borderThickness") ? parameters["borderThickness"] : 4;
+      var borderColor = parameters.hasOwnProperty("borderColor") ?parameters["borderColor"] : { r:0, g:0, b:0, a:1.0 };
+      var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?parameters["backgroundColor"] : { r:255, g:255, b:255, a:1.0 };
+      var textColor = parameters.hasOwnProperty("textColor") ?parameters["textColor"] : { r:0, g:0, b:0, a:1.0 };
+
+      var canvas = document.createElement('canvas');
+      var context = canvas.getContext('2d');
+      context.font = "Bold " + fontsize + "px " + fontface;
+      var metrics = context.measureText( message );
+      var textWidth = metrics.width;
+
+      context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
+      context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
+
+      context.lineWidth = borderThickness;
+      roundRect(context, borderThickness/2, borderThickness/2, (textWidth + borderThickness) * 1.1, fontsize * 1.4 + borderThickness, 8);
+
+      context.fillStyle = "rgba("+textColor.r+", "+textColor.g+", "+textColor.b+", 1.0)";
+      context.fillText( message, borderThickness, fontsize + borderThickness);
+
+      var texture = new THREE.Texture(canvas)
+      texture.needsUpdate = true;
+
+      var spriteMaterial = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: false } );
+      var sprite = new THREE.Sprite( spriteMaterial );
+      sprite.scale.set(0.5 * fontsize, 0.25 * fontsize, 0.75 * fontsize);
+      sprite.name = message;
+      return sprite;
     }
 
     InitComponent() {
@@ -456,13 +478,22 @@ console.log('Spawned', this.group_)
 
     tick(delta: number) {
       // spin planetoid group according to its configured orbital speed
-      if (this.Parent.components_) {
-        this.Parent._rotation.y += delta * this._OrbitalRadiansPerSecond *  worldSettings.value.timeSpeed;
+      const moon = this.group_.children.find((c: any)=>c.name == "Moon MeshGroup")
+      if (moon) {
+        moon.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
+        console.log(moon)
       }
-      // spin planetoid according to its configured rotation cycle
-      //this.group_.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
 
-    }
+      const earth = this.group_.children.find((c: any)=>['planet'].includes(c.type))
+      if (earth) {
+          earth.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
+
+      }
+        // spin planetoid according to its configured rotation cycle
+        this.group_.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
+
+
+      }
   };
 
   return {

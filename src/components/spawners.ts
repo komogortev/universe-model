@@ -88,40 +88,34 @@ export const spawners = (() => {
 
     Spawn() {
       const cfg = getStarSystemConfigByName('SolarSystem');
-      const planetoidsSpawner = this.FindEntity('spawners').GetComponent('PlanetoidSpawner');
+      const planetoidSpawner = this.FindEntity('spawners').GetComponent('PlanetoidSpawner');
 
-      // create and spawn Sun at the center of the Scene_
-
-      // create and spawn planets at the center of the Scene_
-      this._initPlanetoidsRecursevly(cfg, null, planetoidsSpawner)
-
-
-
+      // create and spawn sun and planets at the center of the
+      // Scene_, but moons - they get created in PlanetoidController
+      this._spawnPlanetoidEntitiesRecursevly(cfg, planetoidSpawner)
+      //this.Manager.Add(solar, cfg.nameId);
+      console.log('!! SolarSystem result', this.Manager)
     }
 
-    _initPlanetoidsRecursevly(cfg: any, parentPlanetoid?: any | null, spawner: any): void {
-      const e0 = spawner.Spawn(cfg);
+    _spawnPlanetoidEntitiesRecursevly(cfg: any, planetoidSpawner: any, parentPlanetoid?: any): void {
+      console.log(` ! Spawning Entity: ${cfg.nameId}`)
+      const e0 = planetoidSpawner.Spawn(cfg);
 
-      if (parentPlanetoid) {
-        e0.SetParent(parentPlanetoid)
-        console.log('parented', e0)
-      } else {
-        this.Manager.Add(e0, cfg.nameId);
-        console.log('managed', e0)
-      }
+      console.log('Got fresh Entity & Mesh, attach to EM!', e0)
+      this.Manager.Add(e0, cfg.nameId);
 
+      // attempt to dive deeper into planetoid (config) children (not Moons)
       if (cfg.children != null) {
-        // create and spawn moons at the center of the planetoid mesh position
         cfg.children.forEach((childConfig: any) => {
           // limit generation to planets
           if (['star','planet'].includes(childConfig.type)) {
-            this._initPlanetoidsRecursevly(childConfig, e0, spawner)
-            console.log(cfg.type)
+            this._spawnPlanetoidEntitiesRecursevly(childConfig, planetoidSpawner)
           }
         })
       }
-    }
 
+      return e0
+    }
   };
   class PlanetoidSpawner extends entity.Component {
     group_: THREE.Group;
@@ -135,7 +129,7 @@ export const spawners = (() => {
       this.geometry_ = new SphereGeometry(1, 32, 32);
     }
 
-    Spawn(cfg, position, quaternion, correction) {
+    Spawn(cfg: any, position, quaternion, correction) {
       const params = {
         camera: this.params_.camera,
         scene: this.params_.scene,
@@ -148,6 +142,7 @@ export const spawners = (() => {
 
       const e = new entity.Entity();
       e.SetName(cfg.nameId);
+      // center against core of the matrix (to rotate around sun, duh)
       e.SetPosition(new Vector3(0, 0, 0));
 
       e.AddComponent(new render_component.RenderComponent({
@@ -159,19 +154,6 @@ export const spawners = (() => {
         geometry: this.geometry_,
         camera: this.params_.camera,
       }));
-
-      // attach entity group to the scene
-      // e.AddComponent(new render_component.RenderComponent({
-      //   scene: params.scene,
-      //   offset: {
-      //     position: new THREE.Vector3(),
-      //     quaternion: correction,
-      //   },
-      // }));
-      // // create mesh
-      // e.AddComponent(new planetoid_controller.PlanetoidController(params));
-
-      this.Manager.Add(e);
 
       return e;
     }

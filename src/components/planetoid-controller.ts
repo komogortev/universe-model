@@ -277,13 +277,9 @@ function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); 
     SetLabel(nameId: string, parent: any) {
       const spritey = this.makeTextSprite(
         nameId,
-        { alignment: 1, fontsize: 32, backgroundColor: {r:255, g:100, b:100, a:1} }
+        { alignment: 1, fontsize: 22, backgroundColor: {r:255, g:100, b:100, a:1} }
       );
-      spritey.position.set(
-        parent.position.x,
-        parent.position.y + parent.scale.y + 2,
-        parent.position.z
-      )
+      spritey.position.set(0, parent.scale.y, 0)
       parent.add(spritey);
     }
 

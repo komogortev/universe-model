@@ -210,7 +210,11 @@ export const planetoid_controller = (() => {
           // limit search to moon typed children in case we got full planetoid n stars
           // (sun & planet are parent Entity attached to the scene)
           if (!['star','planet'].includes(childConfig.type)) {
-            const m = this.InitMoonMeshGroup(childConfig, sphereGeo);
+            const m = this.InitMoonMeshGroup({
+              cfg: childConfig,
+              geometry: sphereGeo,
+              parentScale: cfg.radius.AU
+            });
             this.updatables_.push(m);
             originalPlanetoidMesh.add(m)
           }
@@ -232,9 +236,21 @@ export const planetoid_controller = (() => {
       }
 
       planetoid_.rotation.y = cfg.tilt
-      planetoid_.scale.multiplyScalar(
-        (parseFloat(cfg.radius.AU as string)) * (worldSettings.value.planetoidScale as number)
-      )
+
+      if (['star','planet'].includes(cfg.type)) {
+        // default planetoid mesh scale as Scene_ units multiplied by Scene scale settings
+        planetoid_.scale.multiplyScalar(
+          (parseFloat(cfg.radius.AU as string)) * (worldSettings.value.planetoidScale as number)
+        )
+      } else {
+        // derive moon scale by dividing parent scale to moon scale
+        const moonScaleRelativeToParent = parseFloat(cfg.radius.AU as string) / 4
+        // Moon scale should be declared or transformed into local scale value relative to parent
+        planetoid_.scale.multiplyScalar(
+          moonScaleRelativeToParent * (worldSettings.value.planetoidScale as number)
+          )
+      }
+
       // Set planetoid distance from group center
       const planetDistanceInAU = (parseFloat(cfg.distance.AU as string)) * worldSettings.value.distanceScale
       let planetDistanceInSceneUnits: number;
@@ -312,14 +328,14 @@ export const planetoid_controller = (() => {
       return planetoid_;
     }
 
-    InitMoonMeshGroup(cfg: any, geometry: any) {
+    InitMoonMeshGroup(params: any) {
       const moonGroup = new THREE.Group();
-      const moonMesh = this.InitPlanetoidMesh(cfg, geometry, this._generateMaterial(cfg));
+      const moonMesh = this.InitPlanetoidMesh(params.cfg, params.geometry, this._generateMaterial(params.cfg));
       // @Todo, script correct texture positioning of the moon against the parent planetoid (if axial rotation is 0?)
       moonMesh.rotation.y = Math.PI * moonMesh.rotation.y
 
       // attach moon group to parent planetoid
-      moonGroup.name = `${cfg.nameId} Group`
+      moonGroup.name = `${params.cfg.nameId} Group`
       // Moon Group has scale 1 and moon mesh 1.15 - this results in moon bigger than earth
       moonGroup.add(moonMesh);
         {
@@ -328,17 +344,17 @@ export const planetoid_controller = (() => {
           moonGroup.add( axesHelper );
           // Grid Helper
           moonGroup.add(new GridHelper(16, 16, "#F300D5", "#F30060"));
-          this.SetLabel(cfg.nameId, moonGroup);
+          this.SetLabel(params.cfg.nameId, moonGroup);
         }
       moonGroup.tick = (delta: number) => {
-        moonGroup.rotation.y += delta * convertRotationPerDayToRadians(cfg.orbital_period.days as number) *  worldSettings.value.timeSpeed;
+        moonGroup.rotation.y += delta * convertRotationPerDayToRadians(params.cfg.orbital_period.days as number) *  worldSettings.value.timeSpeed;
       }
       return moonGroup;
     }
 
     SetLabel(nameId: string, parent: any) {
       const spritey = this.makeTextSprite(
-        nameId,
+        nameId + ' Label',
         { alignment: 1, fontsize: 22, backgroundColor: {r:255, g:100, b:100, a:1} }
       );
       spritey.position.set(0, parent.scale.y, 0)

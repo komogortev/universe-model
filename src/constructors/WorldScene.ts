@@ -171,6 +171,34 @@ class WorldScene {
       const ambientLight = createAmbientLight()
       Scene_.add(ambientLight)
     }
+
+
+    // test group scaling
+    const group0 = new THREE.Group();
+    const box = new THREE.Mesh(
+        new THREE.BoxGeometry(4, 4, 4),
+        new THREE.MeshNormalMaterial());
+    box.position.set(0, 2, 0);
+    group0.add(box);
+
+    const group1 = new THREE.Group();
+    const copy1 = box.clone();
+    copy1.scale.set(1.5, 1.5, 1.5);
+    group1.add(copy1)
+
+        copy1.position.set(0, 2, -14);
+
+        // const copy2 = box.clone();
+
+        // copy2.scale.set(0.25, 0.25, 0.25);
+
+        // copy2.position.set(0, 0, 1.25);
+
+        Scene_.add(box);
+
+        Scene_.add(copy1);
+
+        // scene.add(copy2);
   }
 
   // _initLilGUI() {

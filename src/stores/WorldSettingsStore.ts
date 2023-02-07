@@ -11,6 +11,10 @@ const state = reactive<IWorldState>({
     },
     planetoidScale: 100000, // multiply planetoid AU/SceneUnits size
     distanceScale: 12,
+
+    // closer to realistic scales
+    // planetoidScale: 100000, // multiply planetoid AU/SceneUnits size
+    // distanceScale: 100,
     constants: {
       STAR_SYSTEM: 'SolarSystem',
       CHARACTER_SPAWN: 'Sun',

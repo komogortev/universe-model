@@ -338,14 +338,16 @@ export const planetoid_controller = (() => {
       moonGroup.name = `${params.cfg.nameId} Group`
       // Moon Group has scale 1 and moon mesh 1.15 - this results in moon bigger than earth
       moonGroup.add(moonMesh);
-        {
-          // axes Helper
-          const axesHelper = new AxesHelper( moonGroup.scale.x * 2 );
-          moonGroup.add( axesHelper );
-          // Grid Helper
-          moonGroup.add(new GridHelper(16, 16, "#F300D5", "#F30060"));
-          this.SetLabel(params.cfg.nameId, moonGroup);
-        }
+
+      // {
+      //   // axes Helper
+      //   const axesHelper = new AxesHelper( moonGroup.scale.x * 2 );
+      //   moonGroup.add( axesHelper );
+      //   // Grid Helper
+      //   moonGroup.add(new GridHelper(16, 16, "#F300D5", "#F30060"));
+      //   this.SetLabel(params.cfg.nameId, moonGroup);
+      // }
+
       moonGroup.tick = (delta: number) => {
         moonGroup.rotation.y += delta * convertRotationPerDayToRadians(params.cfg.orbital_period.days as number) *  worldSettings.value.timeSpeed;
       }

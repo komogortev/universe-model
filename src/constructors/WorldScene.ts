@@ -519,8 +519,6 @@ class WorldScene {
   stop() { Loop_.stop(); }
 }
 
-
-
 function onKeyDown( event: KeyboardEvent ) {
   switch ( event.key ) {
     case '1':

@@ -1,9 +1,9 @@
 import { THREE } from './three-defs';
 import { entity } from '../constructors/Entity';
 import { math } from './math';
-import { AxesHelper, Color, GridHelper, MeshPhongMaterial, PointLight, PointLightHelper, SphereGeometry, TextureLoader, Vector3 } from 'three';
+import { AxesHelper, Color, GridHelper, Mesh, MeshBasicMaterial, MeshPhongMaterial, MeshStandardMaterial, PointLight, PointLightHelper, SphereGeometry, TextureLoader, Vector3 } from 'three';
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
-import { convertRotationPerDayToRadians } from '../utils/helpers';
+import { calcPosFromLatLngRad, convertRotationPerDayToRadians } from '../utils/helpers';
 import { render_component } from './render-component';
 const { worldSettings } = useWorldSettingsStore();
 
@@ -147,9 +147,22 @@ export const planetoid_controller = (() => {
 
     gl_FragColor = vec4(col * visibility, 1.0);
   }`;
-function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r); ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h); ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r); ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y); ctx.closePath(); ctx.fill(); ctx.stroke(); }
 
-  function easeOutBounce(x) {
+  function roundRect(ctx: any, x: number, y: number, w: number, h: number, r: number) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+
+  function easeOutBounce(x: number) {
     const n1 = 7.5625;
     const d1 = 2.75;
 
@@ -166,19 +179,20 @@ function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); 
 
   class PlanetoidController extends entity.Component {
     group_: any;
-    planetoid_: any;
     params_: any;
+    planetoid_: any;
     _OrbitalRadiansPerSecond: number;
     _RotationRadiansPerSecond: number;
-    label: any;
+    updatables_: Array<any>;
 
     constructor(params: any) {
       super();
       this.params_ = params;
       this._OrbitalRadiansPerSecond = this.params_.data.orbital_period != null
         ? convertRotationPerDayToRadians(this.params_.data.orbital_period.days as number)
-        : 0
-      this._RotationRadiansPerSecond = convertRotationPerDayToRadians(this.params_.data.rotation_period.days as number)
+        : 0;
+      this._RotationRadiansPerSecond = convertRotationPerDayToRadians(this.params_.data.rotation_period.days as number);
+      this.updatables_ = [];
     }
 
     InitEntity() {
@@ -208,18 +222,15 @@ function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); 
               this._generateMaterial(childConfig)
             );
 
-            console.log("What to do with Moon planetoid, boss?", moonMesh);
-            {
-              // axes Helper
-              // const axesHelper = new AxesHelper( 15 );
-              // originalPlanetoidMesh.add( axesHelper );
-              // // Grid Helper
-              // originalPlanetoidMesh.add(new GridHelper(6, 6, "#F300D5", "#F30060"));
+            // attach moon group to parent planetoid
+            const moonGroup = new THREE.Group()
+            moonGroup.name = `${childConfig.name} Group`
+            moonGroup.add(moonMesh);
+            moonGroup.tick = (delta: number) => {
+              moonGroup.rotation.y += delta * this._OrbitalRadiansPerSecond *  worldSettings.value.timeSpeed;
             }
-            // find parent Mesh as anchor
-            originalPlanetoidMesh.add(moonMesh)
-            // did we succesfully attach moon?
-            console.log(originalPlanetoidMesh);
+            this.updatables_.push(moonGroup);
+            originalPlanetoidMesh.add(moonGroup)
           }
         })
       }
@@ -261,16 +272,57 @@ function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); 
 
       planetoid_.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
 
-      if (cfg.nameId.includes('Moon') || ['planet'].includes(cfg.type)) {
+      {
         // axes Helper
         const axesHelper = new AxesHelper( planetoid_.scale.x * 2 );
         planetoid_.add( axesHelper );
         // Grid Helper
         planetoid_.add(new GridHelper(6, 6, "#666666", "#222222"));
         this.SetLabel(cfg.nameId, planetoid_);
-
       }
 
+      //Generate athmosphere
+      if (cfg.athmosphereMap != null) {
+        const athmosphere = this._generateAthmosphere(
+          cfg,
+          planetoid_.scale.x,
+          cfg.athmosphereMap,
+        )
+
+        // rotate athmosphereMesh in anticlockwise direction (+=)
+        athmosphere.tick = (delta: number) => {
+          athmosphere.rotation.y -= delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
+        };
+
+        planetoid_.add(athmosphere);
+        this.updatables_.push(athmosphere);
+      }
+
+      // Generate POI
+      if (cfg.POI != null) {
+        const poiGeometry = new SphereGeometry(0.005, 6, 6);
+        const poiMaterial = new MeshBasicMaterial({ color: 0xff0000 });
+
+        cfg.POI.forEach((poi: any) => {
+          let poiMesh = new Mesh(poiGeometry, poiMaterial);
+          poiMesh.name = `POI: ${poi.name}`
+
+          const cartPos = calcPosFromLatLngRad(
+            poi.lat,
+            poi.lng,
+            ((cfg.radius.km as number) * worldSettings.value.planetoidScale) + 0.375
+          );
+          poiMesh.position.set(cartPos.x, cartPos.y, cartPos.z);
+
+          planetoid_.add(poiMesh);
+        });
+      }
+
+      planetoid_.tick = (delta: number) => {
+        // rotate planetoid days
+        planetoid_.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
+      }
+      this.updatables_.push(planetoid_);
       return planetoid_;
     }
 
@@ -282,72 +334,6 @@ function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); 
       spritey.position.set(0, parent.scale.y, 0)
       parent.add(spritey);
     }
-
-    // Spawn(params: any) {
-    //   const cfg = this.params_.data;
-
-    //   const sphereGeo =  this.params_.geometry;
-    //   const sphereMat = this._generateMaterial(cfg);
-
-    //   this.planetoid_ = new THREE.Mesh(sphereGeo, sphereMat);
-    //   this.planetoid_.name = `${cfg.nameId} MeshGroup`
-
-    //   // Inject Light for stars
-    //   if (cfg.emissive != null) {
-    //     this.planetoid_.add(this._createLight());
-    //   }
-
-    //   this.planetoid_.rotation.y = cfg.tilt
-    //   this.planetoid_.scale.multiplyScalar(
-    //     (parseFloat(cfg.radius.AU as string)) * (worldSettings.value.planetoidScale as number)
-    //   )
-    //   // Set planetoid distance from group center
-    //   const planetDistanceInAU = (parseFloat(cfg.distance.AU as string)) * worldSettings.value.distanceScale
-    //   let planetDistanceInSceneUnits: number;
-
-    //   if (cfg.type !== 'moon') {
-    //     planetDistanceInSceneUnits = planetDistanceInAU  * worldSettings.value.distanceScale
-    //   } else {
-    //     planetDistanceInSceneUnits = planetDistanceInAU * (worldSettings.value.distanceScale * 10)
-    //   }
-
-    //   // offset parent and child radius from distance value
-    //   const parentStarDistanceOffset = this.params_.parent != null
-    //     && this.params_.parent.components_!= null && this.params_.parent.components_.PlanetController
-    //     && this.params_.parent.components_.PlanetController.planetoid_.scale
-    //   ? (this.params_.parent.components_.PlanetController.planetoid_.scale.x + this.planetoid_.scale.x)
-    //     : 0
-
-    //   this.planetoid_.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
-
-    //   {
-    //     // axes Helper
-    //     const axesHelper = new AxesHelper( this.planetoid_.scale.x * 2 );
-    //     this.planetoid_.add( axesHelper );
-    //     // Grid Helper
-    //     this.planetoid_.add(new GridHelper(6, 6, "#666666", "#222222"));
-
-    //     this.SetLabel(cfg.nameId, this.planetoid_);
-    //   }
-
-
-    //   this.group_ = this.GetComponent('RenderComponent').group_;
-    //   this.group_.add(this.planetoid_);
-
-    //   console.log('SPAWN', this.group_)
-    //   //this.SpawnChildrenPlanetoids_()
-    // }
-
-    // SpawnChildrenPlanetoids_() {
-    //   //const group = this.GetComponent('RenderComponent').group_;
-    //   const planetoidsSpawner = this.FindEntity('spawners').GetComponent(
-    //       'PlanetoidSpawner');
-    //   // Loop through planetoid config children
-    //   for (let i = 0; i < this.params_.data.children.length; ++i) {
-    //     const e = planetoidsSpawner.Spawn(this.params_.data);
-    //     this.group_.add(e);
-    //   }
-    // }
 
     makeTextSprite( message: string, parameters: any ) {
       if ( parameters === undefined ) parameters = {};
@@ -392,12 +378,12 @@ function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); 
       const loader = new TextureLoader();
       let sphereMaterial = cfg.emissive != null
         ? new MeshPhongMaterial({
-          wireframe: true,
+          //wireframe: true,
           emissive: cfg.emissive,
           emissiveIntensity: 1,
         })
         : new MeshPhongMaterial({
-          wireframe: true,
+          //wireframe: true,
           //color: cfg.color ? new Color(cfg.color) : '#fff',
         })
 
@@ -425,6 +411,23 @@ function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); 
       }
 
       return sphereMaterial;
+    }
+
+    _generateAthmosphere(cfg: any, parentScale: number, athmosphereMap: string) {
+      const _athmosphereDepth = cfg.athmosphereDepth != null ? cfg.athmosphereDepth : 0.5
+      const materialClouds = new MeshStandardMaterial({
+       // map: loader.load(athmosphereMap),
+        transparent: true,
+        opacity: cfg.athmosphereOpacity,
+      });
+      const athmosphereMesh = new Mesh(this.params_.geometry, materialClouds);
+      athmosphereMesh.name = 'Athmosphere Map';
+      athmosphereMesh.scale.multiplyScalar(parentScale + _athmosphereDepth);
+
+      athmosphereMesh.position.set(0, 0, 0);
+      athmosphereMesh.rotation.z = cfg.tilt;
+
+      return athmosphereMesh;
     }
 
     _createLight() {
@@ -473,23 +476,11 @@ function roundRect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); 
     }
 
     tick(delta: number) {
-      // spin planetoid group according to its configured orbital speed
-      const moon = this.group_.children.find((c: any)=>c.name == "Moon MeshGroup")
-      if (moon) {
-        moon.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
-        console.log(moon)
-      }
+      // spin whole planetoid Group around sun Orbit
+      this.group_.rotation.y += delta * this._OrbitalRadiansPerSecond *  worldSettings.value.timeSpeed;
 
-      const earth = this.group_.children.find((c: any)=>['planet'].includes(c.type))
-      if (earth) {
-          earth.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
-
-      }
-        // spin planetoid according to its configured rotation cycle
-        this.group_.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
-
-
-      }
+      this.updatables_.forEach((u: any) => u.tick(delta))
+    }
   };
 
   return {

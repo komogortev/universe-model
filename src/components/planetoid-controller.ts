@@ -181,17 +181,11 @@ export const planetoid_controller = (() => {
     group_: any;
     params_: any;
     planetoid_: any;
-    _OrbitalRadiansPerSecond: number;
-    _RotationRadiansPerSecond: number;
     updatables_: Array<any>;
 
     constructor(params: any) {
       super();
       this.params_ = params;
-      this._OrbitalRadiansPerSecond = this.params_.data.orbital_period != null
-        ? convertRotationPerDayToRadians(this.params_.data.orbital_period.days as number)
-        : 0;
-      this._RotationRadiansPerSecond = convertRotationPerDayToRadians(this.params_.data.rotation_period.days as number);
       this.updatables_ = [];
     }
 
@@ -216,21 +210,9 @@ export const planetoid_controller = (() => {
           // limit search to moon typed children in case we got full planetoid n stars
           // (sun & planet are parent Entity attached to the scene)
           if (!['star','planet'].includes(childConfig.type)) {
-            const moonMesh = this.InitPlanetoidMesh(
-              childConfig,
-              sphereGeo,
-              this._generateMaterial(childConfig)
-            );
-
-            // attach moon group to parent planetoid
-            const moonGroup = new THREE.Group()
-            moonGroup.name = `${childConfig.name} Group`
-            moonGroup.add(moonMesh);
-            moonGroup.tick = (delta: number) => {
-              moonGroup.rotation.y += delta * this._OrbitalRadiansPerSecond *  worldSettings.value.timeSpeed;
-            }
-            this.updatables_.push(moonGroup);
-            originalPlanetoidMesh.add(moonGroup)
+            const m = this.InitMoonMeshGroup(childConfig, sphereGeo);
+            this.updatables_.push(m);
+            originalPlanetoidMesh.add(m)
           }
         })
       }
@@ -242,7 +224,7 @@ export const planetoid_controller = (() => {
 
     InitPlanetoidMesh(cfg: any, sphereGeo: any, sphereMat: any) {
       const planetoid_ = new THREE.Mesh(sphereGeo, sphereMat);
-      planetoid_.name = `${cfg.nameId} MeshGroup`
+      planetoid_.name = `${cfg.nameId} Mesh`
 
       // Inject Light for stars
       if (cfg.emissive != null) {
@@ -272,14 +254,14 @@ export const planetoid_controller = (() => {
 
       planetoid_.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
 
-      {
-        // axes Helper
-        const axesHelper = new AxesHelper( planetoid_.scale.x * 2 );
-        planetoid_.add( axesHelper );
-        // Grid Helper
-        planetoid_.add(new GridHelper(6, 6, "#666666", "#222222"));
-        this.SetLabel(cfg.nameId, planetoid_);
-      }
+      // {
+      //   // axes Helper
+      //   const axesHelper = new AxesHelper( planetoid_.scale.x * 2 );
+      //   planetoid_.add( axesHelper );
+      //   // Grid Helper
+      //   planetoid_.add(new GridHelper(6, 6, "#666666", "#222222"));
+      //   this.SetLabel(cfg.nameId, planetoid_);
+      // }
 
       //Generate athmosphere
       if (cfg.athmosphereMap != null) {
@@ -291,7 +273,7 @@ export const planetoid_controller = (() => {
 
         // rotate athmosphereMesh in anticlockwise direction (+=)
         athmosphere.tick = (delta: number) => {
-          athmosphere.rotation.y -= delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
+          athmosphere.rotation.y -= delta * convertRotationPerDayToRadians(this.params_.data.rotation_period.days as number) *  worldSettings.value.timeSpeed;
         };
 
         planetoid_.add(athmosphere);
@@ -318,12 +300,40 @@ export const planetoid_controller = (() => {
         });
       }
 
-      planetoid_.tick = (delta: number) => {
-        // rotate planetoid days
-        planetoid_.rotation.y += delta * this._RotationRadiansPerSecond *  worldSettings.value.timeSpeed;
+      // Attach day rotation if it is present in planetoid(/moon) config
+      if (cfg.rotation_period != null) {
+        planetoid_.tick = (delta: number) => {
+          // rotate planetoid days
+          planetoid_.rotation.y += delta * convertRotationPerDayToRadians(cfg.rotation_period.days as number) * worldSettings.value.timeSpeed;
+        }
       }
+
       this.updatables_.push(planetoid_);
       return planetoid_;
+    }
+
+    InitMoonMeshGroup(cfg: any, geometry: any) {
+      const moonGroup = new THREE.Group();
+      const moonMesh = this.InitPlanetoidMesh(cfg, geometry, this._generateMaterial(cfg));
+      // @Todo, script correct texture positioning of the moon against the parent planetoid (if axial rotation is 0?)
+      moonMesh.rotation.y = Math.PI * moonMesh.rotation.y
+
+      // attach moon group to parent planetoid
+      moonGroup.name = `${cfg.nameId} Group`
+      // Moon Group has scale 1 and moon mesh 1.15 - this results in moon bigger than earth
+      moonGroup.add(moonMesh);
+        {
+          // axes Helper
+          const axesHelper = new AxesHelper( moonGroup.scale.x * 2 );
+          moonGroup.add( axesHelper );
+          // Grid Helper
+          moonGroup.add(new GridHelper(16, 16, "#F300D5", "#F30060"));
+          this.SetLabel(cfg.nameId, moonGroup);
+        }
+      moonGroup.tick = (delta: number) => {
+        moonGroup.rotation.y += delta * convertRotationPerDayToRadians(cfg.orbital_period.days as number) *  worldSettings.value.timeSpeed;
+      }
+      return moonGroup;
     }
 
     SetLabel(nameId: string, parent: any) {
@@ -378,7 +388,7 @@ export const planetoid_controller = (() => {
       const loader = new TextureLoader();
       let sphereMaterial = cfg.emissive != null
         ? new MeshPhongMaterial({
-          //wireframe: true,
+          wireframe: true,
           emissive: cfg.emissive,
           emissiveIntensity: 1,
         })
@@ -477,7 +487,9 @@ export const planetoid_controller = (() => {
 
     tick(delta: number) {
       // spin whole planetoid Group around sun Orbit
-      this.group_.rotation.y += delta * this._OrbitalRadiansPerSecond *  worldSettings.value.timeSpeed;
+      if (this.params_.data.orbital_period != null) {
+        this.group_.rotation.y += delta * convertRotationPerDayToRadians(this.params_.data.orbital_period.days as number) *  worldSettings.value.timeSpeed;
+      }
 
       this.updatables_.forEach((u: any) => u.tick(delta))
     }

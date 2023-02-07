@@ -5,12 +5,12 @@ import type { IWorldState, IWorldSettings } from "../types/WorldSettingsTypes";
 const state = reactive<IWorldState>({
   loading: true,
   worldSettings: <IWorldSettings>{
-    timeSpeed: 10,
+    timeSpeed: 1,
     timeScale: {
       sec: 0.5
     },
     planetoidScale: 100000, // multiply planetoid AU/SceneUnits size
-    distanceScale: 10,
+    distanceScale: 12,
     constants: {
       STAR_SYSTEM: 'SolarSystem',
       CHARACTER_SPAWN: 'Sun',

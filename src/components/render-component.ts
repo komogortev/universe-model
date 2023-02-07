@@ -24,7 +24,7 @@ export const render_component = (() => {
         const axesHelper = new AxesHelper( 15 );
         this.group_.add( axesHelper );
         // Grid Helper
-        this.group_.add(new GridHelper(6, 6, "#F300D5", "#F30060"));
+        //this.group_.add(new GridHelper(6, 6, "#F300D5", "#F30060"));
       }
     }
 

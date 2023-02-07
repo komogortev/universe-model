@@ -32,7 +32,7 @@ export const gltf_component = (() => {
     }
 
     InitComponent() {
-      this._RegisterHandler(
+      this.RegisterHandler_(
         'update.position',
         (m: any) => { this._OnPosition(m); });
     }
@@ -57,7 +57,7 @@ export const gltf_component = (() => {
       this._params.scene.add(this._target);
 
       this._target.scale.setScalar(this._params.scale);
-      this._target.position.copy(this._parent._position);
+      this._target.position.copy(this.parent_._position);
 
       let texture: any = null;
       if (this._params.resourceTexture) {

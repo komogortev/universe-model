@@ -40,6 +40,7 @@ export const entity = (() => {
 
     _position:  THREE.Vector3;
     _rotation:  THREE.Quaternion;
+    _scale: number;
     handlers_: {[key: string]: any}|null;
     parent_: any;
     dead_: boolean;
@@ -52,6 +53,7 @@ export const entity = (() => {
 
       this._position = new THREE.Vector3();
       this._rotation = new THREE.Quaternion();
+      this._scale = 1;
       this.handlers_ = {};
       this.parent_ = null;
       this.dead_ = false;

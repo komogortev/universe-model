@@ -15,7 +15,7 @@ import { IStarSystemsConfig, IPlanetoid } from "../types/StarsStoreTypes";
  *      z = R cos()
  */
 const _sunDownScale = 0.1
-const _MoonDistanceUpScale = 10
+const _MoonDistanceUpScale = 1
 
 const state = reactive<IStarSystemsConfig>({
   StarSystemsConfig: {
@@ -60,7 +60,7 @@ const state = reactive<IStarSystemsConfig>({
           bumpScale: 0.125,
           athmosphereMap: 'models/solar-system/textures/venus/2k_venus_atmosphere.jpg',
           athmosphereOpacity: 0.3,
-          athmosphereDepth: 0.43,
+          athmosphereDepth: 0.04,
         },
         {
           nameId: 'Earth',
@@ -79,8 +79,8 @@ const state = reactive<IStarSystemsConfig>({
           //specularMap: 'models/solar-system/textures/earth/EarthSpec.png',
           shininess: 0.5,
           athmosphereMap: 'models/solar-system/textures/earth/8k_earth_clouds.jpg',
-          athmosphereOpacity: 0.5,
-          athmosphereDepth: 0.425,
+          athmosphereOpacity: 0.25,
+          athmosphereDepth: 0.06,
           children: [
             {
               nameId: 'Moon',

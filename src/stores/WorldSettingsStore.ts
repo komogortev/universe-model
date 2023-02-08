@@ -9,8 +9,8 @@ const state = reactive<IWorldState>({
     timeScale: {
       sec: 0.5
     },
-    planetoidScale: 100000, // multiply planetoid AU/SceneUnits size
-    distanceScale: 12,
+    planetoidScale: 1000000, // multiply planetoid AU/SceneUnits size
+    distanceScale: 1000,
 
     // closer to realistic scales
     // planetoidScale: 100000, // multiply planetoid AU/SceneUnits size

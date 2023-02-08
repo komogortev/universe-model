@@ -193,13 +193,12 @@ export const planetoid_controller = (() => {
       // get access to renderer three group to attach Meshes directly
       this.group_ = this.GetComponent('RenderComponent').group_;
       const cfg = this.params_.data;
-      this.group_.name = cfg.nameId + 'Group';
+      this.group_.name = cfg.nameId + ' Distance Group';
 
       // attempts of optimization, borrow geometry, share with all children moons
       const sphereGeo =  this.params_.geometry;
-      const sphereMat = this._generateMaterial(cfg);
 
-      const originalPlanetoidMesh = this.InitPlanetoidMesh(cfg, sphereGeo, sphereMat);
+      const originalPlanetoidMeshGroup = this.InitPlanetoidMeshGroup(cfg, sphereGeo);
       // Attach to root controller three group (which is always SunGroup)
       //this.group_.add(entityPlanetoid);
 
@@ -216,52 +215,68 @@ export const planetoid_controller = (() => {
               parentScale: cfg.radius.AU
             });
             this.updatables_.push(m);
-            originalPlanetoidMesh.add(m)
+            originalPlanetoidMeshGroup.add(m)
           }
         })
       }
 
       // attach resulting planetoid with moons
-      this.group_.add(originalPlanetoidMesh);
-      console.log('_attach Mesh to three Group', this.group_)
+      this.group_.add(originalPlanetoidMeshGroup);
+      console.log('_attach MeshGroup to three Group', this.group_)
     }
 
-    InitPlanetoidMesh(cfg: any, sphereGeo: any, sphereMat: any) {
-      const planetoid_ = new THREE.Mesh(sphereGeo, sphereMat);
-      planetoid_.name = `${cfg.nameId} Mesh`
-      this.SetLabel(cfg.nameId, planetoid_);
-
-       // Set planetoid distance from group center
-      const planetDistanceInAU = (parseFloat(cfg.distance.AU as string)) * worldSettings.value.distanceScale
-      const planetDistanceInSceneUnits: number = planetDistanceInAU  * worldSettings.value.distanceScale
+    InitPlanetoidMeshGroup(cfg: any, sphereGeo: any) {
+      const planetoidGroup_ = new THREE.Group();
+      const planetoid_ = new THREE.Mesh(sphereGeo, this._generateMaterial(cfg));
+      // translate AU float into km
+      const planetoidDistanceInSceneUnits: number = (parseFloat(cfg.distance.AU as string)) * worldSettings.value.distanceScale
       // offset parent and child radius from distance value
-      const parentStarDistanceOffset = this.params_.parent != null
-        && this.params_.parent.components_!= null && this.params_.parent.components_.PlanetController
-        && this.params_.parent.components_.PlanetController.planetoid_.scale
-      ? (this.params_.parent.components_.PlanetController.planetoid_.scale.x + planetoid_.scale.x)
-        : 0
+      const planetoidRadiusInSceneUnits = (parseFloat(cfg.radius.AU as string)) * (worldSettings.value.planetoidScale as number)
 
-      planetoid_.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
+      // House keeping
+      {
+        planetoidGroup_.add(planetoid_);
+        planetoidGroup_.name = `${cfg.nameId} Anchor Group`
+        planetoid_.name = `${cfg.nameId} Mesh`
+        this.SetLabel(cfg.nameId, planetoid_);
+      }
 
       planetoid_.rotation.y = cfg.tilt
 
-      if (['star','planet'].includes(cfg.type)) {
+      // Distance from parent center
+      {
+        let bodiesScaleOffset = 0;
+        if (this.parent_ != null && this.parent_.name_ != cfg.nameId
+          && this.parent_.components_.PlanetoidController != null
+          && this.parent_.components_.PlanetoidController.params_.data.radius.AU) {
+          bodiesScaleOffset = planetoidRadiusInSceneUnits + (this.parent_.components_.PlanetoidController.params_.data.radius.AU * (worldSettings.value.planetoidScale as number))
+        }
+        // Offset Anchor Group from Scene_ center (*against the sun)
+        planetoidGroup_.position.x = planetoidDistanceInSceneUnits + bodiesScaleOffset
+      }
+
+      // Scale
+      {
         // default planetoid mesh scale as Scene_ units multiplied by Scene scale settings
         planetoid_.scale.multiplyScalar(
           (parseFloat(cfg.radius.AU as string)) * (worldSettings.value.planetoidScale as number)
         )
-      } else {
-        // derive moon scale by dividing parent scale to moon scale
-        const moonScaleRelativeToParent = parseFloat(cfg.radius.AU as string) / 4
-        // Moon scale should be declared or transformed into local scale value relative to parent
-        planetoid_.scale.multiplyScalar(
-          moonScaleRelativeToParent * (worldSettings.value.planetoidScale as number)
-        )
+
+        // Adjust moon scale for cases when it is attached directly to parent mesh
+        // if (['star','planet'].includes(cfg.type)) {
+        // } else {
+        //   // derive moon scale by dividing parent scale to moon scale
+        //   const moonScaleRelativeToParent = parseFloat(cfg.radius.AU as string) / 4
+        //   // Moon scale should be declared or transformed into local scale value relative to parent
+        //   planetoid_.scale.multiplyScalar(
+        //     moonScaleRelativeToParent * (worldSettings.value.planetoidScale as number)
+        //   )
+        // }
       }
 
-      // Inject Light for stars
+      // Point Light for stars
       if (cfg.emissive != null) {
-        planetoid_.add(this._createLight());
+        planetoid_.add(this._createPointLight());
       }
 
       //Generate athmosphere
@@ -273,13 +288,13 @@ export const planetoid_controller = (() => {
           athmosphere.rotation.y -= delta * convertRotationPerDayToRadians(this.params_.data.rotation_period.days as number) *  worldSettings.value.timeSpeed;
         };
 
-        planetoid_.add(athmosphere);
+        planetoidGroup_.add(athmosphere);
         this.updatables_.push(athmosphere);
       }
 
       // Generate POI
       if (cfg.POI != null) {
-        const poiGeometry = new SphereGeometry(0.005, 6, 6);
+        const poiGeometry = new SphereGeometry(0.1, 6, 6);
         const poiMaterial = new MeshBasicMaterial({ color: 0xff0000 });
 
         cfg.POI.forEach((poi: any) => {
@@ -287,9 +302,7 @@ export const planetoid_controller = (() => {
           poiMesh.name = `POI: ${poi.name}`
 
           const cartPos = calcPosFromLatLngRad(
-            poi.lat,
-            poi.lng,
-            ((cfg.radius.km as number) * worldSettings.value.planetoidScale) + 0.375
+            poi.lat, poi.lng, planetoid_.scale.x
           );
           poiMesh.position.set(cartPos.x, cartPos.y, cartPos.z);
 
@@ -304,15 +317,17 @@ export const planetoid_controller = (() => {
           // rotate planetoid days
           planetoid_.rotation.y += delta * convertRotationPerDayToRadians(cfg.rotation_period.days as number) * worldSettings.value.timeSpeed;
         }
+        this.updatables_.push(planetoid_);
       }
 
-      this.updatables_.push(planetoid_);
-      return planetoid_;
+      planetoidGroup_.add(planetoid_);
+      return planetoidGroup_;
     }
 
     InitMoonMeshGroup(params: any) {
       const moonGroup = new THREE.Group();
-      const moonMesh = this.InitPlanetoidMesh(params.cfg, params.geometry, this._generateMaterial(params.cfg));
+      const moonMesh = this.InitPlanetoidMeshGroup(params.cfg, params.geometry);
+      this.SetLabel(params.cfg.nameId, moonMesh);
       // @Todo, script correct texture positioning of the moon against the parent planetoid (if axial rotation is 0?)
       moonMesh.rotation.y = Math.PI * moonMesh.rotation.y
 
@@ -320,7 +335,6 @@ export const planetoid_controller = (() => {
       moonGroup.name = `${params.cfg.nameId} Group`
       // Moon Group has scale 1 and moon mesh 1.15 - this results in moon bigger than earth
       moonGroup.add(moonMesh);
-      this.SetLabel(params.cfg.nameId, moonGroup);
 
       moonGroup.tick = (delta: number) => {
         moonGroup.rotation.y += delta * convertRotationPerDayToRadians(params.cfg.orbital_period.days as number) *  worldSettings.value.timeSpeed;
@@ -390,7 +404,7 @@ export const planetoid_controller = (() => {
       });
       const athmosphereMesh = new Mesh(this.params_.geometry, materialClouds);
       athmosphereMesh.name = 'Athmosphere Map';
-      athmosphereMesh.scale.multiplyScalar(parentScale + _athmosphereDepth);
+      athmosphereMesh.scale.multiplyScalar(parseFloat(parentScale + (parentScale * _athmosphereDepth)));
 
       athmosphereMesh.position.set(0, 0, 0);
       athmosphereMesh.rotation.z = cfg.tilt;
@@ -398,7 +412,7 @@ export const planetoid_controller = (() => {
       return athmosphereMesh;
     }
 
-    _createLight() {
+    _createPointLight() {
       class ColorGUIHelper {
         object: any;
         prop: any;
@@ -426,37 +440,37 @@ export const planetoid_controller = (() => {
     }
 
     _makeTextSprite( message: string, parameters: any ) {
-          if ( parameters === undefined ) parameters = {};
-          var fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "Arial";
-          var fontsize = parameters.hasOwnProperty("fontsize") ? parameters["fontsize"] : 18;
-          var borderThickness = parameters.hasOwnProperty("borderThickness") ? parameters["borderThickness"] : 4;
-          var borderColor = parameters.hasOwnProperty("borderColor") ?parameters["borderColor"] : { r:0, g:0, b:0, a:1.0 };
-          var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?parameters["backgroundColor"] : { r:255, g:255, b:255, a:1.0 };
-          var textColor = parameters.hasOwnProperty("textColor") ?parameters["textColor"] : { r:0, g:0, b:0, a:1.0 };
+      if ( parameters === undefined ) parameters = {};
+      var fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "Arial";
+      var fontsize = parameters.hasOwnProperty("fontsize") ? parameters["fontsize"] : 18;
+      var borderThickness = parameters.hasOwnProperty("borderThickness") ? parameters["borderThickness"] : 4;
+      var borderColor = parameters.hasOwnProperty("borderColor") ?parameters["borderColor"] : { r:0, g:0, b:0, a:1.0 };
+      var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?parameters["backgroundColor"] : { r:255, g:255, b:255, a:1.0 };
+      var textColor = parameters.hasOwnProperty("textColor") ?parameters["textColor"] : { r:0, g:0, b:0, a:1.0 };
 
-          var canvas = document.createElement('canvas');
-          var context = canvas.getContext('2d');
-          context.font = "Bold " + fontsize + "px " + fontface;
-          var metrics = context.measureText( message );
-          var textWidth = metrics.width;
+      var canvas = document.createElement('canvas');
+      var context = canvas.getContext('2d');
+      context.font = "Bold " + fontsize + "px " + fontface;
+      var metrics = context.measureText( message );
+      var textWidth = metrics.width;
 
-          context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
-          context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
+      context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
+      context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
 
-          context.lineWidth = borderThickness;
-          roundRect(context, borderThickness/2, borderThickness/2, (textWidth + borderThickness) * 1.1, fontsize * 1.4 + borderThickness, 8);
+      context.lineWidth = borderThickness;
+      roundRect(context, borderThickness/2, borderThickness/2, (textWidth + borderThickness) * 1.1, fontsize * 1.4 + borderThickness, 8);
 
-          context.fillStyle = "rgba("+textColor.r+", "+textColor.g+", "+textColor.b+", 1.0)";
-          context.fillText( message, borderThickness, fontsize + borderThickness);
+      context.fillStyle = "rgba("+textColor.r+", "+textColor.g+", "+textColor.b+", 1.0)";
+      context.fillText( message, borderThickness, fontsize + borderThickness);
 
-          var texture = new THREE.Texture(canvas)
-          texture.needsUpdate = true;
+      var texture = new THREE.Texture(canvas)
+      texture.needsUpdate = true;
 
-          var spriteMaterial = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: false } );
-          var sprite = new THREE.Sprite( spriteMaterial );
-          sprite.scale.set(0.5 * fontsize, 0.25 * fontsize, 0.75 * fontsize);
-          sprite.name = message;
-          return sprite;
+      var spriteMaterial = new THREE.SpriteMaterial( { map: texture} );
+      var sprite = new THREE.Sprite( spriteMaterial );
+      sprite.scale.set(0.5 * fontsize, 0.25 * fontsize, 0.75 * fontsize);
+      sprite.name = message;
+      return sprite;
     }
 
     OnHit_() {

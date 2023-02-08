@@ -62,7 +62,7 @@ export const player_input = (() => {
           this.Parent.Attributes.InputCurrent.space = true;
           break;
         case 16: // SHIFT
-          this.Parent.Attributes.InputCurrent.shift = this.Parent.Attributes.InputCurrent.shift < 2 ? this.Parent.Attributes.InputCurrent.shift + 1 : this.Parent.Attributes.InputCurrent.shift;
+          this.Parent.Attributes.InputCurrent.shift = this.Parent.Attributes.InputCurrent.shift < 5 ? this.Parent.Attributes.InputCurrent.shift + 1 : this.Parent.Attributes.InputCurrent.shift;
           break;
         case 17: // CTRL
             this.Parent.Attributes.InputCurrent.shift = this.Parent.Attributes.InputCurrent.shift > 0 ? this.Parent.Attributes.InputCurrent.shift - 1 : this.Parent.Attributes.InputCurrent.shift;

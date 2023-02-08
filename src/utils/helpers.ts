@@ -1,3 +1,5 @@
+import { AxesHelper, GridHelper } from "three"
+
 /**
  * Convert rotaion period (in days) to radians per second
  * @param { Number } rotation_period
@@ -118,4 +120,14 @@ export function findClassByNameIdRecursevly(object: any, lookupId: string): any 
   }
 
   return matchingClassObject
+}
+
+// Axis Helper
+export function axisHelper(planetoid_: any) {
+  return new AxesHelper( planetoid_.scale.x * 2 );
+}
+
+// Grid Helper
+export function gridHelper(planetoid_: any) {
+  return new GridHelper(6, 6, "#666666", "#222222");
 }

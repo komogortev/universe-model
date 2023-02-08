@@ -229,11 +229,19 @@ export const planetoid_controller = (() => {
     InitPlanetoidMesh(cfg: any, sphereGeo: any, sphereMat: any) {
       const planetoid_ = new THREE.Mesh(sphereGeo, sphereMat);
       planetoid_.name = `${cfg.nameId} Mesh`
+      this.SetLabel(cfg.nameId, planetoid_);
 
-      // Inject Light for stars
-      if (cfg.emissive != null) {
-        planetoid_.add(this._createLight());
-      }
+       // Set planetoid distance from group center
+      const planetDistanceInAU = (parseFloat(cfg.distance.AU as string)) * worldSettings.value.distanceScale
+      const planetDistanceInSceneUnits: number = planetDistanceInAU  * worldSettings.value.distanceScale
+      // offset parent and child radius from distance value
+      const parentStarDistanceOffset = this.params_.parent != null
+        && this.params_.parent.components_!= null && this.params_.parent.components_.PlanetController
+        && this.params_.parent.components_.PlanetController.planetoid_.scale
+      ? (this.params_.parent.components_.PlanetController.planetoid_.scale.x + planetoid_.scale.x)
+        : 0
+
+      planetoid_.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
 
       planetoid_.rotation.y = cfg.tilt
 
@@ -248,41 +256,17 @@ export const planetoid_controller = (() => {
         // Moon scale should be declared or transformed into local scale value relative to parent
         planetoid_.scale.multiplyScalar(
           moonScaleRelativeToParent * (worldSettings.value.planetoidScale as number)
-          )
+        )
       }
 
-      // Set planetoid distance from group center
-      const planetDistanceInAU = (parseFloat(cfg.distance.AU as string)) * worldSettings.value.distanceScale
-      let planetDistanceInSceneUnits: number;
-
-        planetDistanceInSceneUnits = planetDistanceInAU  * worldSettings.value.distanceScale
-
-
-      // offset parent and child radius from distance value
-      const parentStarDistanceOffset = this.params_.parent != null
-        && this.params_.parent.components_!= null && this.params_.parent.components_.PlanetController
-        && this.params_.parent.components_.PlanetController.planetoid_.scale
-      ? (this.params_.parent.components_.PlanetController.planetoid_.scale.x + planetoid_.scale.x)
-        : 0
-
-      planetoid_.position.x = planetDistanceInSceneUnits + parentStarDistanceOffset
-      this.SetLabel(cfg.nameId, planetoid_);
-      // {
-      //   // axes Helper
-      //   const axesHelper = new AxesHelper( planetoid_.scale.x * 2 );
-      //   planetoid_.add( axesHelper );
-      //   // Grid Helper
-      //   planetoid_.add(new GridHelper(6, 6, "#666666", "#222222"));
-      //
-      // }
+      // Inject Light for stars
+      if (cfg.emissive != null) {
+        planetoid_.add(this._createLight());
+      }
 
       //Generate athmosphere
       if (cfg.athmosphereMap != null) {
-        const athmosphere = this._generateAthmosphere(
-          cfg,
-          planetoid_.scale.x,
-          cfg.athmosphereMap,
-        )
+        const athmosphere = this._generateAthmosphere(cfg, planetoid_.scale.x)
 
         // rotate athmosphereMesh in anticlockwise direction (+=)
         athmosphere.tick = (delta: number) => {
@@ -397,10 +381,10 @@ export const planetoid_controller = (() => {
       return sphereMaterial;
     }
 
-    _generateAthmosphere(cfg: any, parentScale: number, athmosphereMap: string) {
+    _generateAthmosphere(cfg: any, parentScale: number) {
       const _athmosphereDepth = cfg.athmosphereDepth != null ? cfg.athmosphereDepth : 0.5
       const materialClouds = new MeshStandardMaterial({
-       // map: loader.load(athmosphereMap),
+        // map: loader.load(cfg.athmosphereMap),
         transparent: true,
         opacity: cfg.athmosphereOpacity,
       });

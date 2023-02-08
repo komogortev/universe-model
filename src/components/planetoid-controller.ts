@@ -255,11 +255,8 @@ export const planetoid_controller = (() => {
       const planetDistanceInAU = (parseFloat(cfg.distance.AU as string)) * worldSettings.value.distanceScale
       let planetDistanceInSceneUnits: number;
 
-      if (cfg.type !== 'moon') {
         planetDistanceInSceneUnits = planetDistanceInAU  * worldSettings.value.distanceScale
-      } else {
-        planetDistanceInSceneUnits = planetDistanceInAU * (worldSettings.value.distanceScale * 10)
-      }
+
 
       // offset parent and child radius from distance value
       const parentStarDistanceOffset = this.params_.parent != null
@@ -316,7 +313,7 @@ export const planetoid_controller = (() => {
         });
       }
 
-      // Attach day rotation if it is present in planetoid(/moon) config
+      // Subscribe to Loop_ tick for "day rotation" if it is present in planetoid(/moon) config
       if (cfg.rotation_period != null) {
         // Hack Object3D props
         planetoid_.tick = (delta: number) => {
@@ -348,46 +345,12 @@ export const planetoid_controller = (() => {
     }
 
     SetLabel(nameId: string, parent: any) {
-      const spritey = this.makeTextSprite(
+      const spritey = this._makeTextSprite(
         nameId + ' Label',
         { alignment: 1, fontsize: 22, backgroundColor: {r:255, g:100, b:100, a:1} }
       );
       spritey.position.set(0, parent.scale.y, 0)
       parent.add(spritey);
-    }
-
-    makeTextSprite( message: string, parameters: any ) {
-      if ( parameters === undefined ) parameters = {};
-      var fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "Arial";
-      var fontsize = parameters.hasOwnProperty("fontsize") ? parameters["fontsize"] : 18;
-      var borderThickness = parameters.hasOwnProperty("borderThickness") ? parameters["borderThickness"] : 4;
-      var borderColor = parameters.hasOwnProperty("borderColor") ?parameters["borderColor"] : { r:0, g:0, b:0, a:1.0 };
-      var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?parameters["backgroundColor"] : { r:255, g:255, b:255, a:1.0 };
-      var textColor = parameters.hasOwnProperty("textColor") ?parameters["textColor"] : { r:0, g:0, b:0, a:1.0 };
-
-      var canvas = document.createElement('canvas');
-      var context = canvas.getContext('2d');
-      context.font = "Bold " + fontsize + "px " + fontface;
-      var metrics = context.measureText( message );
-      var textWidth = metrics.width;
-
-      context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
-      context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
-
-      context.lineWidth = borderThickness;
-      roundRect(context, borderThickness/2, borderThickness/2, (textWidth + borderThickness) * 1.1, fontsize * 1.4 + borderThickness, 8);
-
-      context.fillStyle = "rgba("+textColor.r+", "+textColor.g+", "+textColor.b+", 1.0)";
-      context.fillText( message, borderThickness, fontsize + borderThickness);
-
-      var texture = new THREE.Texture(canvas)
-      texture.needsUpdate = true;
-
-      var spriteMaterial = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: false } );
-      var sprite = new THREE.Sprite( spriteMaterial );
-      sprite.scale.set(0.5 * fontsize, 0.25 * fontsize, 0.75 * fontsize);
-      sprite.name = message;
-      return sprite;
     }
 
     InitComponent() {
@@ -476,6 +439,40 @@ export const planetoid_controller = (() => {
       light.add(helper);
 
       return light;
+    }
+
+    _makeTextSprite( message: string, parameters: any ) {
+          if ( parameters === undefined ) parameters = {};
+          var fontface = parameters.hasOwnProperty("fontface") ? parameters["fontface"] : "Arial";
+          var fontsize = parameters.hasOwnProperty("fontsize") ? parameters["fontsize"] : 18;
+          var borderThickness = parameters.hasOwnProperty("borderThickness") ? parameters["borderThickness"] : 4;
+          var borderColor = parameters.hasOwnProperty("borderColor") ?parameters["borderColor"] : { r:0, g:0, b:0, a:1.0 };
+          var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?parameters["backgroundColor"] : { r:255, g:255, b:255, a:1.0 };
+          var textColor = parameters.hasOwnProperty("textColor") ?parameters["textColor"] : { r:0, g:0, b:0, a:1.0 };
+
+          var canvas = document.createElement('canvas');
+          var context = canvas.getContext('2d');
+          context.font = "Bold " + fontsize + "px " + fontface;
+          var metrics = context.measureText( message );
+          var textWidth = metrics.width;
+
+          context.fillStyle   = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
+          context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
+
+          context.lineWidth = borderThickness;
+          roundRect(context, borderThickness/2, borderThickness/2, (textWidth + borderThickness) * 1.1, fontsize * 1.4 + borderThickness, 8);
+
+          context.fillStyle = "rgba("+textColor.r+", "+textColor.g+", "+textColor.b+", 1.0)";
+          context.fillText( message, borderThickness, fontsize + borderThickness);
+
+          var texture = new THREE.Texture(canvas)
+          texture.needsUpdate = true;
+
+          var spriteMaterial = new THREE.SpriteMaterial( { map: texture, useScreenCoordinates: false } );
+          var sprite = new THREE.Sprite( spriteMaterial );
+          sprite.scale.set(0.5 * fontsize, 0.25 * fontsize, 0.75 * fontsize);
+          sprite.name = message;
+          return sprite;
     }
 
     OnHit_() {

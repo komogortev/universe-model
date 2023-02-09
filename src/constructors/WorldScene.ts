@@ -168,8 +168,8 @@ class WorldScene {
     }
     // Ambient worklights
     {
-      const ambientLight = createAmbientLight()
-      Scene_.add(ambientLight)
+      const ambientDevLight = createAmbientLight()
+      Scene_.add(ambientDevLight)
     }
   }
 

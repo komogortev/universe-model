@@ -13,7 +13,7 @@ const CAM_PARAMS = {
   fov: 75,
   aspect: window.innerWidth / window.innerHeight,
   near: 0.05,
-  far: 10000,
+  far: 100000,
 }
 
 export const threejs_component = (() => {
@@ -39,7 +39,8 @@ export const threejs_component = (() => {
         CAM_PARAMS.far
       );
       this.scene_ = new THREE.Scene();
-      this.camera_.position.set(0, 155, -155);
+      this.camera_.position.set(-155, 100, 0);
+      this.camera_.lookAt(new THREE.Vector3(1,1,0))
     }
 
     InitEntity() {

@@ -182,11 +182,13 @@ export const planetoid_controller = (() => {
     params_: any;
     planetoid_: any;
     updatables_: Array<any>;
+    loader_: any;
 
     constructor(params: any) {
       super();
       this.params_ = params;
       this.updatables_ = [];
+      this.loader_ = new TextureLoader();
     }
 
     InitEntity() {
@@ -276,7 +278,7 @@ export const planetoid_controller = (() => {
 
       // Point Light for stars
       if (cfg.emissive != null) {
-        planetoid_.add(this._createPointLight());
+        planetoidGroup_.add(this._createPointLight());
       }
 
       //Generate athmosphere
@@ -296,14 +298,16 @@ export const planetoid_controller = (() => {
       if (cfg.POI != null) {
         const poiGeometry = new SphereGeometry(0.1, 6, 6);
         const poiMaterial = new MeshBasicMaterial({ color: 0xff0000 });
+        const poiRad = planetoid_.scale.x / 4
 
         cfg.POI.forEach((poi: any) => {
           let poiMesh = new Mesh(poiGeometry, poiMaterial);
           poiMesh.name = `POI: ${poi.name}`
 
           const cartPos = calcPosFromLatLngRad(
-            poi.lat, poi.lng, planetoid_.scale.x
+            poi.lat, poi.lng, poiRad
           );
+
           poiMesh.position.set(cartPos.x, cartPos.y, cartPos.z);
 
           planetoid_.add(poiMesh);
@@ -317,6 +321,7 @@ export const planetoid_controller = (() => {
           // rotate planetoid days
           planetoid_.rotation.y += delta * convertRotationPerDayToRadians(cfg.rotation_period.days as number) * worldSettings.value.timeSpeed;
         }
+
         this.updatables_.push(planetoid_);
       }
 
@@ -325,21 +330,18 @@ export const planetoid_controller = (() => {
     }
 
     InitMoonMeshGroup(params: any) {
-      const moonGroup = new THREE.Group();
-      const moonMesh = this.InitPlanetoidMeshGroup(params.cfg, params.geometry);
-      this.SetLabel(params.cfg.nameId, moonMesh);
+      const moonMeshGroup = this.InitPlanetoidMeshGroup(params.cfg, params.geometry);
+
       // @Todo, script correct texture positioning of the moon against the parent planetoid (if axial rotation is 0?)
-      moonMesh.rotation.y = Math.PI * moonMesh.rotation.y
+      //moonMeshGroup.children[0].rotation.y = Math.PI * moonMesh.rotation.y
 
       // attach moon group to parent planetoid
-      moonGroup.name = `${params.cfg.nameId} Group`
-      // Moon Group has scale 1 and moon mesh 1.15 - this results in moon bigger than earth
-      moonGroup.add(moonMesh);
 
-      moonGroup.tick = (delta: number) => {
-        moonGroup.rotation.y += delta * convertRotationPerDayToRadians(params.cfg.orbital_period.days as number) *  worldSettings.value.timeSpeed;
+      // Orbit rotation
+      moonMeshGroup.tick = (delta: number) => {
+        moonMeshGroup.rotation.y += delta * convertRotationPerDayToRadians(params.cfg.orbital_period.days as number) *  worldSettings.value.timeSpeed;
       }
-      return moonGroup;
+      return moonMeshGroup;
     }
 
     SetLabel(nameId: string, parent: any) {
@@ -357,38 +359,38 @@ export const planetoid_controller = (() => {
 
     // 1. Create material according to planetoid config
     _generateMaterial(cfg: any) {
-      const loader = new TextureLoader();
       let sphereMaterial = cfg.emissive != null
         ? new MeshPhongMaterial({
-          wireframe: true,
+          //wireframe: true,
           emissive: cfg.emissive,
           emissiveIntensity: 1,
         })
         : new MeshPhongMaterial({
           //wireframe: true,
-          //color: cfg.color ? new Color(cfg.color) : '#fff',
+          color: cfg.color ? new Color(cfg.color) : '#fff',
         })
 
       if (cfg.map != null) {
-        sphereMaterial.map = loader.load(cfg.map);
+        sphereMaterial.map = this.loader_.load(cfg.map, undefined, () => {console.log('%%map texture should be in place')});
       }
 
+      // Stars have emmissive maps
       if (cfg.emissiveMap != null) {
-        sphereMaterial.emissiveMap = loader.load(cfg.emissiveMap);
+        sphereMaterial.emissiveMap = this.loader_.load(cfg.emissiveMap, undefined, () => {console.log('%%Star texture should be in place')});
       }
 
       if (cfg.displacementMap != null) {
-        sphereMaterial.displacementMap = loader.load(cfg.displacementMap)
+        sphereMaterial.displacementMap = this.loader_.load(cfg.displacementMap)
         sphereMaterial.displacementScale = cfg.displacementScale || 1
       }
 
       if (cfg.bumpMap != null) {
-        sphereMaterial.bumpMap = loader.load(cfg.bumpMap)
+        sphereMaterial.bumpMap = this.loader_.load(cfg.bumpMap)
         sphereMaterial.bumpScale = cfg.bumpScale || 1
       }
 
       if (cfg.emissive != null && cfg.specularMap != null) {
-        sphereMaterial.specularMap = loader.load(cfg.specularMap)
+        sphereMaterial.specularMap = this.loader_.load(cfg.specularMap)
         sphereMaterial.shininess = cfg.shininess || 0
       }
 
@@ -398,13 +400,13 @@ export const planetoid_controller = (() => {
     _generateAthmosphere(cfg: any, parentScale: number) {
       const _athmosphereDepth = cfg.athmosphereDepth != null ? cfg.athmosphereDepth : 0.5
       const materialClouds = new MeshStandardMaterial({
-        // map: loader.load(cfg.athmosphereMap),
+        map: this.loader_.load(cfg.athmosphereMap),
         transparent: true,
         opacity: cfg.athmosphereOpacity,
       });
       const athmosphereMesh = new Mesh(this.params_.geometry, materialClouds);
       athmosphereMesh.name = 'Athmosphere Map';
-      athmosphereMesh.scale.multiplyScalar(parseFloat(parentScale + (parentScale * _athmosphereDepth)));
+      athmosphereMesh.scale.multiplyScalar(parentScale  + (parentScale / 4));
 
       athmosphereMesh.position.set(0, 0, 0);
       athmosphereMesh.rotation.z = cfg.tilt;
@@ -480,14 +482,14 @@ export const planetoid_controller = (() => {
 
       if (this.Parent.Attributes.shields > 0) {
         const loader = this.FindEntity('loader').GetComponent('LoadController');
-        loader.LoadSound('./resources/sounds/', 'shields.ogg', (s) => {
+        loader.LoadSound('./resources/sounds/', 'shields.ogg', (s: any) => {
           const group = this.GetComponent('RenderComponent').group_;
           group.add(s);
           s.play();
         });
 
-        this.shieldsVisible_ = true;
-        this.shieldsTimer_ = 0.0;
+        // this.shieldsVisible_ = true;
+        // this.shieldsTimer_ = 0.0;
       }
     }
 

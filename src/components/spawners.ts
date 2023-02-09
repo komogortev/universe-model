@@ -99,7 +99,8 @@ export const spawners = (() => {
 
     _spawnPlanetoidEntitiesRecursevly(cfg: any, planetoidSpawner: any, parentPlanetoid?: any): void {
       console.log(` ! Spawning Entity: ${cfg.nameId}`)
-      const e0 = planetoidSpawner.Spawn(cfg);
+      const position = new Vector3(0, 0, 0)
+      const e0 = planetoidSpawner.Spawn(cfg, position);
 
       console.log('Got fresh Entity & Mesh, attach to EM!', e0)
       this.Manager.Add(e0, cfg.nameId);
@@ -136,14 +137,13 @@ export const spawners = (() => {
         grid: this.params_.grid,
       };
 
+      const e = new entity.Entity();
       //position.add(new THREE.Vector3(0, 0, -1000));
-      //e.SetPosition(position);
+      e.SetPosition(position);
       //e.SetQuaternion(quaternion);
 
-      const e = new entity.Entity();
       e.SetName(cfg.nameId);
       // center against core of the matrix (to rotate around sun, duh)
-      e.SetPosition(new Vector3(0, 0, 0));
 
       e.AddComponent(new render_component.RenderComponent({
         scene: this.params_.scene,
@@ -158,246 +158,6 @@ export const spawners = (() => {
       return e;
     }
   };
-  // class TieFighterSpawner extends entity.Component {
-  //   constructor(params) {
-  //     super();
-  //     this.params_ = params;
-  //   }
-
-  //   Spawn() {
-  //     const params = {
-  //       camera: this.params_.camera,
-  //       scene: this.params_.scene,
-  //       blasterStrength: 20,
-  //     };
-
-  //     const e = new entity.Entity();
-  //     e.AddComponent(
-  //       new spatial_grid_controller.SpatialGridController(
-  //           {grid: this.params_.grid}));
-  //     e.AddComponent(new render_component.RenderComponent({
-  //       scene: params.scene,
-  //       resourcePath: './resources/models/tie-fighter-gltf/',
-  //       resourceName: 'scene.gltf',
-  //       scale: 0.15,
-  //       colour: new THREE.Color(0xFFFFFF),
-  //     }));
-  //     e.AddComponent(new tie_fighter_controller.TieFighterController(params));
-  //     e.AddComponent(new basic_rigid_body.BasicRigidBody({
-  //       box: new THREE.Vector3(15, 15, 15)
-  //     }));
-  //     e.AddComponent(new health_controller.HealthController({
-  //       maxHealth: 50,
-  //     }));
-  //     // DEMO
-  //     e.AddComponent(new floating_descriptor.FloatingDescriptor());
-  //     e.AddComponent(new enemy_ai_controller.EnemyAIController({
-  //       grid: this.params_.grid,
-  //     }));
-
-  //     this.Manager.Add(e);
-
-  //     return e;
-  //   }
-  // };
-
-  // class XWingSpawner extends entity.Component {
-  //   constructor(params) {
-  //     super();
-  //     this.params_ = params;
-  //   }
-
-  //   Spawn() {
-  //     const params = {
-  //       camera: this.params_.camera,
-  //       scene: this.params_.scene,
-  //       blasterStrength: 10,
-  //       offset: new THREE.Vector3(0, -5, -4),
-  //     };
-
-  //     const e = new entity.Entity();
-  //     e.AddComponent(
-  //       new spatial_grid_controller.SpatialGridController(
-  //           {grid: this.params_.grid}));
-  //     e.AddComponent(new render_component.RenderComponent({
-  //       scene: params.scene,
-  //       resourcePath: './resources/models/x-wing/',
-  //       resourceName: 'scene.gltf',
-  //       scale: 2,
-  //       offset: {
-  //         position: new THREE.Vector3(0, -5, -4),
-  //         quaternion: new THREE.Quaternion(),
-  //       },
-  //     }));
-  //     e.AddComponent(new xwing_effect.XWingEffects(params));
-  //     e.AddComponent(new xwing_controller.XWingController(params));
-  //     e.AddComponent(new basic_rigid_body.BasicRigidBody({
-  //       box: new THREE.Vector3(15, 15, 15)
-  //     }));
-  //     e.AddComponent(new health_controller.HealthController({
-  //       maxHealth: 50,
-  //       shields: 50,
-  //     }));
-  //     // e.AddComponent(new floating_descriptor.FloatingDescriptor());
-  //     e.AddComponent(new enemy_ai_controller.EnemyAIController({
-  //       grid: this.params_.grid,
-  //     }));
-  //     e.AddComponent(
-  //         new shields_controller.ShieldsController(params));
-
-  //     this.Manager.Add(e);
-
-  //     return e;
-  //   }
-  // };
-
-  // class StarDestroyerSpawner extends entity.Component {
-  //   constructor(params) {
-  //     super();
-  //     this.params_ = params;
-  //   }
-
-  //   Spawn() {
-  //     const params = {
-  //       camera: this.params_.camera,
-  //       scene: this.params_.scene,
-  //     };
-
-  //     const e = new entity.Entity();
-  //     e.SetPosition(new THREE.Vector3(0, 0, -1000));
-  //     e.AddComponent(new render_component.RenderComponent({
-  //       scene: params.scene,
-  //       resourcePath: './resources/models/star-destroyer/',
-  //       resourceName: 'scene-final.glb',
-  //       scale: 50.0,
-  //       colour: new THREE.Color(0.5, 0.5, 0.5),
-  //     }));
-  //     e.AddComponent(new mesh_rigid_body.MeshRigidBody({
-  //       scene: params.scene,
-  //       resourcePath: './resources/models/star-destroyer/',
-  //       resourceName: 'scene-collision.glb',
-  //       scale: 50.0,
-  //     }));
-  //     e.AddComponent(
-  //         new star_destroyer_fighter_controller.StarDestroyerFighterController());
-
-  //     this.Manager.Add(e, 'star-destroyer');
-
-  //     return e;
-  //   }
-  // };
-
-  // class StarDestroyerTurretSpawner extends entity.Component {
-  //   constructor(params) {
-  //     super();
-  //     this.params_ = params;
-  //   }
-
-  //   Spawn(position, quaternion, correction) {
-  //     const params = {
-  //       camera: this.params_.camera,
-  //       scene: this.params_.scene,
-  //       grid: this.params_.grid,
-  //       blasterStrength: 10,
-  //     };
-
-  //     position.add(new THREE.Vector3(0, 0, -1000));
-
-  //     const e = new entity.Entity();
-  //     e.SetPosition(position);
-  //     e.SetQuaternion(quaternion);
-  //     e.AddComponent(new render_component.RenderComponent({
-  //       scene: params.scene,
-  //       resourcePath: './resources/models/star-destroyer/',
-  //       resourceName: 'turret.glb',
-  //       scale: 50.0,
-  //       offset: {
-  //         position: new THREE.Vector3(),
-  //         quaternion: correction,
-  //       },
-  //     }));
-  //     e.AddComponent(new basic_rigid_body.BasicRigidBody({
-  //       box: new THREE.Vector3(25, 25, 25)
-  //     }));
-  //     // e.AddComponent(new floating_descriptor.FloatingDescriptor());
-  //     e.AddComponent(new health_controller.HealthController({
-  //       maxHealth: 40,
-  //       ignoreCollisions: true,
-  //     }));
-  //     e.AddComponent(new turret_controller.TurretController(params));
-
-  //     this.Manager.Add(e);
-
-  //     return e;
-  //   }
-  // };
-
-  // class ShipSmokeSpawner extends entity.Component {
-  //   constructor(params) {
-  //     super();
-  //     this.params_ = params;
-  //   }
-
-  //   Spawn(target) {
-  //     const params = {
-  //       camera: this.params_.camera,
-  //       scene: this.params_.scene,
-  //       target: target,
-  //     };
-
-  //     const e = new entity.Entity();
-  //     e.SetPosition(target.Position);
-  //     e.AddComponent(new ship_effect.ShipEffects(params));
-
-  //     this.Manager.Add(e);
-
-  //     return e;
-  //   }
-  // };
-
-  // class ExplosionSpawner extends entity.Component {
-  //   constructor(params) {
-  //     super();
-  //     this.params_ = params;
-  //   }
-
-  //   Spawn(pos) {
-  //     const params = {
-  //       camera: this.params_.camera,
-  //       scene: this.params_.scene,
-  //     };
-
-  //     const e = new entity.Entity();
-  //     e.SetPosition(pos);
-  //     e.AddComponent(new explode_component.ExplodeEffect(params));
-
-  //     this.Manager.Add(e);
-
-  //     return e;
-  //   }
-  // };
-
-  // class TinyExplosionSpawner extends entity.Component {
-  //   constructor(params) {
-  //     super();
-  //     this.params_ = params;
-  //   }
-
-  //   Spawn(pos) {
-  //     const params = {
-  //       camera: this.params_.camera,
-  //       scene: this.params_.scene,
-  //     };
-
-  //     const e = new entity.Entity();
-  //     e.SetPosition(pos);
-  //     e.AddComponent(new explode_component.TinyExplodeEffect(params));
-
-  //     this.Manager.Add(e);
-
-  //     return e;
-  //   }
-  // };
 
   return {
     SpaceShipSpawner: SpaceShipSpawner,

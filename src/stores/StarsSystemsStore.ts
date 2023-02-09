@@ -14,7 +14,7 @@ import { IStarSystemsConfig, IPlanetoid } from "../types/StarsStoreTypes";
  *      y = R sin() sin()
  *      z = R cos()
  */
-const _sunDownScale = 0.1
+const _sunDownScale = 0.01
 const _MoonDistanceUpScale = 1
 
 const state = reactive<IStarSystemsConfig>({
@@ -80,7 +80,7 @@ const state = reactive<IStarSystemsConfig>({
           shininess: 0.5,
           athmosphereMap: 'models/solar-system/textures/earth/8k_earth_clouds.jpg',
           athmosphereOpacity: 0.25,
-          athmosphereDepth: 0.06,
+          athmosphereDepth: 0.18,
           children: [
             {
               nameId: 'Moon',
@@ -88,7 +88,7 @@ const state = reactive<IStarSystemsConfig>({
               radius:   { AU: 0.0000115826, km: 1737.4 },
               distance: { AU: 0.00257 *_MoonDistanceUpScale, km: 385000 }, //0.00257, 385000
               orbital_period:  { days: 28 },
-              rotation_period: { days: 0 },
+              rotation_period: null,
               tilt: 5.145,
               color: 0xFEF9E7,
               map: 'models/solar-system/textures/earth/moons/moon_2k.jpg',

@@ -5,12 +5,12 @@ import type { IWorldState, IWorldSettings } from "../types/WorldSettingsTypes";
 const state = reactive<IWorldState>({
   loading: true,
   worldSettings: <IWorldSettings>{
-    timeSpeed: 1,
+    timeSpeed: 0.2,
     timeScale: {
       sec: 0.5
     },
     planetoidScale: 1000000, // multiply planetoid AU/SceneUnits size
-    distanceScale: 10000,
+    distanceScale: 1000,
 
     // closer to realistic scales
     // planetoidScale: 100000, // multiply planetoid AU/SceneUnits size

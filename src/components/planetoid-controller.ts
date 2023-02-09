@@ -294,9 +294,11 @@ export const planetoid_controller = (() => {
 
       // Generate POI
       if (cfg.POI != null) {
-        const poiGeometry = new SphereGeometry(0.1, 6, 6);
+        const poiGeometry = new SphereGeometry(0.02, 6, 6);
         const poiMaterial = new MeshBasicMaterial({ color: 0xff0000 });
-        const poiRad = planetoid_.scale.x / 4
+
+        // being attached to the directly to the mesh we have parent radius scale (whatever it is) as 1
+        const poiRad = 1.02
 
         cfg.POI.forEach((poi: any) => {
           let poiMesh = new Mesh(poiGeometry, poiMaterial);

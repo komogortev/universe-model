@@ -194,13 +194,10 @@ export const planetoid_controller = (() => {
       this.group_ = this.GetComponent('RenderComponent').group_;
       const cfg = this.params_.data;
       this.group_.name = cfg.nameId + ' Distance Group';
-
       // attempts of optimization, borrow geometry, share with all children moons
       const sphereGeo =  this.params_.geometry;
 
       const originalPlanetoidMeshGroup = this.InitPlanetoidMeshGroup(cfg, sphereGeo);
-      // Attach to root controller three group (which is always SunGroup)
-      //this.group_.add(entityPlanetoid);
 
       // Check for moons to genereate
       if (cfg.children != null) {
@@ -241,9 +238,7 @@ export const planetoid_controller = (() => {
         this.SetLabel(cfg.nameId, planetoid_);
       }
 
-      planetoid_.rotation.y = cfg.tilt
-
-      // Distance from parent center
+      // Position - Distance from parent center
       {
         let bodiesScaleOffset = 0;
         if (this.parent_ != null && this.parent_.name_ != cfg.nameId
@@ -273,6 +268,8 @@ export const planetoid_controller = (() => {
         //   )
         // }
       }
+
+      planetoid_.rotation.y = cfg.tilt
 
       // Point Light for stars
       if (cfg.emissive != null) {
@@ -312,24 +309,29 @@ export const planetoid_controller = (() => {
         });
       }
 
-      // Subscribe to Loop_ tick for "year rotation" if it is present in planetoid(/moon) config
-      if (cfg.orbital_period != null) {
-        // Hack Object3D props
-        planetoidGroup_.tick = (delta: number) => {
-          // rotate planetoid days
-          planetoidGroup_.rotation.y += delta * convertRotationPerDayToRadians(cfg.rotation_period.days as number) * worldSettings.value.timeSpeed;
-        }
-        this.updatables_.push(planetoidGroup_);
-      }
+      // Updatables
+      {
+        // Subscribe to Loop_ tick for "year rotation" if it is present in planetoid(/moon) config
+        if (cfg.orbital_period != null) {
+          // Hack Object3D props
+          planetoidGroup_.tick = (delta: number) => {
+            // rotate planetoid days
+            planetoidGroup_.rotation.y += delta * convertRotationPerDayToRadians(cfg.rotation_period.days as number) * worldSettings.value.timeSpeed;
+          }
 
-      // Subscribe to Loop_ tick for "day rotation" if it is present in planetoid(/moon) config
-      if (cfg.rotation_period != null) {
-        // Hack Object3D props
-        planetoid_.tick = (delta: number) => {
-          // rotate planetoid days
-          planetoid_.rotation.y += delta * convertRotationPerDayToRadians(cfg.rotation_period.days as number) * worldSettings.value.timeSpeed;
+          this.updatables_.push(planetoidGroup_);
         }
-        this.updatables_.push(planetoid_);
+
+        // Subscribe to Loop_ tick for "day rotation" if it is present in planetoid(/moon) config
+        if (cfg.rotation_period != null) {
+          // Hack Object3D props
+          planetoid_.tick = (delta: number) => {
+            // rotate planetoid days
+            planetoid_.rotation.y += delta * convertRotationPerDayToRadians(cfg.rotation_period.days as number) * worldSettings.value.timeSpeed;
+          }
+
+          this.updatables_.push(planetoid_);
+        }
       }
 
       planetoidGroup_.add(planetoid_);
@@ -338,16 +340,14 @@ export const planetoid_controller = (() => {
 
     InitMoonMeshGroup(params: any) {
       const moonMeshGroup = this.InitPlanetoidMeshGroup(params.cfg, params.geometry);
-
       // @Todo, script correct texture positioning of the moon against the parent planetoid (if axial rotation is 0?)
-      moonMeshGroup.rotation.y = Math.PI * moonMeshGroup.rotation.y
-
-      // attach moon group to parent planetoid
+      moonMeshGroup.children[0].rotation.y = Math.PI * moonMeshGroup.rotation.y
 
       // Orbit rotation
       moonMeshGroup.tick = (delta: number) => {
         moonMeshGroup.rotation.y += delta * convertRotationPerDayToRadians(params.cfg.orbital_period.days as number) *  worldSettings.value.timeSpeed;
       }
+
       return moonMeshGroup;
     }
 

@@ -60,7 +60,7 @@ export const spawners = (() => {
       spaceship.AddComponent(new render_component.RenderComponent({
         scene: params.scene,
         resourcePath: './models/aircrafts/Luminaris/',
-        resourceName: 'Luminaris Animated FBX.fbx',
+        resourceName: 'LuminarisAnimated.fbx',
         scale: 0.25,
         offset: {
           position: new THREE.Vector3(0, 0, 0),

@@ -296,18 +296,16 @@ export const planetoid_controller = (() => {
       if (cfg.POI != null) {
         const poiGeometry = new SphereGeometry(0.02, 6, 6);
         const poiMaterial = new MeshBasicMaterial({ color: 0xff0000 });
-
         // being attached to the directly to the mesh we have parent radius scale (whatever it is) as 1
         const poiRad = 1.02
 
         cfg.POI.forEach((poi: any) => {
           let poiMesh = new Mesh(poiGeometry, poiMaterial);
-          poiMesh.name = `POI: ${poi.name}`
-
           const cartPos = calcPosFromLatLngRad(
             poi.lat, poi.lng, poiRad
           );
 
+          poiMesh.name = `POI: ${poi.name}`
           poiMesh.position.set(cartPos.x, cartPos.y, cartPos.z);
 
           planetoid_.add(poiMesh);

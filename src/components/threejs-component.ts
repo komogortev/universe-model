@@ -12,8 +12,8 @@ export interface IThreeComponent extends IComponent {
 const CAM_PARAMS = {
   fov: 75,
   aspect: window.innerWidth / window.innerHeight,
-  near: 0.05,
-  far: 100000,
+  near: 0.1,
+  far: 10000,
 }
 
 export const threejs_component = (() => {
@@ -44,18 +44,14 @@ export const threejs_component = (() => {
     }
 
     InitEntity() {
-
       //document.getElementById('scene-container').appendChild(this.threejsRenderer_.domElement);
 
       // // window.addEventListener('resize', () => {
       // //   this.OnResize_();
       // // }, false);
 
-
-
       // this.listener_ = new THREE.AudioListener();
       // this.camera_.add(this.listener_);
-
 
       this.uiCamera_ = new THREE.OrthographicCamera(
           -1, 1, 1 * CAM_PARAMS.aspect, -1 * CAM_PARAMS.aspect, 1, 1000);

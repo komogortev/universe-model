@@ -10,7 +10,7 @@ const state = reactive<IWorldState>({
       sec: 0.5
     },
     planetoidScale: 1000000, // multiply planetoid AU/SceneUnits size
-    distanceScale: 1000,
+    distanceScale: 10000,
 
     // closer to realistic scales
     // planetoidScale: 100000, // multiply planetoid AU/SceneUnits size

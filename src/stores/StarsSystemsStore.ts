@@ -15,7 +15,7 @@ import { IStarSystemsConfig, IPlanetoid } from "../types/StarsStoreTypes";
  *      z = R cos()
  */
 const _sunDownScale = 0.01
-const _MoonDistanceUpScale = 1
+const _MoonDistanceUpScale = 10
 
 const state = reactive<IStarSystemsConfig>({
   StarSystemsConfig: {

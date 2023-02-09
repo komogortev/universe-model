@@ -1,10 +1,8 @@
 import { THREE } from './three-defs';
 import { entity } from '../constructors/Entity';
-import { math } from './math';
 import { AxesHelper, Color, GridHelper, Mesh, MeshBasicMaterial, MeshPhongMaterial, MeshStandardMaterial, PointLight, PointLightHelper, SphereGeometry, TextureLoader, Vector3 } from 'three';
 import useWorldSettingsStore from "../stores/WorldSettingsStore";
 import { calcPosFromLatLngRad, convertRotationPerDayToRadians } from '../utils/helpers';
-import { render_component } from './render-component';
 const { worldSettings } = useWorldSettingsStore();
 
 export const planetoid_controller = (() => {
@@ -278,7 +276,7 @@ export const planetoid_controller = (() => {
 
       // Point Light for stars
       if (cfg.emissive != null) {
-        planetoidGroup_.add(this._createPointLight());
+        this.group_.add(this._createPointLight());
       }
 
       //Generate athmosphere
@@ -314,6 +312,16 @@ export const planetoid_controller = (() => {
         });
       }
 
+      // Subscribe to Loop_ tick for "year rotation" if it is present in planetoid(/moon) config
+      if (cfg.orbital_period != null) {
+        // Hack Object3D props
+        planetoidGroup_.tick = (delta: number) => {
+          // rotate planetoid days
+          planetoidGroup_.rotation.y += delta * convertRotationPerDayToRadians(cfg.rotation_period.days as number) * worldSettings.value.timeSpeed;
+        }
+        this.updatables_.push(planetoidGroup_);
+      }
+
       // Subscribe to Loop_ tick for "day rotation" if it is present in planetoid(/moon) config
       if (cfg.rotation_period != null) {
         // Hack Object3D props
@@ -321,7 +329,6 @@ export const planetoid_controller = (() => {
           // rotate planetoid days
           planetoid_.rotation.y += delta * convertRotationPerDayToRadians(cfg.rotation_period.days as number) * worldSettings.value.timeSpeed;
         }
-
         this.updatables_.push(planetoid_);
       }
 
@@ -333,7 +340,7 @@ export const planetoid_controller = (() => {
       const moonMeshGroup = this.InitPlanetoidMeshGroup(params.cfg, params.geometry);
 
       // @Todo, script correct texture positioning of the moon against the parent planetoid (if axial rotation is 0?)
-      //moonMeshGroup.children[0].rotation.y = Math.PI * moonMesh.rotation.y
+      moonMeshGroup.rotation.y = Math.PI * moonMeshGroup.rotation.y
 
       // attach moon group to parent planetoid
 

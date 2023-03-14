@@ -1,11 +1,11 @@
-import { THREE } from './three-defs';
+import { THREE } from './threejs/three-defs';
 import { SphereGeometry, Vector3 } from 'three';
 import { entity } from '../constructors/Entity';
-import { render_component } from './render-component';
-import { player_input } from './player-input';
-import { player_controller } from './player-controller';
-import { third_person_camera } from './third-person-camera';
-import { planetoid_controller } from './planetoid-controller';
+import { render_component } from './threejs/render-component';
+import { player_input } from './player/player-input';
+import { player_controller } from './player/player-controller';
+import { third_person_camera } from './threejs/third-person-camera';
+import { planetoid_controller } from './planetoids/planetoid-controller';
 
 import useStarSystemsStore from "../stores/StarsSystemsStore";
 const { getStarSystemConfigByName } = useStarSystemsStore();
@@ -130,7 +130,7 @@ export const spawners = (() => {
       this.geometry_ = new SphereGeometry(1, 32, 32);
     }
 
-    Spawn(cfg: any, position, quaternion, correction) {
+    Spawn(cfg: any, position: Vector3, quaternion: any, correction: any) {
       const params = {
         camera: this.params_.camera,
         scene: this.params_.scene,

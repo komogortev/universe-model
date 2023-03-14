@@ -1,8 +1,8 @@
-import { THREE } from './three-defs';
-import { entity } from '../constructors/Entity';
+import { THREE } from '../threejs/three-defs';
+import { entity } from '../../constructors/Entity';
 import { AxesHelper, Color, GridHelper, Mesh, MeshBasicMaterial, MeshPhongMaterial, MeshStandardMaterial, PointLight, PointLightHelper, SphereGeometry, TextureLoader, Vector3 } from 'three';
-import useWorldSettingsStore from "../stores/WorldSettingsStore";
-import { calcPosFromLatLngRad, convertRotationPerDayToRadians } from '../utils/helpers';
+import { calcPosFromLatLngRad, convertRotationPerDayToRadians } from '../../utils/helpers';
+import useWorldSettingsStore from "../../stores/WorldSettingsStore";
 const { worldSettings } = useWorldSettingsStore();
 
 export const planetoid_controller = (() => {
@@ -185,6 +185,7 @@ export const planetoid_controller = (() => {
     constructor(params: any) {
       super();
       this.params_ = params;
+      // attempts of optimization, borrow geometry, share with all children moons
       this.updatables_ = [];
       this.loader_ = new TextureLoader();
     }
@@ -192,29 +193,24 @@ export const planetoid_controller = (() => {
     InitEntity() {
       // get access to renderer three group to attach Meshes directly
       this.group_ = this.GetComponent('RenderComponent').group_;
+      this.group_.name = this.params_.data.nameId + ' Distance Group';
+
       const cfg = this.params_.data;
-      this.group_.name = cfg.nameId + ' Distance Group';
-      // attempts of optimization, borrow geometry, share with all children moons
-      const sphereGeo =  this.params_.geometry;
+      const originalPlanetoidMeshGroup = this.InitPlanetoidMeshGroup(cfg, this.params_.geometry);
 
-      const originalPlanetoidMeshGroup = this.InitPlanetoidMeshGroup(cfg, sphereGeo);
-
-      // Check for moons to genereate
+      // Moon generation loop
       if (cfg.children != null) {
-        // Woohoo! Got moons to generate
         cfg.children.forEach((childConfig: any) => {
-          // limit search to moon typed children in case we got full planetoid n stars
-          // (sun & planet are parent Entity attached to the scene)
-          if (!['star','planet'].includes(childConfig.type)) {
+          if (childConfig.type === 'moon') {
             const m = this.InitMoonMeshGroup({
               cfg: childConfig,
-              geometry: sphereGeo,
-              parentScale: cfg.radius.AU
+              geometry: this.params_.geometry
             });
+
             this.updatables_.push(m);
             originalPlanetoidMeshGroup.add(m)
           }
-        })
+        });
       }
 
       // attach resulting planetoid with moons
@@ -270,11 +266,6 @@ export const planetoid_controller = (() => {
       }
 
       planetoid_.rotation.y = cfg.tilt
-
-      // Point Light for stars
-      if (cfg.emissive != null) {
-        this.group_.add(this._createPointLight());
-      }
 
       //Generate athmosphere
       if (cfg.athmosphereMap != null) {

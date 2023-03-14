@@ -1,5 +1,5 @@
 import { THREE } from './three-defs';
-import { entity } from '../constructors/Entity';
+import { entity } from '../../constructors/Entity';
 import { AxesHelper, GridHelper } from 'three';
 
 export const render_component = (() => {

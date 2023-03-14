@@ -1,5 +1,5 @@
 import { THREE, FBXLoader, GLTFLoader/*, SkeletonUtils */} from './three-defs.js';
-import { entity } from "../constructors/Entity";
+import { entity } from "../../constructors/Entity";
 
 export const three_load_controller = (() => {
 

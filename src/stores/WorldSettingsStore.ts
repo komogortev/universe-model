@@ -18,6 +18,17 @@ const state = reactive<IWorldState>({
     constants: {
       STAR_SYSTEM: 'SolarSystem',
       CHARACTER_SPAWN: 'Sun',
+
+
+
+
+
+
+
+
+
+
+      
       AU: {
         km: 150000000,
         mi: 93000000,

@@ -1,6 +1,6 @@
-import { THREE } from './three-defs';
-import { entity } from '../constructors/Entity';
-import { math } from './math';
+import { THREE } from '../threejs/three-defs';
+import { entity } from '../../constructors/Entity';
+import { math } from '../math';
 
 export const player_controller = (() => {
 

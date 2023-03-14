@@ -1,5 +1,5 @@
-import { THREE } from './three-defs';
-import { entity } from '../constructors/Entity';
+import { THREE } from '../threejs/three-defs';
+import { entity } from '../../constructors/Entity';
 import { Vector3 } from 'three';
 
 

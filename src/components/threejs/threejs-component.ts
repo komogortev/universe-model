@@ -1,9 +1,9 @@
 import { THREE, OrbitControls } from './three-defs';
-import { entity } from "../constructors/Entity";
-import type { IComponent } from '../constructors/Entity';
+import { entity } from "../../constructors/Entity";
+import type { IComponent } from '../../constructors/Entity';
 
-import { createRenderer } from '../systems/Renderer';
-import { createScene } from '../systems/Scene';
+import { createRenderer } from '../../systems/Renderer';
+import { createScene } from '../../systems/Scene';
 export interface IThreeComponent extends IComponent {
   scene_: any;
   camera_: any;

@@ -1,4 +1,4 @@
-import { entity } from "../constructors/Entity";
+import { entity } from "../../constructors/Entity";
 
 export const player_input = (() => {
 

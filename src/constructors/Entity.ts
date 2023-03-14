@@ -1,4 +1,4 @@
-import { THREE } from '../components/three-defs';
+import { THREE } from '../components/threejs/three-defs';
 
 export interface IEntity {
   _name: string|null;

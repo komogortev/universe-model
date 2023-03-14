@@ -7,14 +7,15 @@ import { entity_manager } from '../systems/EntityManager';
 import { entity } from './Entity';
 
 // threejs systems
-import { THREE } from '../components/three-defs';
+import { THREE } from '../components/threejs/three-defs';
 import { Resizer } from '../systems/Resizer';
 import { Loop } from '../systems/Loop';
 
 // entity components
-import { threejs_component } from '../components/threejs-component';
-import { three_load_controller } from '../components/three-load-controller';
+import { threejs_component } from '../components/threejs/threejs-component';
+import { three_load_controller } from '../components/threejs/three-load-controller';
 import { spawners } from '../components/spawners';
+import { spatial_hash_grid } from '../components/grid/spatial-hash-grid';
 
 
 // WorldScene instruments
@@ -23,22 +24,6 @@ import { createOrbitControls } from "../utils/controls"
 import { createAmbientLight, createPointLight } from '../utils/lights';
 import { helperAddToLoopRecursevly, findClassByNameIdRecursevly } from '../utils/helpers';
 
-// WorldScene decorations
-import type { IPlanetoid } from '../types/StarsStoreTypes';
-import { PlanetoidGroupClass } from './PlanetoidGroupClass';
-import { SpaceCraftClass } from './SpaceCraftClass';
-import { CharacterGroupClass } from './CharacterGroupClass';
-
-// Connect to App stores
-import useStarSystemsStore from "../stores/StarsSystemsStore";
-const { getStarSystemConfigByName } = useStarSystemsStore();
-import useWorldSettingsStore from "../stores/WorldSettingsStore";
-import { BasicCharacterController } from '../systems/BasicCharacterController';
-import { gltf_component } from './gltf-component';
-import { player_input } from '../systems/player-input';
-import { player_entity } from './Models/Characters/player-entity';
-import { third_person_camera } from '../utils/third-person-camera'
-const { getWorldSettings, getWorldConstants, setTimeSpeed, setSizeScaleMultiplier, setDistanceScaleMultiplier } = useWorldSettingsStore();
 
 // *WorldScene systems
 let Renderer_: any;
@@ -63,6 +48,7 @@ class WorldScene {
   container_: HTMLElement;
   entityManager_: any;
   textureLoader: any;
+  grid_: any;
 
   constructor(container: HTMLElement) {
     this.container_ = container;
@@ -103,6 +89,8 @@ class WorldScene {
 
   // initialize *WorldScene decorations
   OnGameStarted_() {
+    this.grid_ = new spatial_hash_grid.SpatialHashGrid(
+        [[-5000, -5000], [5000, 5000]], [100, 100]);
     const spawner = new entity.Entity();
 
     // Initialize and Register spawners

@@ -341,7 +341,7 @@ function createPointerLockControls(cameraRig, canvas, options = {
 
     if (controls.isLocked === true) {
       const floor = cameraRig.camera.floor
-      const mass = 10
+      let mass = 10
       const Mmass = 1
       // Calculate direction of force
       var force = new Vector3().subVectors(cameraRig.camera.position, cameraRig.camera.floor.position);
